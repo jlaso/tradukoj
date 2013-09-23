@@ -1,0 +1,56 @@
+{% extends '::base.html.twig' %}
+
+{% block stylesheets %}
+    <style type="text/css">
+        body {
+            padding-top: 160px;
+            padding-bottom: 40px;
+            background-image: url("{{ asset('bundles/translations/resource/img/bg.png') }}");
+        }
+
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+    </style>
+{% endblock stylesheets %}
+
+{% block body %}
+    <div class="container">
+
+        <div class="row">
+
+            <div class="span4 offset4">
+                <div class="navbar">
+                    <div class="navbar-inner">
+                        <div class="container">
+                            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </a>
+                            <a class="brand" href="#" style="color: #ffffff;">{{ "label.projects"|trans|raw }}</a>
+
+                            <div class="nav-collapse">
+
+                            </div>
+                            <!-- /.nav-collapse -->
+                        </div>
+                    </div>
+                    <!-- /navbar-inner -->
+                </div>
+
+                {% for project in projects %}
+
+                <div class="well">
+                    <a class="btn btn-primary span3"
+                       href="{{ path('translations', {'projectId':project.id}) }}">Go to {{ project.project }} translations</a>
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+    </div>
+{% endblock body %}

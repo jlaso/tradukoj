@@ -1,13 +1,306 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <title>{% block title %}Welcome!{% endblock %}</title>
-        {% block stylesheets %}{% endblock %}
-        <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}" />
+        <title>{% block title %}Translations by JLaso for symfony2 programmers{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="">
+        <meta name="author" content="Joseluis Laso">
+
+        <link href="{{ asset('bundles/translations/bootstrap/css/bootstrap.css') }}" type="text/css" rel="stylesheet">
+        <link href="{{ asset('bundles/translations/bootstrap/css/font-awesome.css') }}" type="text/css" rel="stylesheet">
+        <link href="{{ asset('bundles/translations/resource/css/style.css') }}" type="text/css" rel="stylesheet">
+        <link href="{{ asset('bundles/translations/bootstrap/css/bootstrap-responsive.min.css') }}" rel="stylesheet">
+
+        <!--[if lt IE 9]>
+        <script src="{{ asset('bundles/translations/bootstrap/js/html5.js') }}"></script>
+        <![endif]-->
+
+        <link rel="shortcut icon" href="{{ asset('bundles/translations/bootstrap/ico/favicon.ico') }}">
+        <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{ asset('bundles/translations/bootstrap/ico/bootstrap-apple-114x114.png') }}">
+        <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{{ asset('bundles/translations/bootstrap/ico/bootstrap-apple-114x114.png') }}">
+        <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{{ asset('bundles/translations/bootstrap/ico/bootstrap-apple-72x72.png') }}">
+        <link rel="apple-touch-icon-precomposed" href="{{ asset('bundles/translations/bootstrap/ico/bootstrap-apple-57x57.png') }}">
+        {% block stylesheets %}
+        <style type="text/css">
+            body {
+                padding-top: 50px;
+                padding-bottom: 40px;
+                background-image: url("{{ asset('bundles/translations/resource/img/bg.png') }}");
+            }
+
+            .sidebar-nav {
+                padding: 9px 0;
+            }
+        </style>
+        {% endblock stylesheets %}
     </head>
     <body>
-        {% block body %}{% endblock %}
-        {% block javascripts %}{% endblock %}
+
+        {% block body %}
+
+            {% block navbar %}
+                <div class="navbar navbar-fixed-top">
+                    <div class="navbar-inner">
+                        <div class="container-fluid">
+                            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                                <span class="icon-bar"></span>
+                            </a>
+                            <a class="brand" href="#">{{ block('title') }}</a>
+
+                            <div class="nav-collapse">
+                                {#<ul class="nav">
+                                    <li class="divider-vertical"></li>
+                                    <li><a href="#"><i class="icon-comments-alt"></i> <span class="label label-important">3</span></a>
+                                    </li>
+
+                                    <li><a href="#"><i class="icon-envelope"></i> <span class="label label-important">3 new</span></a>
+                                    </li>
+
+                                    <li><a href="#"><i class="icon-refresh"></i> <span class="label label-info">3 updates</span></a>
+                                    </li>
+
+                                </ul>#}
+                                <ul class="nav pull-right">
+                                    {#<li>
+                                        <form class="navbar-search pull-left" action="">
+                                            <input type="text" class="search-query span2" placeholder="Search">
+                                        </form>
+                                    </li>#}
+                                    <li class="divider-vertical"></li>
+                                    <li>
+                                        <ul class="nav">
+                                            <li class="dropdown">
+                                                <a href="#"
+                                                   class="dropdown-toggle"
+                                                   data-toggle="dropdown">
+                                                    <i class="icon-user"></i> {{ app.user.email }}
+                                                    <b class="caret"></b>
+                                                </a>
+                                                <ul class="dropdown-menu">
+
+                                                    <li>
+                                                        <div style="width: 314px">
+                                                            <div class="modal-header">
+
+                                                                <h3>{{ app.user.nameOrEmail }}</h3>
+                                                                <h4>ROLE: {{ app.user.prettyRole }}</h4>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <div class="row-fluid">
+                                                                    <div class="span3">
+                                                                        <img src="{{ asset('bundles/translations/img/defaultPhoto.png') }}"
+                                                                             alt="" class="thumbnail span12">
+                                                                    </div>
+                                                                    {#<div class="span9">
+                                                                        <a href="#"><i class="icon-cogs"></i> Settings Account</a>
+                                                                        <a href="#"><i class="icon-cogs"></i> Settings Privacy</a>
+                                                                    </div>#}
+                                                                    {% if projects is defined %}
+                                                                    <div class="span9">
+                                                                        <h4>{{ "label.projects"|trans|raw }}</h4>
+                                                                        {% for current in projects %}
+                                                                            {% if current.id == project.id %}
+                                                                                <span class="btn">
+                                                                                    You are in {{ current.project }} project
+                                                                                </span>
+                                                                            {% else %}
+                                                                                <a href="{{ path('translations', {'projectId':current.id}) }}">
+                                                                                    Go to {{ current.project }} project
+                                                                                </a>
+                                                                            {% endif %}
+                                                                        {% endfor %}
+                                                                    </div>
+                                                                    {% endif %}
+                                                                </div>
+
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <a href="{{ path('_user_logout') }}" class="btn btn-primary"><i class="icon-off"></i> Log Out</a>
+                                                            </div>
+                                                        </div>
+
+                                                    </li>
+
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+
+                            </div>
+                            <!--/.nav-collapse -->
+                        </div>
+                    </div>
+                </div>
+            {% endblock navbar %}
+
+            <div class="container-fluid">
+                <div class="row-fluid">
+
+                    {% block sidebar %}
+                    <div class="span2">
+                        <div class="row-fluid">
+                            <div class="span6">
+                                <img src="../resource/img/160x120.gif" alt="" class="span12 thumbnail">
+                            </div>
+                            <div class="span6">
+                                <h6>username</h6>
+                                <a href="#">Profile</a>|<a href="../index.html">Logout</a>
+                            </div>
+                        </div>
+                        <br>
+                        <div class="well sidebar-nav">
+                            <ul class="nav nav-list">
+                                <li>
+                                    <div class="accordion" id="accordian2">
+                                        <div class="accordion-group">
+                                            <div class="accordion-heading">
+                                                <a style="text-decoration: none;text-align: left" class="accordion-toggle btn " href="dashboard.html">
+                                                    <i class="icon-home icon-white"></i><span> Dashboard</span>
+                                                </a>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="accordion-group">
+                                            <div class="accordion-heading">
+                                                <a style="text-decoration: none;text-align: left" class="accordion-toggle btn btn-danger" href="tables.html">
+                                                    <i class="icon-list-alt"></i><span> Tables</span>
+                                                </a>
+                                            </div>
+
+                                        </div>
+                                        <div class="accordion-group">
+                                            <div class="accordion-heading">
+                                                <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="element.html">
+                                                    <i class="icon-tasks"></i><span> Elements</span>
+                                                </a>
+                                            </div>
+
+                                        </div>
+                                        <div class="accordion-group">
+                                            <div class="accordion-heading">
+                                                <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="media.html">
+                                                    <i class="icon-picture"></i><span> Media</span>
+                                                </a>
+                                            </div>
+
+                                        </div>
+                                        <div class="accordion-group">
+                                            <div class="accordion-heading">
+                                                <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="forms.html">
+                                                    <i class="icon-align-center"></i><span> Forms</span>
+                                                </a>
+                                            </div>
+
+                                        </div>
+                                        <div class="accordion-group">
+                                            <div class="accordion-heading">
+                                                <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="grid.html">
+                                                    <i class="icon-indent-left"></i><span> Grid</span>
+                                                </a>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="accordion-group">
+                                            <div class="accordion-heading">
+                                                <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="button.html">
+                                                    <i class="icon-gift"></i><span> Buttons </span>
+                                                </a>
+                                            </div>
+
+                                        </div>
+                                        <div class="accordion-group">
+                                            <div class="accordion-heading">
+                                                <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="notification.html">
+                                                    <i class="icon-info-sign"></i><span> Notification</span>
+                                                </a>
+                                            </div>
+
+                                        </div>
+                                        <div class="accordion-group">
+                                            <div class="accordion-heading">
+                                                <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="calendar.html">
+                                                    <i class="icon-calendar"></i><span> Callendar</span>
+                                                </a>
+                                            </div>
+
+                                        </div>
+                                        <div class="accordion-group">
+                                            <div class="accordion-heading">
+                                                <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="chat.html">
+                                                    <i class="icon-comment"></i><span> Chat</span>
+                                                </a>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="accordion-group">
+                                            <div class="accordion-heading">
+                                                <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="chart.html">
+                                                    <i class="icon-bar-chart"></i><span> Charts</span>
+                                                </a>
+                                            </div>
+
+                                        </div>
+
+
+
+                                    </div>
+
+                                </li>
+
+                            </ul>
+                        </div><!--/.well -->
+                    </div><!--/span-->
+                    {% endblock sidebar %}
+
+
+                    <div class="span10">
+
+                        {% set breadcrum = [ {'label':'Home','url':'/'}, {'label':'Tables', 'url':'/'} ] %}
+                        {% block breadcrum %}
+                        <div class="row-fluid">
+                            <ul class="breadcrumb pull-right">
+                                {% for step in breadcrum %}
+                                    <li>
+                                        <a href="{{ step.url }}">
+                                            {{ step.label }}
+                                        </a> <span class="divider">/</span>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endblock breadcrum %}
+
+                        {% block content %}
+
+                        {% endblock content %}
+
+                    </div><!--/.span10-->
+
+                </div><!--/row-->
+                <hr>
+            </div><!--/.fluid-container-->
+
+
+        {% endblock body %}
+
     </body>
+    {#<script type="text/javascript" src="{{ asset('bundles/translations/js/jquery-1.7.2.min.js') }}"></script>#}
+    {#<script type="text/javascript" src="{{ asset('bundles/translations/bootstrap/js/jquery.js') }}"></script>#}
+    <script type="text/javascript" src="{{ asset('bundles/translations/js/jstree/_lib/jquery.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('bundles/translations/js/jstree/jquery.jstree.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('bundles/translations/bootstrap/js/bootstrap.js') }}"></script>
+    {% block javascripts %}
+        <script type="text/javascript">
+            $(function(){
+
+            });
+        </script>
+    {% endblock javascripts %}
 </html>

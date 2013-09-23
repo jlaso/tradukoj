@@ -2,41 +2,50 @@ jms_security_extra:
     secure_all_services: false
     expressions: true
 
+
 security:
     encoders:
-        Symfony\Component\Security\Core\User\User: plaintext
+         JLaso\TranslationsBundle\Entity\User: sha512
 
     role_hierarchy:
-        ROLE_ADMIN:       ROLE_USER
-        ROLE_SUPER_ADMIN: [ROLE_USER, ROLE_ADMIN, ROLE_ALLOWED_TO_SWITCH]
+        ROLE_TRANSLATOR:  ROLE_TRANSLATOR
+        ROLE_DEVELOPER:   [ROLE_TRANSLATOR, ROLE_DEVELOPER]
+        ROLE_ADMIN:       [ROLE_ADMIN, ROLE_TRANSLATOR, ROLE_DEVELOPER]
 
     providers:
-        in_memory:
-            memory:
-                users:
-                    user:  { password: userpass, roles: [ 'ROLE_USER' ] }
-                    admin: { password: adminpass, roles: [ 'ROLE_ADMIN' ] }
+        main:
+            entity:
+                class: JLaso\TranslationsBundle\Entity\User
+                property: email
 
     firewalls:
         dev:
             pattern:  ^/(_(profiler|wdt)|css|images|js)/
             security: false
 
-        login:
-            pattern:  ^/demo/secured/login$
+        user_login:
+            pattern:  ^/login$
             security: false
 
-        secured_area:
-            pattern:    ^/demo/secured/
+        user_register:
+            pattern:  ^/register
+            security: false
+
+        # User Security
+        user_area:
+            pattern:    ^/
+            anonymous: ~
             form_login:
-                check_path: _security_check
-                login_path: _demo_login
+                login_path:  user_login
+                check_path:  user_login_check
+                default_target_path:  user_index
+
             logout:
-                path:   _demo_logout
-                target: _demo
-            #anonymous: ~
-            #http_basic:
-            #    realm: "Secured Demo Area"
+                path:   _user_logout
+                target: user_login
 
     access_control:
-        #- { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY, requires_channel: https }
+        - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/translations, roles: ROLE_TRANSLATOR }
+        - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY }
