@@ -4,7 +4,7 @@ imports:
 
 framework:
     #esi:             ~
-    #translator:      { fallback: %locale% }
+    translator:      { fallback: %locale% }
     secret:          %secret%
     router:
         resource: "%kernel.root_dir%/config/routing.yml"
@@ -58,8 +58,18 @@ doctrine:
 
 # Swiftmailer Configuration
 swiftmailer:
-    transport: %mailer_transport%
-    host:      %mailer_host%
-    username:  %mailer_user%
-    password:  %mailer_password%
-    spool:     { type: memory }
+    transport:  %mailer_transport%
+    host:       %mailer_host%
+    username:   %mailer_user%
+    password:   %mailer_password%
+    encryption: %mailer_encryption%
+    auth_mode:  %mailer_auth_mode%
+    #spool:      { type: memory }
+
+jlaso_translations:
+    default_locale: %locale%
+    managed_locales: ['es', 'en', 'fr', 'ca']
+
+#lexik_translation:
+#    fallback_locale: en      # (required) default locale to use
+#    managed_locales: [en]    # (required) locales that the bundle have to manage

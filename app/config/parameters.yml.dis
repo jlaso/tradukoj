@@ -1,0 +1,23 @@
+parameters:
+    database_driver:   pdo_mysql
+    database_host:     localhost
+    database_port:     ~
+    database_name:     translations
+    database_user:     root
+    database_password: root
+
+    mailer_encryption: ssl
+    mailer_transport:  smtp
+    mailer_host:       translations.com.es
+    mailer_user:       no-reply@translations.com.es
+    mailer_password:   *********
+    mailer_auth_mode:  plain
+
+    locale:            es
+    secret:            asThisfTokenIsNoq1tSoSecretChangeIte
+
+    jlaso_translations_api_access:
+        project_id: 2 #translations
+        key:  1234
+        secret: 1234
+        url: http://translations.com.dev/app_dev.php/api/

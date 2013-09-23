@@ -1,0 +1,16 @@
+#translations_api:
+#    resource: "@TranslationsApiBundle/Controller/"
+#    type:     annotation
+#    prefix:   /
+
+translations:
+    resource: "@TranslationsBundle/Controller/"
+    prefix:   /
+    type: annotation
+
+user_login_check:
+    pattern:   /login_check
+
+_user_logout:
+    pattern:   /logout
+

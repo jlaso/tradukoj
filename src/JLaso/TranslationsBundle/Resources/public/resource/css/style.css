@@ -1,0 +1,59 @@
+.abs
+{
+    position: absolute;
+    top: -13px;
+    right: -10px;
+    z-index: 260;
+
+}
+
+.show-grid
+{
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.show-grid div
+{
+    background-color: #EEE ;
+    border-radius: 6px;
+    text-align: center ;
+    padding: 10px
+}
+
+.btn.jumbo {
+    font-size: 20px;
+    font-weight: normal;
+    padding: 14px 24px;
+    margin-right: 10px;
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+}
+
+/* =======================================
+
+		Main Stylesheet
+
+		Building on Twitter Bootstrap
+		http://twitter.github.com/bootstrap/
+
+========================================== */
+
+
+/* New styles below */
+
+label.valid {
+    width: 24px;
+    height: 24px;
+    background: url(../validate/img/valid.png) center center no-repeat;
+    display: inline-block;
+    text-indent: -9999px;
+}
+label.error {
+    font-weight: bold;
+    color: red;
+    padding: 2px 8px;
+    margin-top: 2px;
+}
+

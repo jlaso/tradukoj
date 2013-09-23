@@ -1,0 +1,34 @@
+login:
+    title: "Translations by JLaso"
+    not_a_member_yet: "Not a member yet?"
+    register: "Register"
+    login_button: "Login"
+    placeholder:
+        email: "Email"
+        password: "Password"
+
+register:
+    title: "User registration"
+    placeholder:
+        email: "Email"
+        password: "Password"
+        repeat_password: "Repeat password"
+        terms: "Accept terms and conditions"
+    privacy_policy: "I have read the <a href='#'>Privacy policy</a>"
+    register_button: "Register"
+    cancel: "Cancel"
+
+error:
+    acl:
+        not_enough_permissions_to_manage_this_project: "Not enough permissions to manage this project"
+
+label:
+    language: 'Idioma'
+    message: Mensaje
+    actions: Acciones
+    comment: Comentario
+    projects: 'Projects'
+
+button:
+    save: Guardar
+
