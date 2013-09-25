@@ -84,31 +84,35 @@
                                                     <li>
                                                         <div style="width: 314px">
                                                             <div class="modal-header">
-
-                                                                <h3>{{ app.user.nameOrEmail }}</h3>
-                                                                <h4>ROLE: {{ app.user.prettyRole }}</h4>
+                                                                <div class="row-fluid">
+                                                                    <div class="span9">
+                                                                        <h3>{{ app.user.nameOrEmail }}</h3>
+                                                                        <h4>ROLE: {{ app.user.prettyRole }}</h4>
+                                                                    </div>
+                                                                    <div class="span3">
+                                                                        {% set defaultPhoto = asset('bundles/translations/img/defaultPhoto.png') %}
+                                                                        <img src="{{ app.user.avatarUrl|default(defaultPhoto) }}"
+                                                                             class="thumbnail span12">
+                                                                    </div>
+                                                                </div>
                                                             </div>
                                                             <div class="modal-body">
                                                                 <div class="row-fluid">
-                                                                    <div class="span3">
-                                                                        <img src="{{ asset('bundles/translations/img/defaultPhoto.png') }}"
-                                                                             alt="" class="thumbnail span12">
-                                                                    </div>
                                                                     {#<div class="span9">
                                                                         <a href="#"><i class="icon-cogs"></i> Settings Account</a>
                                                                         <a href="#"><i class="icon-cogs"></i> Settings Privacy</a>
                                                                     </div>#}
                                                                     {% if projects is defined %}
-                                                                    <div class="span9">
+                                                                    <div class="span12">
                                                                         <h4>{{ "label.projects"|trans|raw }}</h4>
                                                                         {% for current in projects %}
                                                                             {% if current.id == project.id %}
                                                                                 <span class="btn">
-                                                                                    You are in {{ current.project }} project
+                                                                                    You are in {{ current.project ~ ' (id:' ~ current.id ~ ')' }} project
                                                                                 </span>
                                                                             {% else %}
                                                                                 <a href="{{ path('translations', {'projectId':current.id}) }}">
-                                                                                    Go to {{ current.project }} project
+                                                                                    Go to {{ current.project ~ ' (id:' ~ current.id ~ ')' }} project
                                                                                 </a>
                                                                             {% endif %}
                                                                         {% endfor %}
@@ -118,6 +122,7 @@
 
                                                             </div>
                                                             <div class="modal-footer">
+                                                                <a href="{{ path('user_index') }}" class="btn pull-left"><i class="icon-th-list"></i> {{ "translations.user_index"|trans|raw }}</a>
                                                                 <a href="{{ path('_user_logout') }}" class="btn btn-primary"><i class="icon-off"></i> Log Out</a>
                                                             </div>
                                                         </div>

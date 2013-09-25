@@ -57,11 +57,14 @@
                         <div class="row">
                             <div class="span12">
                                 <button class="btn btn-danger">{{ "login.login_button"|trans|raw }}</button>
+                                <button class="btn" id="login_github">{{ "login.login_with_github"|trans|raw }}</button>
                             </div>
                             <div class="span12">&nbsp;</div>
                             <div class="span12">
                                 <span>{{ "login.not_a_member_yet"|trans|raw }}
-                                    <a href="{{ url('user_register') }}">{{ "login.register"|trans|raw }}</a>
+                                    <a href="{{ url('user_register') }}">
+                                        {{ "login.register"|trans|raw }}
+                                    </a>
                                 </span>
                             </div>
                         </div>
@@ -74,3 +77,29 @@
 
     </div>
 {% endblock body %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script type="text/javascript">
+        $(function(){
+            $('#login_github').click(function (e) {
+                e.preventDefault();
+                window.open('https://github.com/login/oauth/authorize?client_id={{ client_id }}');
+            });
+        });
+
+        window.addEventListener('message', function (event) {
+            var code = event.data;
+            var url = '{{ path('do_github_login') }}?code=' + code;
+            console.log(url);
+            $.get(url, function (result) {
+                if(result == 'OK'){
+                    window.location = '{{ path('user_index') }}';
+                }else{
+                    alert('error, result is ' + result);
+                }
+            });
+        });
+
+    </script>
+{% endblock javascripts %}
