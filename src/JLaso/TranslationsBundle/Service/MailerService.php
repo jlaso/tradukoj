@@ -2,6 +2,7 @@
 
 namespace JLaso\TranslationsBundle\Service;
 
+use JLaso\TranslationsBundle\Entity\Project;
 use JLaso\TranslationsBundle\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Templating\EngineInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -73,7 +74,7 @@ class MailerService
 
     public function sendWelcomeMessage(User $user)
     {
-        $subject    = 'Welcome user';
+        $subject    = 'Welcome user to ' . self::SELF_NAME;
         $template   = $this->templateName('welcomeUser.html.twig');
         $parameters = array(
             'user'      => $user,
@@ -81,6 +82,24 @@ class MailerService
             'urls'      => array(
                 'homePage' => $this->router->generate('home', array(), true)
             )
+        );
+        $emailTo = $user->getEmail();
+
+        return $this->sendMail($subject, $emailTo, $template, $parameters);
+    }
+
+    public function sendNewProjectMessage(Project $project, User $user)
+    {
+        $subject    = 'New project created in ' . self::SELF_NAME;
+        $template   = $this->templateName('newProject.html.twig');
+        $parameters = array(
+            'user'      => $user,
+            'project'   => $project,
+            'subject'   => $subject,
+            'urls'      => array(
+                'homePage' => $this->router->generate('home', array(), true)
+            ),
+            'translations_name' => self::SELF_NAME
         );
         $emailTo = $user->getEmail();
 

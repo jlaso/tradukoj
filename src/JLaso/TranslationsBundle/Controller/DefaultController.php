@@ -6,6 +6,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use JLaso\TranslationsBundle\Entity\Key;
 use JLaso\TranslationsBundle\Entity\Message;
+use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
 use JLaso\TranslationsBundle\Entity\Repository\KeyRepository;
 use JLaso\TranslationsBundle\Entity\Repository\LanguageRepository;
@@ -13,6 +14,8 @@ use JLaso\TranslationsBundle\Entity\Repository\MessageRepository;
 use JLaso\TranslationsBundle\Entity\Repository\ProjectRepository;
 use JLaso\TranslationsBundle\Entity\User;
 use JLaso\TranslationsBundle\Exception\AclException;
+use JLaso\TranslationsBundle\Form\Type\NewProjectType;
+use JLaso\TranslationsBundle\Service\MailerService;
 use JLaso\TranslationsBundle\Service\Manager\TranslationsManager;
 use JLaso\TranslationsBundle\Service\RestService;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -68,9 +71,58 @@ class DefaultController extends Controller
     public function userIndexAction()
     {
         $this->init();
+        $projects = $this->translationsManager->getProjectsForUser($this->user);
 
         return array(
-            'projects' => $this->user->getProjects(),
+            'projects' => $projects,
+        );
+    }
+
+    /**
+     * Create new Project
+     *
+     * @Route("/new-project", name="new_project")
+     * @Template()
+     */
+    public function newProjectAction(Request $request)
+    {
+        $this->init();
+
+        $project  = new Project();
+        $form = $this->createForm(new NewProjectType(), $project);
+
+        if($request->isMethod('POST')){
+            $form->bind($request);
+
+            if ($form->isValid()) {
+
+                $permission = new Permission();
+                $permission->setUser($this->user);
+                $permission->setProject($project);
+                $permission->addPermission(Permission::OWNER);
+                $this->em->persist($permission);
+                $this->em->persist($project);
+                $this->em->flush();
+
+                /** @var MailerService $mailer */
+                $mailer = $this->get('jlaso.mailer_service');
+                try{
+                    $send   = $mailer->sendNewProjectMessage($project, $this->user);
+                }catch(\Exception $e){
+                    if($this->get('kernel')->getEnvironment()=='prod'){
+                         // ?
+                    }
+                }
+
+                return $this->redirect($this->generateUrl('user_index'));
+            }
+
+        }
+
+        return array(
+            'error'         => null,
+            'form'          => $form->createView(),
+            'project'       => $project,
         );
     }
 
@@ -82,8 +134,9 @@ class DefaultController extends Controller
     public function translationsAction(Project $project, $bundle = '', $catalog ='', $currentKey = '')
     {
         $this->init();
+        $permission = $this->translationsManager->userHasProject($this->user, $project);
 
-        if(!$this->translationsManager->userHasProject($this->user, $project)){
+        if(false === $permission){
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
@@ -128,9 +181,10 @@ class DefaultController extends Controller
         }
 
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+        $projects  = $this->translationsManager->getProjectsForUser($this->user);
 
         return array(
-            'projects'          => $this->user->getProjects(),
+            'projects'          => $projects,
             'project'           => $project,
             'bundles'           => $bundles,
             'keys'              => $keysAssoc,

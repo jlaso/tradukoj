@@ -3,6 +3,7 @@ login:
     not_a_member_yet: "Not a member yet?"
     register: "Register"
     login_button: "Login"
+    login_with_github: "w/Github"
     placeholder:
         email: "Email"
         password: "Password"
@@ -28,7 +29,11 @@ label:
     actions: Acciones
     comment: Comentario
     projects: 'Projects'
+    project_new: 'Nuevo proyecto'
 
 button:
     save: Guardar
+
+translations:
+    user_index: "Area usuario"
 

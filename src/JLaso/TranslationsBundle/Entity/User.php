@@ -57,9 +57,16 @@ class User implements UserInterface, EquatableInterface
     /**
      * @var string $username
      *
-     * @ORM\Column(name="username", type="string", length=255, unique=true, nullable=true)
+     * @ORM\Column(name="avatar_url", type="string", length=255, unique=true, nullable=true)
      */
     protected $username;
+
+    /**
+     * @var string $avatarUrl
+     *
+     * @ORM\Column(name="username", type="string", length=255, nullable=true)
+     */
+    protected $avatarUrl;
 
     /**
      * @var string $password
@@ -456,5 +463,22 @@ class User implements UserInterface, EquatableInterface
     {
         return $this->permissions;
     }
+
+    /**
+     * @param string $avatarUrl
+     */
+    public function setAvatarUrl($avatarUrl)
+    {
+        $this->avatarUrl = $avatarUrl;
+    }
+
+    /**
+     * @return string
+     */
+    public function getAvatarUrl()
+    {
+        return $this->avatarUrl;
+    }
+
 
 }

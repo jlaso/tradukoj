@@ -2,10 +2,13 @@
 namespace JLaso\TranslationsBundle\Controller;
 
 use Doctrine\ORM\EntityManager;
+use JLaso\TranslationsBundle\Entity\Repository\UserRepository;
 use JLaso\TranslationsBundle\Entity\User;
 use JLaso\TranslationsBundle\Form\Type\UserRegistrationType;
 use JLaso\TranslationsBundle\Service\MailerService;
+use JLaso\TranslationsBundle\Service\Manager\TranslationsManager;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -23,6 +26,28 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
  */
 class SecurityController extends Controller
 {
+
+    const CLIENT_ID = '0334c2cebd3ec46632a3';
+
+    /** @var  EntityManager */
+    protected $em;
+    protected $config;
+    /** @var  TranslationsManager */
+    protected $translationsManager;
+    /** @var User */
+    protected $user;
+    /** @var  Translator */
+    protected $translator;
+
+    protected function init()
+    {
+        $this->em                  = $this->container->get('doctrine.orm.default_entity_manager');
+        $this->config              = $this->container->getParameter('jlaso_translations');
+        $this->translationsManager = $this->container->get('jlaso.translations_manager');
+        $this->user                = $this->get('security.context')->getToken()->getUser();
+        $this->translator          = $this->container->get('translator');
+    }
+
     /**
      * @Route("/login/", name="user_login")
      * @Template()
@@ -63,150 +88,70 @@ class SecurityController extends Controller
         return array(
             'last_username' => $session->get(SecurityContext::LAST_USERNAME),
             'error'         => $error,
+            'client_id'     => self::CLIENT_ID,
         );
     }
 
-//    /**
-//     * @Route("/login-facebook", name="login_facebook")
-//     * @Template()
-//     */
-//    public function loginFacebookAction()
-//    {
-//        $facebook = $this->get('jlaso.facebook_client');
-//
-//        $session = $this->get('session')->all();
-//
-//        $facebookUser = $facebook->getUser();
-//
-//        if ($facebookUser) {
-//            try {
-//                $facebookUserProfile = $facebook->api('/me');
-//
-//                $userManager = $this->get('onbile.user_manager');
-//
-//                $user = $userManager->findUserBy(array(
-//                        'email' => $facebookUserProfile['email']
-//                    ));
-//
-//                if (!$user) {
-//                    $user = $userManager->createFacebookUser($facebookUserProfile);
-//                }
-//
-//                $this->loginAs($user);
-//
-//                if (isset($session['_security.user_area.target_path'])) {
-//                    $url = $session['_security.user_area.target_path'];
-//                } else {
-//                    $url = $this->generateUrl('user_index');
-//                }
-//
-//                return $this->redirect($url);
-//            } catch (\FacebookApiException $e) {
-//                $facebookUser = null;
-//            }
-//        }
-//
-//        $parameters = array(
-//            'scope' => 'email,publish_actions'
-//        );
-//
-//        return $this->redirect($facebook->getLoginUrl($parameters));
-//    }
-//
-//    /**
-//     * @Route("/login-twitter", name="login_twitter")
-//     * @Template()
-//     */
-//    public function loginTwAction()
-//    {
-//        $request = $this->getRequest();
-//        $session = $request->getSession();
-//
-//        $twitterClient = $this->get('onbile.twitter_client');
-//
-//        $twitterParams = $this->container->getParameter('twitter');
-//        $request_token = $twitterClient->getRequestToken($twitterParams['callback']);
-//
-//        $token = $request_token['oauth_token'];
-//        $session->set('oauth_token', $token);
-//        $session->set('oauth_token_secret', $request_token['oauth_token_secret']);
-//
-//        if ($twitterClient->http_code === 200) {
-//            $url = $twitterClient->getAuthorizeURL($token);
-//
-//            return $this->redirect($url);
-//        }
-//
-//        echo 'Could not connect to Twitter. Refresh the page or try again later.';
-//
-//        return array();
-//    }
-//
-//    /**
-//     * @Route("/twitter-callback", name="login_tw_callback")
-//     * @Template()
-//     */
-//    public function loginTwCallbackAction()
-//    {
-//        $request = $this->getRequest();
-//        $session = $request->getSession();
-//
-//        /* If the oauth_token is old redirect to the connect page. */
-//        if ($request->query->has('oauth_token') && $session->get('oauth_token') !== $request->query->get('oauth_token')) {
-//            $session->set('oauth_status', 'oldtoken');
-//        }
-//
-//        $twitterClient = $this->get('onbile.twitter_client');
-//        $twitterClient->setOAuthToken($session->get('oauth_token'), $session->get('oauth_token_secret'));
-//
-//        /* Request access tokens from twitter */
-//        $access_token = $twitterClient->getAccessToken($request->query->get('oauth_verifier'));
-//
-//        /* Save the access tokens. Normally these would be saved in a database for future use. */
-//        $session->set('access_token', $access_token);
-//
-//        /* Remove no longer needed request tokens */
-//        $session->remove('oauth_token');
-//        $session->remove('oauth_token_secret');
-//
-//        /* If HTTP response is 200 continue otherwise send to connect page to retry */
-//        if (200 == $twitterClient->http_code) {
-//            /* The user has been verified and the access tokens can be saved for future use */
-//            $session->set('status', 'verified');
-//
-//            $twitterProfile = $twitterClient->get('account/verify_credentials');
-//
-//            $userManager = $this->get('onbile.user_manager');
-//
-//            $user = $userManager->findUserByTwitterId($twitterProfile->id);
-//
-//            if (!$user) {
-//                $user = $userManager->createTwitterUser($twitterProfile);
-//            }
-//
-//            $this->loginAs($user);
-//
-//        } else {
-//            /* Save HTTP status for error dialog on connnect page.*/
-//            // return $this->redirect('f_twitter_clear_sessions');
-//        }
-//
-//        $sessionAttr = $session->all();
-//        if (isset($sessionAttr['_security.user_area.target_path'])) {
-//            $url = $sessionAttr['_security.user_area.target_path'];
-//        } else {
-//            $url = $this->generateUrl('user_index');
-//        }
-//
-//        return $this->redirect($url);
-//    }
-//
-//    private function loginAs($user, $providerKey = 'user_area')
-//    {
-//        $token = new UsernamePasswordToken($user, null, $providerKey, $user->getRoles());
-//        $this->container->get('security.context')->setToken($token);
-//        $this->get('session')->set('_security_'.$providerKey, serialize($token));
-//    }
+    /**
+     * @Route("/user/github-login/callback", name="login_github_callback")
+     * @Template()
+     */
+    public function loginGithubCallbackAction()
+    {
+        return array();
+    }
+
+    /**
+     * @Route("/user/do-github-login", name="do_github_login")
+     */
+    public function doGithubLoginAction()
+    {
+        $this->init();
+        $request       = $this->getRequest();
+        $client_secret = 'd945ef6df389f0fa5d95eb638fd74fccf623d218';
+
+        if($code = $request->get('code')){
+            $data = sprintf('client_id=%s&client_secret=%s&code=%s', self::CLIENT_ID, $client_secret, urlencode($code));
+
+            $ch = curl_init('https://github.com/login/oauth/access_token');
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            $response = curl_exec($ch);
+
+            preg_match('/access_token=([0-9a-f]+)/', $response, $out);
+            curl_close($ch);
+            if(isset($out[1])){
+                $access_token = $out[1];
+                $response     = file_get_contents('https://api.github.com/user?access_token=' . $access_token);
+                $data         = json_decode($response, true);
+                $login        = $data['login'];
+                $avatar_url   = $data['avatar_url'];
+                $user         = $this->getUserRepository()->findOneBy(array('username' => $login));
+                if(!$user instanceof User){
+                    $user     = $this->getUserRepository()->findOneBy(array('email' => $data['email']));
+                }
+                if(!$user instanceof User){
+                    $user = new User();
+                    $user->setUsername($login);
+                    $user->setEmail($data['email']);
+                    $user->setName($data['name']);
+                    $user->setActived(true);
+                    $user->setPassword(uniqid());
+                }
+                $user->setAvatarUrl($avatar_url);
+                $this->em->persist($user);
+                $this->em->flush();
+                $this->loginAs($user);
+                return new Response('OK');
+
+            }else{
+                ld($response);
+
+            }
+        }
+
+        return new Response('OK');
+    }
 
 
     /**
@@ -271,5 +216,21 @@ class SecurityController extends Controller
         );
     }
 
+    /**
+     * @return UserRepository
+     */
+    protected function getUserRepository()
+    {
+        return $this->em->getRepository('TranslationsBundle:User');
+    }
+
+    protected function loginAs($user, $providerKey = 'user_index')
+    {
+        $token = new UsernamePasswordToken($user, null, $providerKey, $user->getRoles());
+        $this->container->get('security.context')->setToken($token);
+        /** @var Session $session */
+        $session = $this->get('session');
+        $session->set('_security_'.$providerKey, serialize($token));
+    }
 
 }

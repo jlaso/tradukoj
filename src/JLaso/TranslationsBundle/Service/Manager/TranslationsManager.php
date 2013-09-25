@@ -6,7 +6,9 @@
 namespace JLaso\TranslationsBundle\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
+use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
+use JLaso\TranslationsBundle\Entity\Repository\PermissionRepository;
 use JLaso\TranslationsBundle\Entity\User;
 
 class TranslationsManager
@@ -49,21 +51,28 @@ class TranslationsManager
      */
     public function userHasProject(User $user, Project $project)
     {
-        if(count($user->getProjects()) > count($project->getUsers())){
-            foreach($project->getUsers() as $currentUser){
-                if($currentUser->isEqualTo($user)){
-                    return true;
-                }
-            }
-        }else{
-            $id = $project->getId();
-            foreach($user->getProjects() as $currentProject){
-                if($currentProject->getId() == $id){
-                    return true;
-                }
-            }
+        $permission = $this->getPermissionRepository()->findPermissionForProjectAndUser($project, $user);
+        if($permission instanceof Permission){
+            return $permission->getPermissions();
         }
+
         return false;
+    }
+
+    /**
+     * @param User $user
+     *
+     * @return Project[]
+     */
+    public function getProjectsForUser(User $user)
+    {
+        $projects = array();
+        $permissions = $user->getPermissions();
+        foreach($permissions as $permission){
+            $projects[] = $permission->getProject();
+        }
+
+        return $projects;
     }
 
     /**
@@ -76,5 +85,12 @@ class TranslationsManager
         return str_replace('.','-',$key);
     }
 
+    /**
+     * @return PermissionRepository
+     */
+    protected function getPermissionRepository()
+    {
+        return $this->em->getRepository('TranslationsBundle:Permission');
+    }
 
 }
