@@ -176,15 +176,15 @@ class Permission
 
         if(null === $language){
             if(!in_array($permission, $this->allGeneralPermissions())){
-                throw new \Exception('Permission ' .  $permission . 'not recognized');
+                throw new \Exception(sprintf('Permission %s not recognized', $permission));
             }
             $permissions[self::GENERAL_KEY] = $permission;
         }else{
             if(!in_array($permission, $this->allLanguagePermissions())){
-                throw new \Exception('Permission ' .  $permission . 'not recognized');
+                throw new \Exception(sprintf('Permission %s not recognized', $permission));
             }
             if(!in_array($language, $this->allLanguageCodes())){
-                throw new \Exception('Permission ' .  $permission . 'not recognized');
+                throw new \Exception(sprintf('Language %s not recognized', $language));
             }
             $permissions[self::LOCALE_KEY][$language] = $permission;
         }

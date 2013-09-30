@@ -51,12 +51,23 @@ class TranslationsManager
      */
     public function userHasProject(User $user, Project $project)
     {
-        $permission = $this->getPermissionRepository()->findPermissionForProjectAndUser($project, $user);
+        $permission = $this->getPermissionForUserAndProject($user, $project);
         if($permission instanceof Permission){
             return $permission->getPermissions();
         }
 
         return false;
+    }
+
+    /**
+     * @param User    $user
+     * @param Project $project
+     *
+     * @return Permission
+     */
+    public function getPermissionForUserAndProject(User $user, Project $project)
+    {
+        return $this->getPermissionRepository()->findPermissionForProjectAndUser($project, $user);
     }
 
     /**
