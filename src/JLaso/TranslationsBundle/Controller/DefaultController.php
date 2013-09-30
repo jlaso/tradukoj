@@ -100,6 +100,8 @@ class DefaultController extends Controller
                 $permission->setUser($this->user);
                 $permission->setProject($project);
                 $permission->addPermission(Permission::OWNER);
+                // Give permission to write in all languages
+                $permission->addPermission(Permission::WRITE_PERM, '*');
                 $this->em->persist($permission);
                 $this->em->persist($project);
                 $this->em->flush();
@@ -134,9 +136,10 @@ class DefaultController extends Controller
     public function translationsAction(Project $project, $bundle = '', $catalog ='', $currentKey = '')
     {
         $this->init();
-        $permission = $this->translationsManager->userHasProject($this->user, $project);
+        //$permission = $this->translationsManager->userHasProject($this->user, $project);
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(false === $permission){
+        if(!$permission instanceof Permission){
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
@@ -182,6 +185,10 @@ class DefaultController extends Controller
 
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
         $projects  = $this->translationsManager->getProjectsForUser($this->user);
+        $permission->addPermission(Permission::WRITE_PERM, '*');
+        $permission->addPermission(Permission::READ_PERM, 'dz');
+
+//ld($permission);
 
         return array(
             'projects'          => $projects,
@@ -194,6 +201,7 @@ class DefaultController extends Controller
             'trans_data'        => $transData,
             'current_key'       => $currentKey,
             'languages'         => $languages,
+            'permissions'       => $permission->getPermissions(),
         );
     }
 

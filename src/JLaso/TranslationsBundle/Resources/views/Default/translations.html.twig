@@ -95,6 +95,7 @@
             {% endfor %}
         </ul>
     </div>#}
+    {{ permissions|ld }}
 {% endblock breadcrum %}
 
 {% block content %}
@@ -150,6 +151,8 @@
                             </td>
                         </tr>
                         {% for lang in managed_languages %}
+                            {% set canEdit = permission(permissions, lang, 'WRITE') %}
+                            {% set canView = permission(permissions, lang, 'READ') %}
                             <tr class="key-row {{ cycle('odd', 'even') }} gradeX" id="key-{{ info.id }}-{{ lang }}">
                                 <td class="center">
                                     <i class="icon-flag"></i>&nbsp;<code>{{ lang }}</code>
@@ -157,9 +160,14 @@
                                     &nbsp;{{ languages[lang].name }}
                                 </td>
                                 <td>
-                                    <textarea class="span12" rows="2" dir="{{ languages[lang].dir }}">
-                                        {{- info.messages[lang] is defined ? info.messages[lang] : '' -}}
-                                    </textarea>
+                                    {% set msg = info.messages[lang] is defined ? info.messages[lang] : '' %}
+                                    {% if canEdit %}
+                                        <textarea class="span12" rows="2" dir="{{ languages[lang].dir }}">{{ msg }}</textarea>
+                                    {% else %}
+                                        <span dir="{{ languages[lang].dir }}">
+                                            {{- msg -}}
+                                        </span>
+                                    {% endif %}
                                 </td>
                                 <td>
                                     <a href="#" class="btn btn-primary save-message"

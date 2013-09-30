@@ -107,11 +107,11 @@
                                                                         <h4>{{ "label.projects"|trans|raw }}</h4>
                                                                         {% for current in projects %}
                                                                             {% if current.id == project.id %}
-                                                                                <span class="btn">
+                                                                                <span class="btn span12 btn-danger">
                                                                                     You are in {{ current.project ~ ' (id:' ~ current.id ~ ')' }} project
                                                                                 </span>
                                                                             {% else %}
-                                                                                <a href="{{ path('translations', {'projectId':current.id}) }}">
+                                                                                <a class="btn span12" href="{{ path('translations', {'projectId':current.id}) }}">
                                                                                     Go to {{ current.project ~ ' (id:' ~ current.id ~ ')' }} project
                                                                                 </a>
                                                                             {% endif %}
