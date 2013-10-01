@@ -124,26 +124,32 @@ class SecurityController extends Controller
                 $access_token = $out[1];
                 $response     = file_get_contents('https://api.github.com/user?access_token=' . $access_token);
                 $data         = json_decode($response, true);
-                $login        = $data['login'];
-                $avatar_url   = $data['avatar_url'];
-                $user         = $this->getUserRepository()->findOneBy(array('username' => $login));
-                if(!$user instanceof User){
-                    $user     = $this->getUserRepository()->findOneBy(array('email' => $data['email']));
+                try{
+                    $login        = $data['login'];
+                    $avatar_url   = $data['avatar_url'];
+                    $user         = $this->getUserRepository()->findOneBy(array('username' => $login));
+                    $email        = isset($data['email']) ? $data['email'] : $login . '-github@translations.com.es';
+                    if(!$user instanceof User){
+                        $user     = $this->getUserRepository()->findOneBy(array('email' => $email));
+                    }
+                    if(!$user instanceof User){
+                        $user = new User();
+                        $user->setUsername($login);
+                        $user->setEmail($email);
+                        $user->setName(isset($data['name']) ? $data['name'] : 'unknown');
+                        $user->setActived(true);
+                        $user->setPassword(uniqid());
+                    }
+                    $user->setAvatarUrl($avatar_url);
+                    $this->em->persist($user);
+                    $this->em->flush();
+                    $this->loginAs($user);
+                    var_dump($data);
+                    return new Response('OK');
+                }catch(\Exception $e){
+                    print $e->getMessage();
+                    var_dump($data);
                 }
-                if(!$user instanceof User){
-                    $user = new User();
-                    $user->setUsername($login);
-                    $user->setEmail($data['email']);
-                    $user->setName($data['name']);
-                    $user->setActived(true);
-                    $user->setPassword(uniqid());
-                }
-                $user->setAvatarUrl($avatar_url);
-                $this->em->persist($user);
-                $this->em->flush();
-                $this->loginAs($user);
-                return new Response('OK');
-
             }else{
                 ld($response);
 
