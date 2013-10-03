@@ -55,18 +55,18 @@ class User implements UserInterface, EquatableInterface
     protected $email;
 
     /**
-     * @var string $username
-     *
-     * @ORM\Column(name="username", type="string", length=255, unique=true, nullable=true)
-     */
-    protected $username;
-
-    /**
      * @var string $avatarUrl
      *
      * @ORM\Column(name="avatar_url", type="string", length=255, nullable=true)
      */
     protected $avatarUrl;
+
+    /**
+     * @var string $username
+     *
+     * @ORM\Column(name="username", type="string", length=100, unique=true, nullable=true)
+     */
+    protected $username;
 
     /**
      * @var string $password
