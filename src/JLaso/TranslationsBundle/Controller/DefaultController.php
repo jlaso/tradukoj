@@ -71,6 +71,7 @@ class DefaultController extends Controller
     public function userIndexAction()
     {
         $this->init();
+
         $projects = $this->translationsManager->getProjectsForUser($this->user);
 
         return array(

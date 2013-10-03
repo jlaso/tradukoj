@@ -44,12 +44,12 @@ class SecurityController extends Controller
         $this->em                  = $this->container->get('doctrine.orm.default_entity_manager');
         $this->config              = $this->container->getParameter('jlaso_translations');
         $this->translationsManager = $this->container->get('jlaso.translations_manager');
-        $this->user                = $this->get('security.context')->getToken()->getUser();
+        //$this->user                = $this->get('security.context')->getToken()->getUser();
         $this->translator          = $this->container->get('translator');
     }
 
     /**
-     * @Route("/login/", name="user_login")
+     * @Route("/login", name="user_login")
      * @Template()
      */
     public function loginAction()
@@ -57,21 +57,29 @@ class SecurityController extends Controller
         $request = $this->getRequest();
         $session = $request->getSession();
 
-        /** @var User $user */
-        $user = $this->get('security.context')->getToken()->getUser();
-        if ($this->get('security.context')->isGranted('IS_FULLY_AUTHENTICATED')){
-            switch(true){
-                case ($user->hasRole(User::ROLE_DEVELOPER)):
-                    return $this->redirect($this->generateUrl('user_index') . '#developer-area');
-                    break;
-                case ($user->hasRole(User::ROLE_TRANSLATOR)):
-                    return $this->redirect($this->generateUrl('user_index') . '#translator-area');
-                    break;
-                case ($user->hasRole(User::ROLE_ADMIN)):
-                    return $this->redirect($this->generateUrl('user_index') . '#admin-area');
-                    break;
-                default:
-                    throw new \Exception('Unknow role for user');
+        /** @var SecurityContext $securityContext */
+        $securityContext = $this->get('security.context');
+        $token = $securityContext->getToken();
+        if($token){
+            /** @var User $user */
+            $user = $token->getUser();
+            if($user instanceof User){
+                die('asd');
+                if ($this->get('security.context')->isGranted('IS_FULLY_AUTHENTICATED')){
+                    switch(true){
+                        case ($user->hasRole(User::ROLE_DEVELOPER)):
+                            return $this->redirect($this->generateUrl('user_index') . '#developer-area');
+                            break;
+                        case ($user->hasRole(User::ROLE_TRANSLATOR)):
+                            return $this->redirect($this->generateUrl('user_index') . '#translator-area');
+                            break;
+                        case ($user->hasRole(User::ROLE_ADMIN)):
+                            return $this->redirect($this->generateUrl('user_index') . '#admin-area');
+                            break;
+                        default:
+                            throw new \Exception('Unknow role for user');
+                    }
+                }
             }
         }
 
@@ -93,20 +101,12 @@ class SecurityController extends Controller
     }
 
     /**
-     * @Route("/user/github-login/callback", name="login_github_callback")
-     * @Template()
-     */
-    public function loginGithubCallbackAction()
-    {
-        return array();
-    }
-
-    /**
      * @Route("/user/do-github-login", name="do_github_login")
      */
     public function doGithubLoginAction()
     {
         $this->init();
+
         $request       = $this->getRequest();
         $client_secret = 'd945ef6df389f0fa5d95eb638fd74fccf623d218';
 
@@ -120,10 +120,13 @@ class SecurityController extends Controller
 
             preg_match('/access_token=([0-9a-f]+)/', $response, $out);
             curl_close($ch);
+            //ld($response);
+            sleep(1);
             if(isset($out[1])){
                 $access_token = $out[1];
                 $response     = file_get_contents('https://api.github.com/user?access_token=' . $access_token);
                 $data         = json_decode($response, true);
+                //ld($data); sleep(4);
                 try{
                     $login        = $data['login'];
                     $avatar_url   = $data['avatar_url'];
@@ -134,18 +137,21 @@ class SecurityController extends Controller
                     }
                     if(!$user instanceof User){
                         $user = new User();
-                        $user->setUsername($login);
                         $user->setEmail($email);
                         $user->setName(isset($data['name']) ? $data['name'] : 'unknown');
                         $user->setActived(true);
                         $user->setPassword(uniqid());
+                        $user->setUsername($login);
+                        $user->addRole('ROLE_TRANSLATOR');
+                        $user->setAvatarUrl($avatar_url);
+                        $this->em->persist($user);
+                        $this->em->flush();
                     }
-                    $user->setAvatarUrl($avatar_url);
-                    $this->em->persist($user);
-                    $this->em->flush();
                     $this->loginAs($user);
-                    var_dump($data);
-                    return new Response('OK');
+
+                    //return new Response('OK');
+                    return $this->redirect($this->generateUrl('user_index'));
+
                 }catch(\Exception $e){
                     print $e->getMessage();
                     var_dump($data);
@@ -230,9 +236,9 @@ class SecurityController extends Controller
         return $this->em->getRepository('TranslationsBundle:User');
     }
 
-    protected function loginAs($user, $providerKey = 'user_index')
+    protected function loginAs(User $user, $providerKey = 'user_index')
     {
-        $token = new UsernamePasswordToken($user, null, $providerKey, $user->getRoles());
+        $token = new UsernamePasswordToken($user, $user->getPassword(), $providerKey, $user->getRoles());
         $this->container->get('security.context')->setToken($token);
         /** @var Session $session */
         $session = $this->get('session');
