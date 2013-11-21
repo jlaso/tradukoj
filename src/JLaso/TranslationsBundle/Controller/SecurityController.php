@@ -157,7 +157,7 @@ class SecurityController extends Controller
                     var_dump($data);
                 }
             }else{
-                ld($response);
+                var_dump($response);
 
             }
         }
