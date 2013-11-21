@@ -78,7 +78,7 @@ $RECYCLE.BIN/
 # Linux
 .*
 !.gitignore
-!.htaccess
+# !.htaccess
 *~
 
 # Mac OS X
