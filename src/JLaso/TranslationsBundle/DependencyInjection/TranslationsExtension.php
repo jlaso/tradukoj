@@ -28,6 +28,7 @@ class TranslationsExtension extends Extension
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
         $loader->load('managers.xml');
+        $loader->load('twig.xml');
 
         $container->setParameter('jlaso_translations', $config);
     }
