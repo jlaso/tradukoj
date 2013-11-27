@@ -187,7 +187,7 @@ class DefaultController extends Controller
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
         $projects  = $this->translationsManager->getProjectsForUser($this->user);
         $permission->addPermission(Permission::WRITE_PERM, '*');
-        $permission->addPermission(Permission::READ_PERM, 'dz');
+        //$permission->addPermission(Permission::READ_PERM, 'dz');
 
 //ld($permission);
 

@@ -170,11 +170,15 @@
                                     {% endif %}
                                 </td>
                                 <td>
+                                    {% if canEdit %}
                                     <a href="#" class="btn btn-primary save-message"
                                             data-role="#key-{{ info.id }}-{{ lang }}"
                                             language="{{ lang }}" key="{{ info.key }}">
                                         <i class="icon-save"></i> {{ "button.save"|trans|raw }}
                                     </a>
+                                    {% else %}
+                                        --
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}

@@ -50,6 +50,41 @@ class KeyRepository extends EntityRepository
 
     /**
      * @param Project $project
+     * @param string  $bundle
+     *
+     * @return Query
+     */
+    public function findAllKeysForProjectAndBundleQuery(Project $project, $bundle)
+    {
+        $em = $this->getEntityManager();
+
+        $queryBuilder = $em->createQueryBuilder();
+        $queryBuilder->select('k')
+            ->from('TranslationsBundle:Key', 'k')
+            ->where('k.project = :project')
+            ->andWhere('k.bundle = :bundle')
+            ->setParameters(array(
+                    'project' => $project,
+                    'bundle'  => $bundle,
+                ))
+        ;
+
+        return $queryBuilder->getQuery();
+    }
+
+    /**
+     * @param Project $project
+     * @param string  $bundle
+     *
+     * @return Key[]
+     */
+    public function findAllKeysForProjectAndBundle(Project $project, $bundle)
+    {
+        return $this->findAllKeysForProjectAndBundleQuery($project, $bundle)->getResult();
+    }
+
+    /**
+     * @param Project $project
      *
      * @return array
      */

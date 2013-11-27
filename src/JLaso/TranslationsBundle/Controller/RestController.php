@@ -25,12 +25,23 @@ class RestController extends Controller
     /** @var EntityManager */
     protected $em;
 
+    const DEFAULT_CATALOG = "messages";
+
     /**
      *
      */
     protected function init()
     {
         $this->em = $this->container->get('doctrine.orm.default_entity_manager');
+    }
+
+    protected function validateRequest(Request $request, Project $project)
+    {
+        $content = $request->getContent();
+        $params  = json_decode($content, true);
+
+        return ($params['key'] == $project->getApiKey()) && ($params['secret'] == $project->getApiSecret());
+
     }
 
     /**
@@ -96,7 +107,7 @@ class RestController extends Controller
     {
         $this->init();
         $keyRepository = $this->getKeyRepository();
-        $bundles       = $keyRepository->findAllBundlesForProject($project);
+        //$bundles       = $keyRepository->findAllBundlesForProject($project);
         $keys          = $keyRepository->findAllKeysForProjectAndBundle($project, $bundle);
         $keysResult    = array();
         foreach($keys as $key){
@@ -113,10 +124,13 @@ class RestController extends Controller
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function getBundleIndex(Project $project)
+    public function getBundleIndex(Request $request, Project $project)
     {
         try{
             $this->init();
+            if(!$this->validateRequest($request, $project)){
+                return $this->exception('error_messages.invalid_credentials');
+            };
             $keyRepository = $this->getKeyRepository();
             $bundles       = $keyRepository->findAllBundlesForProject($project);
         }catch(\Exception $e){
@@ -129,11 +143,11 @@ class RestController extends Controller
     /**
      * Devuelve los detalles de un mensaje en concreto
      *
-     * @Route("/translation/details/{projectId}/{bundle}/{key}/{language}")
+     * @Route("/translation/details/{projectId}/{bundle}/{key}/{language}/{catalog}")
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function getTranslationDetails(Project $project, $bundle, $key, $language)
+    public function getTranslationDetails(Project $project, $bundle, $key, $language, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
 
@@ -142,6 +156,7 @@ class RestController extends Controller
                 'project'  => $project,
                 'bundle'   => $bundle,
                 'key'      => $key,
+                'catalog'  => $catalog,
             )
         );
 
@@ -168,11 +183,11 @@ class RestController extends Controller
     /**
      * Devuelve los mensajes de una key
      *
-     * @Route("/translations/{projectId}/{bundle}/{key}")
+     * @Route("/translations/{projectId}/{bundle}/{key}/{catalog}")
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function getTranslations(Project $project, $bundle, $key)
+    public function getTranslations(Project $project, $bundle, $key, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
 
@@ -181,6 +196,7 @@ class RestController extends Controller
                 'project'  => $project,
                 'bundle'   => $bundle,
                 'key'      => $key,
+                'catalog'  => $catalog,
             )
         );
 
@@ -199,11 +215,11 @@ class RestController extends Controller
     }
 
     /**
-     * @Route("/get-messages/{projectId}/{bundle}/{catalog}/{locale}")
+     * @Route("/get-messages/{projectId}/{bundle}/{locale}/{catalog}")
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function getMessagesAction(Project $project, $bundle, $catalog, $locale)
+    public function getMessagesAction(Project $project, $bundle, $locale, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
 
@@ -234,7 +250,7 @@ class RestController extends Controller
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function getCommentsAction(Project $project, $bundle, $catalog)
+    public function getCommentsAction(Project $project, $bundle, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
 
@@ -261,11 +277,11 @@ class RestController extends Controller
     }
 
     /**
-     * @Route("/put-messages/{projectId}/{bundle}/{catalog}/{locale}")
+     * @Route("/put-messages/{projectId}/{bundle}/{locale}/{catalog}")
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function putMessagesAction(Project $project, $bundle, $catalog, $locale, Request $request)
+    public function putMessagesAction(Request $request, Project $project, $bundle, $locale, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
         $requestContent = json_decode($request->getContent(), true);
@@ -283,7 +299,7 @@ class RestController extends Controller
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function putCommentsAction(Project $project, $bundle, $catalog, Request $request)
+    public function putCommentsAction(Request $request, Project $project, $bundle, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
         $requestContent = json_decode($request->getContent(), true);
@@ -299,11 +315,11 @@ class RestController extends Controller
     /**
      * Devuelve el mensaje de una key
      *
-     * @Route("/translation/{projectId}/{bundle}/{key}/{locale}")
+     * @Route("/translation/{projectId}/{bundle}/{key}/{locale}/{catalog}")
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function getTranslation(Project $project, $bundle, $key, $locale)
+    public function getTranslation(Project $project, $bundle, $key, $locale, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
 
@@ -312,6 +328,7 @@ class RestController extends Controller
                 'project'  => $project,
                 'bundle'   => $bundle,
                 'key'      => $key,
+                'catalog'  => $catalog,
             )
         );
 
@@ -421,11 +438,11 @@ class RestController extends Controller
     /**
      * Devuelve el comentario de una key
      *
-     * @Route("/get/comment/{projectId}/{bundle}/{key}")
+     * @Route("/get/comment/{projectId}/{bundle}/{key}/{catalog}")
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function getCommentAction(Project $project, $bundle, $key)
+    public function getCommentAction(Project $project, $bundle, $key, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
 
@@ -434,6 +451,7 @@ class RestController extends Controller
                 'project'  => $project,
                 'bundle'   => $bundle,
                 'key'      => $key,
+                'catalog'  => $catalog,
             )
         );
 
@@ -450,11 +468,11 @@ class RestController extends Controller
     }
 
     /**
-     * @Route("/put/message/{projectId}/{bundle}/{catalog}/{key}/{language}")
+     * @Route("/put/message/{projectId}/{bundle}/{key}/{language}/{catalog}")
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function putMessage($project, $bundle, $catalog, $key, $language, Request $request)
+    public function putMessage(Request $request, $project, $bundle, $key, $language, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
         $param   = json_decode($request->getContent(), true);
@@ -466,11 +484,11 @@ class RestController extends Controller
 
 
     /**
-     * @Route("/update/message/if-newest/{projectId}/{bundle}/{key}/{language}")
+     * @Route("/update/message/if-newest/{projectId}/{bundle}/{key}/{language}/{catalog}")
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function updateMessageIfNewest($project, $bundle, $key, $language, Request $request)
+    public function updateMessageIfNewest( Request $request, $project, $bundle, $key, $language, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
         $param = json_decode($request->getContent(), true);
@@ -484,6 +502,7 @@ class RestController extends Controller
                 'project'  => $project,
                 'bundle'   => $bundle,
                 'key'      => $key,
+                'catalog'  => $catalog,
             )
         );
 
@@ -492,6 +511,7 @@ class RestController extends Controller
             $keyRecord->setProject($project);
             $keyRecord->setKey($key);
             $keyRecord->setBundle($bundle);
+            $keyRecord->setCatalog($catalog);
             $this->em->persist($keyRecord);
             $this->em->flush();
         }
@@ -524,11 +544,11 @@ class RestController extends Controller
     }
 
     /**
-     * @Route("/update/comment/if-newest/{projectId}/{bundle}/{key}")
+     * @Route("/update/comment/if-newest/{projectId}/{bundle}/{key}/{catalog}")
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function updateCommentIfNewest($project, $bundle, $key, Request $request)
+    public function updateCommentIfNewest(Request $request, $project, $bundle, $key, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
 
@@ -542,12 +562,14 @@ class RestController extends Controller
                 'project'  => $project,
                 'bundle'   => $bundle,
                 'key'      => $request->get('key'),
+                'catalog'  => $catalog,
             )
         );
         if(!$keyRecord instanceof Key){
             $keyRecord = new Key();
             $keyRecord->setBundle($bundle);
             $keyRecord->setKey($key);
+            $keyRecord->setCatalog($catalog);
         }else{
             if($keyRecord->getUpdatedAt() >= $lastModification){
                 return $this->resultOk(array(
