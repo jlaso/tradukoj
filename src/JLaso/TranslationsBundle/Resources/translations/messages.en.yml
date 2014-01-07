@@ -5,6 +5,8 @@ login:
 
 button:
     save: Save
+    approve: Approve
+    disapprove: Disapprove
 general:
     test: prueba
     test2:

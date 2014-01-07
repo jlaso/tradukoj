@@ -15,6 +15,7 @@ class Permission
     const WRITE_PERM   = 'WRITE';
     const READ_PERM    = 'READ';
     const ADMIN_PERM   = 'ADMIN';
+    const NONE_PERM    = 'NONE';
 
     const OWNER        = 'OWNER';
     const COLLABORATOR = 'COLLABORATOR';
@@ -44,7 +45,7 @@ class Permission
     /**
      * @var User $user
      *
-     * @ORM\ManyToOne(targetEntity="JLaso\TranslationsBundle\Entity\User", inversedBy="users")
+     * @ORM\ManyToOne(targetEntity="JLaso\TranslationsBundle\Entity\User", inversedBy="permissions")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
      */
     protected $user;
@@ -162,7 +163,7 @@ class Permission
 
     protected function allLanguagePermissions()
     {
-        return array(self::ADMIN_PERM, self::WRITE_PERM, self::READ_PERM);
+        return array(self::ADMIN_PERM, self::WRITE_PERM, self::READ_PERM, self::NONE_PERM);
     }
 
     protected function allLanguageCodes()
@@ -176,15 +177,15 @@ class Permission
 
         if(null === $language){
             if(!in_array($permission, $this->allGeneralPermissions())){
-                throw new \Exception(sprintf('Permission %s not recognized', $permission));
+                throw new \Exception(sprintf('addPermission: Permission %s not recognized', $permission));
             }
             $permissions[self::GENERAL_KEY] = $permission;
         }else{
             if(!in_array($permission, $this->allLanguagePermissions())){
-                throw new \Exception(sprintf('Permission %s not recognized', $permission));
+                throw new \Exception(sprintf('addPermission: Permission %s not recognized', $permission));
             }
             if(!in_array($language, $this->allLanguageCodes())){
-                throw new \Exception(sprintf('Language %s not recognized', $language));
+                throw new \Exception(sprintf('addPermission: Language %s not recognized', $language));
             }
             $permissions[self::LOCALE_KEY][$language] = $permission;
         }
@@ -230,7 +231,7 @@ class Permission
         return false;
     }
 
-    protected function checkPermission($currentPermission, $permissionInquiried)
+    public static function checkPermission($currentPermission, $permissionInquiried)
     {
         switch(true){
             case $currentPermission == self::ADMIN_PERM:
@@ -242,8 +243,14 @@ class Permission
             case $currentPermission == self::READ_PERM:
                 return ($permissionInquiried == self::READ_PERM);
                 break;
+            case $currentPermission == self::NONE_PERM:
+                return false;
+                break;
+            case !$currentPermission:
+                return false;
+                break;
             default:
-                throw new \Exception('Permission ' . $currentPermission . ' not recognized');
+                throw new \Exception('checkPermission: Permission ' . $currentPermission . ' not recognized');
         }
     }
 

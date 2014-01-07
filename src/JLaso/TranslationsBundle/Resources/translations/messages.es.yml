@@ -33,6 +33,8 @@ label:
 
 button:
     save: Guardar
+    approve: Aprobar
+    disapprove: Desaprobar
 
 translations:
     user_index: "Area usuario"

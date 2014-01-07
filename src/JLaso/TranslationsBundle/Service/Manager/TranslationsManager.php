@@ -6,9 +6,11 @@
 namespace JLaso\TranslationsBundle\Service\Manager;
 
 use Doctrine\ORM\EntityManagerInterface;
+use JLaso\TranslationsBundle\Entity\Message;
 use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
 use JLaso\TranslationsBundle\Entity\Repository\PermissionRepository;
+use JLaso\TranslationsBundle\Entity\TranslateLog;
 use JLaso\TranslationsBundle\Entity\User;
 
 class TranslationsManager
@@ -97,11 +99,40 @@ class TranslationsManager
     }
 
     /**
+     * @param Message $msg
+     * @param string  $action
+     * @param User    $user
+     */
+    public function saveLog(Message $msg, $action, User $user)
+    {
+        $log = new TranslateLog();
+        $log->setMessage($msg);
+        $log->setMessageCopy($msg->getMessage());
+        $log->setMessageId($msg->getId());
+        $log->setActionType($action);
+        $log->setUser($user);
+        $this->em->persist($log);
+        $this->em->flush();
+    }
+
+    /**
      * @return PermissionRepository
      */
     protected function getPermissionRepository()
     {
         return $this->em->getRepository('TranslationsBundle:Permission');
     }
+
+    /**
+     * @return TranslationLogRepository
+     */
+    protected function getTranslationLogRepository()
+    {
+        return $this->em->getRepository('TranslationsBundle:TranslationLog');
+    }
+
+
+
+
 
 }

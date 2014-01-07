@@ -150,6 +150,7 @@ class RestController extends Controller
     public function getTranslationDetails(Project $project, $bundle, $key, $language, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
+        $key = urldecode($key);
 
         /** @var Key $keyRecord */
         $keyRecord = $this->getKeyRepository()->findOneBy(array(
@@ -190,6 +191,7 @@ class RestController extends Controller
     public function getTranslations(Project $project, $bundle, $key, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
+        $key = urldecode($key);
 
         /** @var Key $keyRecord */
         $keyRecord = $this->getKeyRepository()->findOneBy(array(
@@ -322,6 +324,7 @@ class RestController extends Controller
     public function getTranslation(Project $project, $bundle, $key, $locale, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
+        $key = urldecode($key);
 
         /** @var Key $keyRecord */
         $keyRecord = $this->getKeyRepository()->findOneBy(array(
@@ -365,6 +368,7 @@ class RestController extends Controller
      */
     protected function insertOrUpdateMessage(Project $project, $bundleName, $catalog, $key, $language, $msg)
     {
+        $key = urldecode($key);
         /** @var Key $keyRecord */
         $keyRecord = $this->getKeyRepository()->findOneBy(array(
                 'project'  => $project,
@@ -413,6 +417,7 @@ class RestController extends Controller
      */
     protected function insertOrUpdateComment(Project $project, $bundleName, $catalog, $key, $comment)
     {
+        $key = urldecode($key);
         /** @var Key $keyRecord */
         $keyRecord = $this->getKeyRepository()->findOneBy(array(
                 'project'  => $project,
@@ -445,6 +450,7 @@ class RestController extends Controller
     public function getCommentAction(Project $project, $bundle, $key, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
+        $key = urldecode($key);
 
         /** @var Key $keyRecord */
         $keyRecord = $this->getKeyRepository()->findOneBy(array(
@@ -475,6 +481,7 @@ class RestController extends Controller
     public function putMessage(Request $request, $project, $bundle, $key, $language, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
+        $key = urldecode($key);
         $param   = json_decode($request->getContent(), true);
         $message = $param['message'];
         $this->insertOrUpdateMessage($project, $bundle, $catalog, $key, $language, $message);
@@ -491,6 +498,7 @@ class RestController extends Controller
     public function updateMessageIfNewest( Request $request, $project, $bundle, $key, $language, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
+        $key = urldecode($key);
         $param = json_decode($request->getContent(), true);
         $lastModification = new \DateTime($param['last_modification']);
         $message = $param['message'];
@@ -551,6 +559,7 @@ class RestController extends Controller
     public function updateCommentIfNewest(Request $request, $project, $bundle, $key, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
+        $key = urldecode($key);
 
         $param = json_decode($request->getContent(), true);
         $lastModification = new \DateTime($param['last_modification']);

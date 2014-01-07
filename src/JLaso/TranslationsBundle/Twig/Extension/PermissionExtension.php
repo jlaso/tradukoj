@@ -41,11 +41,8 @@ class PermissionExtension extends \Twig_Extension
         }else{
             $permission = isset($permissions[Permission::WILD_KEY]) ? $permissions[Permission::WILD_KEY] : '';
         }
-        if(null===$perm){
-            return $permission;
-        }else{
-            return ($perm == $permission);
-        }
+
+        return Permission::checkPermission($permission, $perm);
     }
 
     /**

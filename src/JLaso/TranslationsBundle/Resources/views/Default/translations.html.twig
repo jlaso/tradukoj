@@ -122,7 +122,7 @@
 
     {% for info in trans_data %}
 
-        <div class="translations-group row-fluid" id="key-{{ info.id_html }}" {{ current_key==info.key ? '' : 'style="display: none;"' }}>
+        <div class="translations-group row-fluid" id="key-{{ info.id_html|replace(" ","_") }}" {{ current_key==info.key ? '' : 'style="display: none;"' }}>
             <div class="span12">
                 <div class="row-fluid">
                     <div style="text-align: left;" class="span12 btn">
@@ -142,6 +142,8 @@
                         <tbody>
                         <tr id="comment-{{ info.id }}" class="comment-row">
                             <td><i class="icon-comment"></i>&nbsp;{{ "label.comment"|trans|raw }}</td>
+                            {% set canComment = permission(permissions, 'comment', 'WRITE') %}
+                            {% if canComment %}
                             <td><input type="text" class="span12" value="{{ info.comment }}"/></td>
                             <td>
                                 <a href="#" class="btn btn-primary save-comment"
@@ -149,10 +151,17 @@
                                     <i class="icon-save"></i> {{ "button.save"|trans|raw }}
                                 </a>
                             </td>
+                            {% else %}
+                                <td>{{ info.comment }}</td>
+                                <td>&nbsp;</td>
+                            {% endif %}
                         </tr>
                         {% for lang in managed_languages %}
+                            {% set canAdmin = permission(permissions, lang, 'ADMIN') %}
                             {% set canEdit = permission(permissions, lang, 'WRITE') %}
                             {% set canView = permission(permissions, lang, 'READ') %}
+
+                            {% if canAdmin or canEdit or canView %}
                             <tr class="key-row {{ cycle('odd', 'even') }} gradeX" id="key-{{ info.id }}-{{ lang }}">
                                 <td class="center">
                                     <i class="icon-flag"></i>&nbsp;<code>{{ lang }}</code>
@@ -171,16 +180,29 @@
                                 </td>
                                 <td>
                                     {% if canEdit %}
-                                    <a href="#" class="btn btn-primary save-message"
-                                            data-role="#key-{{ info.id }}-{{ lang }}"
-                                            language="{{ lang }}" key="{{ info.key }}">
-                                        <i class="icon-save"></i> {{ "button.save"|trans|raw }}
-                                    </a>
+                                        <a href="#" class="btn btn-primary save-message"
+                                                data-role="#key-{{ info.id }}-{{ lang }}"
+                                                language="{{ lang }}" key="{{ info.key }}">
+                                            <i class="icon-save"></i> {{ "button.save"|trans|raw }}
+                                        </a>
                                     {% else %}
                                         --
                                     {% endif %}
+                                    {% if canAdmin %}
+                                        {% set approved = info.approved[lang] is defined ? info.approved[lang] : false %}
+                                        {% if approved %}
+                                            <a href="#" class="btn btn-danger disapprove" key="{{ info.id }}">
+                                                <i class="icon-thumbs-down"></i> {{ "button.disapprove"|trans|raw }}
+                                            </a>
+                                        {% else %}
+                                            <a href="#" class="btn btn-success approve" key="{{ info.id }}">
+                                                <i class="icon-thumbs-up"></i> {{ "button.approve"|trans|raw }}
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
                                 </td>
                             </tr>
+                            {% endif %}
                         {% endfor %}
                         </tbody>
                     </table>
@@ -335,7 +357,7 @@
 
             $('#bundle-keys').on('click','.key-tree-node',function(e){
                 e.preventDefault();
-                var key = $(this).attr('key');
+                var key = $(this).attr('key').replace(" ","_");
                 console.log('showing '+key+' ...');
                 var dest = $('#key-'+key);
                 if(dest){
@@ -344,6 +366,26 @@
                     $('.translations-group').hide();
                     $(dest).show();
                 }
+            });
+
+            $('.approve').click(function(e){
+                e.preventDefault();
+                var id = $(this).attr('key');
+                $.ajax({
+                    url: '{{ path('approve_translation', {"messageId": "000"}) }}'.replace('000', id),
+                    type: 'post',
+                    success: function(data){
+                        if(data.result){
+
+                        }else{
+                            alert(data.reason);
+                        }
+                        console.log(data);
+                    },
+                    error: function(data){
+                        alert(data);
+                    }
+                })
             });
 
         });

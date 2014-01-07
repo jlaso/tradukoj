@@ -34,6 +34,9 @@ use Symfony\Component\HttpFoundation\Request;
 class DefaultController extends Controller
 {
 
+    const APPROVE    = 'approve';
+    const DISAPPROVE = 'disapprove';
+
     /** @var  EntityManager */
     protected $em;
     protected $config;
@@ -177,19 +180,17 @@ class DefaultController extends Controller
                 'comment'  => $key->getComment(),
                 'bundle'   => $key->getBundle(),
                 'messages' => array(),
+                'approved' => array(),
             );
             foreach($key->getMessages() as $message){
                 $data['messages'][$message->getLanguage()] = $message->getMessage();
+                $data['approved'][$message->getLanguage()] = $message->getApproved();
             }
             $transData[] = $data;
         }
 
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
         $projects  = $this->translationsManager->getProjectsForUser($this->user);
-        $permission->addPermission(Permission::WRITE_PERM, '*');
-        //$permission->addPermission(Permission::READ_PERM, 'dz');
-
-//ld($permission);
 
         return array(
             'projects'          => $projects,
@@ -242,6 +243,111 @@ class DefaultController extends Controller
             )
         );
     }
+
+    /**
+     * @param Message $msg
+     * @param         $action
+     *
+     * @throws \Exception
+     */
+    protected function genericActionOnMessage(Message $msg, $action)
+    {
+        switch($action){
+            case self::APPROVE:
+                $msg->setApproved(true);
+                break;
+
+            case self::DISAPPROVE:
+                $msg->setApproved(false);
+                break;
+
+            default:
+                throw new \Exception("genericActionOnMessage: unknown action " . $action);
+        }
+
+        $this->em->persist($msg);
+        $this->em->flush($msg);
+    }
+
+    /**
+     * @param $permissionArray
+     * @param $locale
+     * @param $perm
+     *
+     * @return bool
+     */
+    protected function checkPermission($permissionArray, $locale, $perm)
+    {
+        if(is_string($permissionArray)){
+            $permissionArray = json_decode($permissionArray, true);
+        }
+        $permission = null;
+        $permissions = isset($permissionArray[Permission::LOCALE_KEY]) ? $permissionArray[Permission::LOCALE_KEY] : array();
+        if(isset($permissions[$locale])){
+            $permission = $permissions[$locale];
+        }else{
+            $permission = isset($permissions[Permission::WILD_KEY]) ? $permissions[Permission::WILD_KEY] : '';
+        }
+
+        return Permission::checkPermission($permission, $perm);
+    }
+
+    /**
+     * @Route("/approve/{messageId}", name="approve_translation")
+     * @ Method("POST")
+     * @ParamConverter("message", class="TranslationsBundle:Message", options={"id" = "messageId"})
+     */
+    public function approveMessageAction(Message $message)
+    {
+        $this->init();
+        /** @var User $user */
+        $user = $this->getUser();
+        $permissions = $user->getPermissions();
+        $lang = $message->getLanguage();
+        if($this->checkPermission($permissions, $lang, Permission::ADMIN_PERM)){
+            $this->genericActionOnMessage($message, self::APPROVE);
+            $this->restService->resultOk(
+                array(
+                    'message'  => $message->getId(),
+                    'approved' => $message->getApproved(),
+                )
+            );
+        }else{
+            $this->restService->exception(
+                $this->translator->trans('message.without_permissions_to_approve')
+            );
+        }
+
+    }
+
+    /**
+     * @Route("/disapprove/{messageId}", name="disapprove_translation")
+     * @Method("POST")
+     * @ParamConverter("message", class="TranslationsBundle:Message", options={"id" = "messageId"})
+     */
+    public function disapproveMessageAction(Message $message)
+    {
+        $this->init();
+        /** @var User $user */
+        $user = $this->getUser();
+        $permissions = $user->getPermissions();
+        $lang = $message->getLanguage();
+        if($this->checkPermission($permissions, $lang, Permission::ADMIN_PERM)){
+            $this->genericActionOnMessage($message, self::DISAPPROVE);
+            $this->restService->resultOk(
+                array(
+                    'message'  => $message->getId(),
+                    'approved' => $message->getApproved(),
+                )
+            );
+        }else{
+            $this->restService->exception(
+                $this->translator->trans('message.without_permissions_to_disapprove')
+            );
+        }
+
+    }
+
 
 
     /**

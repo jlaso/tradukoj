@@ -1,6 +1,7 @@
 <?php
 namespace JLaso\TranslationsBundle\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
@@ -53,6 +54,13 @@ class Message
     protected $createdAt;
 
     /**
+     * @var bool $approved
+     *
+     * @ORM\Column(name="approved", type="boolean")
+     */
+    protected $approved;
+
+    /**
      * @var \DateTime $createdAt
      *
      * @ORM\Column(name="updated_at", type="datetime")
@@ -61,9 +69,18 @@ class Message
      */
     protected $updatedAt;
 
+    /**
+     * @var TranslationLog[] $translationLogs
+     *
+     * @ORM\ManyToMany(targetEntity="TranslationLog", inversedBy="messages", cascade={"persist"})
+     * @ORM\JoinTable(name="translation_log_message")
+     **/
+    protected $translationLogs;
+
     public function __construct()
     {
-        $this->createdAt = new \DateTime();
+        $this->createdAt       = new \DateTime();
+        $this->translationLogs = new ArrayCollection();
     }
 
     public function __toString()
@@ -164,6 +181,39 @@ class Message
     {
         $this->updatedAt = $updatedAt ?: new \DateTime();
     }
+
+    /**
+     * @param TranslationLog[] $translationLogs
+     */
+    public function setTranslationLogs($translationLogs)
+    {
+        $this->translationLogs = $translationLogs;
+    }
+
+    /**
+     * @return TranslationLog[]
+     */
+    public function getTranslationLogs()
+    {
+        return $this->translationLogs;
+    }
+
+    /**
+     * @param boolean $approved
+     */
+    public function setApproved($approved)
+    {
+        $this->approved = $approved;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getApproved()
+    {
+        return $this->approved;
+    }
+
 
 //    /**
 //     * @ORM\PrePersist
