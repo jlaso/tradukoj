@@ -10,7 +10,7 @@ use JLaso\TranslationsBundle\Entity\Message;
 use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
 use JLaso\TranslationsBundle\Entity\Repository\PermissionRepository;
-use JLaso\TranslationsBundle\Entity\TranslateLog;
+use JLaso\TranslationsBundle\Entity\TranslationLog;
 use JLaso\TranslationsBundle\Entity\User;
 
 class TranslationsManager
@@ -105,7 +105,7 @@ class TranslationsManager
      */
     public function saveLog(Message $msg, $action, User $user)
     {
-        $log = new TranslateLog();
+        $log = new TranslationLog();
         $log->setMessage($msg);
         $log->setMessageCopy($msg->getMessage());
         $log->setMessageId($msg->getId());

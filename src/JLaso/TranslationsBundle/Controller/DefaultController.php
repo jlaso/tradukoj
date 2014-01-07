@@ -12,6 +12,7 @@ use JLaso\TranslationsBundle\Entity\Repository\KeyRepository;
 use JLaso\TranslationsBundle\Entity\Repository\LanguageRepository;
 use JLaso\TranslationsBundle\Entity\Repository\MessageRepository;
 use JLaso\TranslationsBundle\Entity\Repository\ProjectRepository;
+use JLaso\TranslationsBundle\Entity\TranslationLog;
 use JLaso\TranslationsBundle\Entity\User;
 use JLaso\TranslationsBundle\Exception\AclException;
 use JLaso\TranslationsBundle\Form\Type\NewProjectType;
@@ -34,8 +35,8 @@ use Symfony\Component\HttpFoundation\Request;
 class DefaultController extends Controller
 {
 
-    const APPROVE    = 'approve';
-    const DISAPPROVE = 'disapprove';
+    const APPROVE    = TranslationLog::APPROVE;
+    const DISAPPROVE = TranslationLog::DISAPPROVE;
 
     /** @var  EntityManager */
     protected $em;
@@ -180,11 +181,14 @@ class DefaultController extends Controller
                 'comment'  => $key->getComment(),
                 'bundle'   => $key->getBundle(),
                 'messages' => array(),
-                'approved' => array(),
+                'info'     => array(),
             );
             foreach($key->getMessages() as $message){
                 $data['messages'][$message->getLanguage()] = $message->getMessage();
-                $data['approved'][$message->getLanguage()] = $message->getApproved();
+                $data['info'][$message->getLanguage()] = array(
+                    'approved' => $message->getApproved(),
+                    'id'       => $message->getId(),
+                );
             }
             $transData[] = $data;
         }
@@ -267,25 +271,23 @@ class DefaultController extends Controller
 
         $this->em->persist($msg);
         $this->em->flush($msg);
+        $this->translationsManager->saveLog($msg, $action, $this->user);
     }
 
     /**
-     * @param $permissionArray
      * @param $locale
      * @param $perm
      *
      * @return bool
      */
-    protected function checkPermission($permissionArray, $locale, $perm)
+    protected function checkPermission($locale, $perm)
     {
-        if(is_string($permissionArray)){
-            $permissionArray = json_decode($permissionArray, true);
-        }
-        $permission = null;
-        $permissions = isset($permissionArray[Permission::LOCALE_KEY]) ? $permissionArray[Permission::LOCALE_KEY] : array();
-        if(isset($permissions[$locale])){
+        $permissionArray = $this->user->getPermission();
+        $permission      = null;
+        $permissions     = isset($permissionArray[Permission::LOCALE_KEY]) ? $permissionArray[Permission::LOCALE_KEY] : array();
+        if (isset($permissions[$locale])) {
             $permission = $permissions[$locale];
-        }else{
+        } else {
             $permission = isset($permissions[Permission::WILD_KEY]) ? $permissions[Permission::WILD_KEY] : '';
         }
 
@@ -293,25 +295,21 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/approve/{messageId}", name="approve_translation")
+     * @Route("/approve-translation/message/{messageId}", name="approve_translation")
      * @ Method("POST")
      * @ParamConverter("message", class="TranslationsBundle:Message", options={"id" = "messageId"})
      */
     public function approveMessageAction(Message $message)
     {
         $this->init();
-        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $message->getKey()->getProject());
-        $permissions = $permission->getPermissions();
-        $ps = $this->user->getPermissions();
-        $p = $ps[0];
-        var_dump($p); die;
         $lang = $message->getLanguage();
-        if($this->checkPermission($permissions, $lang, Permission::ADMIN_PERM)){
+        if($this->checkPermission($lang, Permission::ADMIN_PERM)){
             $this->genericActionOnMessage($message, self::APPROVE);
             $this->restService->resultOk(
                 array(
                     'message'  => $message->getId(),
                     'approved' => $message->getApproved(),
+                    'id'       => $message->getId(),
                 )
             );
         }else{
@@ -323,23 +321,21 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/disapprove/{messageId}", name="disapprove_translation")
+     * @Route("/disapprove-translation/message/{messageId}", name="disapprove_translation")
      * @Method("POST")
      * @ParamConverter("message", class="TranslationsBundle:Message", options={"id" = "messageId"})
      */
     public function disapproveMessageAction(Message $message)
     {
         $this->init();
-        /** @var User $user */
-        $user = $this->getUser();
-        $permissions = $user->getPermissions();
         $lang = $message->getLanguage();
-        if($this->checkPermission($permissions, $lang, Permission::ADMIN_PERM)){
+        if($this->checkPermission($lang, Permission::ADMIN_PERM)){
             $this->genericActionOnMessage($message, self::DISAPPROVE);
             $this->restService->resultOk(
                 array(
                     'message'  => $message->getId(),
                     'approved' => $message->getApproved(),
+                    'id'       => $message->getId(),
                 )
             );
         }else{

@@ -158,8 +158,10 @@
                         </tr>
                         {% for lang in managed_languages %}
                             {% set canAdmin = permission(permissions, lang, 'ADMIN') %}
-                            {% set canEdit = permission(permissions, lang, 'WRITE') %}
-                            {% set canView = permission(permissions, lang, 'READ') %}
+                            {% set canEdit  = permission(permissions, lang, 'WRITE') %}
+                            {% set canView  = permission(permissions, lang, 'READ') %}
+                            {% set infoAux  = info['info'][lang] is defined ? info['info'][lang] : {'approved': false, 'id': 0} %}
+                            {% set approved = infoAux.approved %}
 
                             {% if canAdmin or canEdit or canView %}
                             <tr class="key-row {{ cycle('odd', 'even') }} gradeX" id="key-{{ info.id }}-{{ lang }}">
@@ -167,6 +169,13 @@
                                     <i class="icon-flag"></i>&nbsp;<code>{{ lang }}</code>
                                     <img src="{{ asset('bundles/translations/img/flags/' ~ lang ~ '.png') }}" alt="{{ lang }} flag"/>
                                     &nbsp;{{ languages[lang].name }}
+                                    <span class="approved_indicator" key="{{ infoAux.id }}">
+                                    {% if approved %}
+                                        <i class="icon-thumbs-up"></i>
+                                    {% else %}
+                                        <i class="icon-thumbs-down"></i>
+                                    {% endif %}
+                                    </span>
                                 </td>
                                 <td>
                                     {% set msg = info.messages[lang] is defined ? info.messages[lang] : '' %}
@@ -189,13 +198,12 @@
                                         --
                                     {% endif %}
                                     {% if canAdmin %}
-                                        {% set approved = info.approved[lang] is defined ? info.approved[lang] : false %}
                                         {% if approved %}
-                                            <a href="#" class="btn btn-danger disapprove" key="{{ info.id }}">
+                                            <a href="#" class="btn btn-danger disapprove" key="{{ infoAux.id }}">
                                                 <i class="icon-thumbs-down"></i> {{ "button.disapprove"|trans|raw }}
                                             </a>
                                         {% else %}
-                                            <a href="#" class="btn btn-success approve" key="{{ info.id }}">
+                                            <a href="#" class="btn btn-success approve" key="{{ infoAux.id }}">
                                                 <i class="icon-thumbs-up"></i> {{ "button.approve"|trans|raw }}
                                             </a>
                                         {% endif %}
@@ -371,12 +379,19 @@
             $('.approve').click(function(e){
                 e.preventDefault();
                 var id = $(this).attr('key');
+                var url = '{{ path('approve_translation', {"messageId": "000"}) }}'.replace('000', id);
                 $.ajax({
-                    url: '{{ path('approve_translation', {"messageId": "000"}) }}'.replace('000', id),
+                    url: url,
                     type: 'post',
                     success: function(data){
                         if(data.result){
-
+                            $('.approve[key="'+data.id+'"]')
+                                .removeClass('btn-success').addClass('btn-danger')
+                                .html('<i class="icon-thumbs-down"></i> {{ "button.disapprove"|trans|raw }}');
+                            $('.approved_indicator[key="'+data.id+'"]')
+                                    .find('i')
+                                    .removeClass('icon-thumbs-down')
+                                    .addClass('icon-thumbs-up');
                         }else{
                             alert(data.reason);
                         }

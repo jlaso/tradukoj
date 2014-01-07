@@ -465,6 +465,20 @@ class User implements UserInterface, EquatableInterface
     }
 
     /**
+     * @return array
+     */
+    public function getPermission()
+    {
+        if(count($this->permissions)){
+            $aux = $this->permissions[0];
+
+            return $aux->getPermissions();
+        }
+
+        return array();
+    }
+
+    /**
      * @param string $avatarUrl
      */
     public function setAvatarUrl($avatarUrl)

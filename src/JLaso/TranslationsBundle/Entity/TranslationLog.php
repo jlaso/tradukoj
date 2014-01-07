@@ -10,8 +10,9 @@ use Symfony\Component\Validator\Constraints as Assert;
  */
 class TranslationLog
 {
-    const TRANSLATE = 'translate';
-    const APPROVE   = 'approve';
+    const TRANSLATE  = 'translate';
+    const APPROVE    = 'approve';
+    const DISAPPROVE = 'disapprove';
 
     /**
      * @var integer $id
