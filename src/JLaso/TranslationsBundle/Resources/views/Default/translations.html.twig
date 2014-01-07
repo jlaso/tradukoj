@@ -14,7 +14,7 @@
     <ul>
         {% for key,item in nodes %}
             <li id="phtml_{{ loop.index }}">
-                <a href="#" class="key-tree-node" key="{{ item }}">{{ key }}</a>
+                <a href="#" class="key-tree-node" key="{{ item is iterable ? '' : item }}">{{ key }}</a>
                 {{ _self.node(item) }}
             </li>
         {% endfor %}

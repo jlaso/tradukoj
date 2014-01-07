@@ -300,9 +300,11 @@ class DefaultController extends Controller
     public function approveMessageAction(Message $message)
     {
         $this->init();
-        /** @var User $user */
-        $user = $this->getUser();
-        $permissions = $user->getPermissions();
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $message->getKey()->getProject());
+        $permissions = $permission->getPermissions();
+        $ps = $this->user->getPermissions();
+        $p = $ps[0];
+        var_dump($p); die;
         $lang = $message->getLanguage();
         if($this->checkPermission($permissions, $lang, Permission::ADMIN_PERM)){
             $this->genericActionOnMessage($message, self::APPROVE);
