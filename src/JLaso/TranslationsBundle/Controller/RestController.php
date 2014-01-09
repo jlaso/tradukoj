@@ -8,12 +8,15 @@ use JLaso\TranslationsBundle\Entity\Message;
 use JLaso\TranslationsBundle\Entity\Project;
 use JLaso\TranslationsBundle\Entity\Repository\KeyRepository;
 use JLaso\TranslationsBundle\Entity\Repository\MessageRepository;
+use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
+use Symfony\Component\HttpKernel\Kernel;
 
 /**
  * Class RestController
@@ -26,6 +29,8 @@ class RestController extends Controller
     protected $em;
 
     const DEFAULT_CATALOG = "messages";
+    const MIN_PORT = 10000;
+    const MAX_PORT = 10500;
 
     /**
      *
@@ -39,6 +44,10 @@ class RestController extends Controller
     {
         $content = $request->getContent();
         $params  = json_decode($content, true);
+
+        if( !isset($params['key'])  || !isset($params['secret']) ){
+            return false;
+        }
 
         return ($params['key'] == $project->getApiKey()) && ($params['secret'] == $project->getApiSecret());
 
@@ -115,6 +124,60 @@ class RestController extends Controller
         }
 
         return $this->resultOk(array('keys' => $keysResult));
+    }
+
+    /**
+     * Crea un socket de comunicacion
+     *
+     * @Route("/create-socket/{projectId}")
+     * @Method("POST")
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function createSocketAction(Request $request, Project $project)
+    {
+        $this->init();
+        if($this->validateRequest($request, $project)){
+            $host = '127.0.0.1';
+            $found = false;
+            for ($port = self::MIN_PORT; $port < self::MAX_PORT; $port++)
+            {
+                $connection = @fsockopen($host, $port);
+                if (is_resource($connection))
+                {
+                    fclose($connection);
+                    $found = true;
+                    break;
+                }
+            }
+            if($found){
+
+                /*
+                $app = new Application($this->get('kernel'));
+                $app->run(null, new NullOutput());
+                */
+
+//                /** @var Kernel $kernel */
+//                $kernel = $this->get('kernel');
+//                $kernel->getRootDir();
+
+                $srcDir = dirname($this->get('kernel')->getRootDir());
+                $cmd = 'php ' . $srcDir . '/app/console jlaso:translations:sync2 --port=' . $port . ' >/dev/nul &2>/dev/nul &';
+                exec($cmd);
+
+                return $this->resultOk(
+                    array(
+                        'port' => $port,
+                        'cmd'  => $cmd,
+                    )
+                );
+
+            }
+
+            return $this->exception('unable to start socket server');
+
+        }
+
+        return $this->exception('unable to start socket: bad credentials');
     }
 
     /**
@@ -528,7 +591,7 @@ class RestController extends Controller
                 'key'      => $keyRecord,
                 'language' => $language,
             )
-        );        
+        );
         if(!$messageRecord){
             $messageRecord = new Message();
             $messageRecord->setKey($keyRecord);
@@ -591,11 +654,16 @@ class RestController extends Controller
             }
         }
         $keyRecord->setComment($comment);
-        $keyRecord->setUpdatedAt();
+        $keyRecord->setUpdatedAt($lastModification);
         $this->em->persist($keyRecord);
         $this->em->flush();
 
-        return $this->resultOk(array('updated' => true));
+        return $this->resultOk(array(
+                'updated'   => true,
+                'message'   => $keyRecord->getComment(),
+                'updatedAt' => $keyRecord->getUpdatedAt()->format('c'),
+            )
+        );
     }
 
     /**

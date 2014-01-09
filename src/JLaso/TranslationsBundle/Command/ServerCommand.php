@@ -36,8 +36,10 @@ class ServerCommand extends ContainerAwareCommand
     protected $project;
 
     protected $debug = false;
-    protected $showCommand = true;
-    protected $showExceptions = true;
+    protected $showCommand = false;
+    protected $showExceptions = false;
+    protected $sended = 0;
+    protected $received = 0;
 
     protected function configure()
     {
@@ -91,6 +93,11 @@ class ServerCommand extends ContainerAwareCommand
                 if (!$buf = trim($buf)) {
                     continue;
                 }
+
+                $this->received += strlen($buf);
+                $size = $this->prettySize($this->received);
+                echo "v " , $size, "  ";
+
                 try{
                     $read     = json_decode($buf, true);
                     $command  = isset($read['command']) ? $read['command'] : '';
@@ -118,7 +125,7 @@ class ServerCommand extends ContainerAwareCommand
                                 $keyRepository = $this->getKeyRepository();
                                 $keys          = $keyRepository->findAllKeysForProjectAndBundle($this->project, $bundle);
                                 foreach($keys as $key){
-                                    $keysResult[$key->getKey()] = $key->getKey();
+                                    $keysResult[] = $key->getKey();
                                 }
                                 $this->resultOk(array('keys' => $keysResult));
                             };
@@ -158,7 +165,7 @@ class ServerCommand extends ContainerAwareCommand
 
                         case self::CMD_UPDATE_COMMENT:
                             if($this->validateRequest($buf)){
-                                $this->updateCommentIfNewest($this->project, $bundle, $key, $language, $catalog, $lastModification, $comment);
+                                $this->updateCommentIfNewest($this->project, $bundle, $key, $catalog, $lastModification, $comment);
                             }
                             break;
 
@@ -208,6 +215,22 @@ class ServerCommand extends ContainerAwareCommand
         return $result;
     }
 
+    protected function send($buffer)
+    {
+        $buffer = lzf_compress($buffer);
+
+        $this->sended += strlen($buffer);
+        $size = $this->prettySize($this->sended);
+        echo '^ ' ,$size, "    ";
+
+        $size = $this->prettySize($this->sended + $this->received);
+        echo ', Total:', $size;
+
+        echo str_repeat(chr(8), 80);
+
+        return socket_write($this->msgsock, $buffer, strlen($buffer));
+    }
+
     protected function resultOk($data = array())
     {
         $data['result'] = true;
@@ -216,7 +239,7 @@ class ServerCommand extends ContainerAwareCommand
             print $result;
         }
 
-        return socket_write($this->msgsock, $result, strlen($result));
+        return $this->send($result);
     }
 
     protected function exception($reason)
@@ -230,7 +253,34 @@ class ServerCommand extends ContainerAwareCommand
             print $result;
         }
 
-        return socket_write($this->msgsock, $result, strlen($result));
+        return $this->send($result);
+    }
+
+    protected function prettySize($size)
+    {
+        $kb = 1024;
+        $mb = $kb * 1024;
+        $gb = $mb * 1024;
+
+        $result = "";
+        if($size > $gb){
+            $result .= intval($size/$gb) . 'Gb ';
+            $size -= $gb * intval($size/$gb);
+        }
+
+        if($size > $mb){
+            $result .= intval($size/$mb, 3) . 'Mb ';
+            $size -= $mb * intval($size/$mb);
+        }
+
+        if($size > $kb){
+            $result .= intval($size/$kb) . 'Kb ';
+            $size -= $kb * intval($size/$kb);
+        }
+
+        //$result .= $size . 'b ';
+
+        return $result;
     }
 
     /**
@@ -293,6 +343,7 @@ class ServerCommand extends ContainerAwareCommand
         return $this->resultOk(array(
                 'message'           => $message->getMessage(),
                 'last_modification' => $message->getUpdatedAt()->format('U'),
+                'updatedAt'         => $message->getUpdatedAt()->format('c'),
             )
         );
     }
@@ -419,9 +470,14 @@ class ServerCommand extends ContainerAwareCommand
         $messageRecord->setMessage($message);
         $messageRecord->setUpdatedAt($lastModification);
         $this->em->persist($messageRecord);
-        $this->em->flush();
+        $this->em->flush($messageRecord);
 
-        return $this->resultOk(array('updated' => true));
+        return $this->resultOk(array(
+                'updated'   => true,
+                'message'   => $messageRecord->getMessage(),
+                'updatedAt' => $messageRecord->getUpdatedAt()->format('c'),
+            )
+        );
     }
 
     /**
@@ -455,11 +511,16 @@ class ServerCommand extends ContainerAwareCommand
             }
         }
         $keyRecord->setComment($comment);
-        $keyRecord->setUpdatedAt();
+        $keyRecord->setUpdatedAt($lastModification);
         $this->em->persist($keyRecord);
-        $this->em->flush();
+        $this->em->flush($keyRecord);
 
-        return $this->resultOk(array('updated' => true));
+        return $this->resultOk(array(
+                'updated'   => true,
+                'message'   => $keyRecord->getComment(),
+                'updatedAt' => $keyRecord->getUpdatedAt()->format('c'),
+            )
+        );
     }
 
     /**

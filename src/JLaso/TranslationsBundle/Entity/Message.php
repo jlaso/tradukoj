@@ -81,6 +81,7 @@ class Message
     {
         $this->createdAt       = new \DateTime();
         $this->translationLogs = new ArrayCollection();
+        $this->approved        = false;
     }
 
     public function __toString()
