@@ -44,7 +44,7 @@ class ServerCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('server:start')
+            ->setName('jlaso:translations:server-start')
             ->setDescription('Start the server')
             ->addArgument('port', InputArgument::REQUIRED, 'port number where start server');
     }

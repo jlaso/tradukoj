@@ -16,6 +16,7 @@
         "symfony/symfony": "*",
         "symfony/yaml": "*",
         "doctrine/orm": "*",
+        "doctrine/mongodb-odm-bundle": "*",
         "doctrine/doctrine-bundle": "*",
         "twig/extensions": "*",
         "symfony/assetic-bundle": "*",
