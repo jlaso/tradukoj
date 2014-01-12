@@ -112,13 +112,13 @@ class User implements UserInterface, EquatableInterface
      */
     protected $createdAt;
 
-    /**
-     * @var Project[] $projects
-     *
-     * @ORM\ManyToMany(targetEntity="Project", inversedBy="users", cascade={"persist"})
-     * @ORM\JoinTable(name="translations_user_project")
-     **/
-    protected $projects;
+//    /**
+//     * @var Project[] $projects
+//     *
+//     * @ORM\ManyToMany(targetEntity="Project", inversedBy="users", cascade={"persist"})
+//     * @ORM\JoinTable(name="translations_user_project")
+//     **/
+//    protected $projects;
 
     /**
      * @ORM\OneToMany(targetEntity="JLaso\TranslationsBundle\Entity\Permission", mappedBy="user", cascade={"remove"})
@@ -133,7 +133,7 @@ class User implements UserInterface, EquatableInterface
         $this->actived     = false;
         $this->name        = "";
         $this->surname     = "";
-        $this->projects    = new ArrayCollection();
+        //$this->projects    = new ArrayCollection();
         $this->permissions = new ArrayCollection();
     }
 
@@ -432,21 +432,21 @@ class User implements UserInterface, EquatableInterface
         return $this->username ?: $this->email;
     }
 
-    /**
-     * @param Project[] $projects
-     */
-    public function setProjects($projects)
-    {
-        $this->projects = $projects;
-    }
-
-    /**
-     * @return Project[]
-     */
-    public function getProjects()
-    {
-        return $this->projects;
-    }
+//    /**
+//     * @param Project[] $projects
+//     */
+//    public function setProjects($projects)
+//    {
+//        $this->projects = $projects;
+//    }
+//
+//    /**
+//     * @return Project[]
+//     */
+//    public function getProjects()
+//    {
+//        return $this->projects;
+//    }
 
     /**
      * @param Permission[] $permissions

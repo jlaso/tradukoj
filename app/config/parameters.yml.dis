@@ -6,6 +6,11 @@ parameters:
     database_user:     root
     database_password: root
 
+    database_mongo_server:  mongodb://localhost/translations
+    username:               translations
+    password:               password
+    default_database:       translations
+
     mailer_encryption: ssl
     mailer_transport:  smtp
     mailer_host:       mail.translations.com.es

@@ -5,13 +5,16 @@
 
 namespace JLaso\TranslationsBundle\Service\Manager;
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use JLaso\TranslationsBundle\Entity\Message;
 use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
+use JLaso\TranslationsBundle\Entity\Repository\MessageRepository;
 use JLaso\TranslationsBundle\Entity\Repository\PermissionRepository;
 use JLaso\TranslationsBundle\Entity\TranslationLog;
 use JLaso\TranslationsBundle\Entity\User;
+use JLaso\TranslationsBundle\Document\Translation;
 
 class TranslationsManager
 {
@@ -34,7 +37,7 @@ class TranslationsManager
      */
     public function iniToAssoc($keyedArray, $arrayAssoc)
     {
-        $node = str_replace('.', '-', $keyedArray);
+        $node = $keyedArray; //str_replace('.', '-', $keyedArray);
         $keys = explode('.', $keyedArray);
         for($i=count($keys); $i>0; $i--){
             $k = $keys[$i-1];
@@ -99,20 +102,29 @@ class TranslationsManager
     }
 
     /**
-     * @param Message $msg
-     * @param string  $action
-     * @param User    $user
+     * @param int    $translation
+     * @param string $locale
+     * @param string $action
+     * @param User   $user
      */
-    public function saveLog(Message $msg, $action, User $user)
+    public function saveLog($translationId, $locale, $message, $action, User $user)
     {
         $log = new TranslationLog();
-        $log->setMessage($msg);
-        $log->setMessageCopy($msg->getMessage());
-        $log->setMessageId($msg->getId());
+        $log->setTranslationId($translationId);
+        $log->setMessage($message);
         $log->setActionType($action);
+        $log->setLocale($locale);
         $log->setUser($user);
         $this->em->persist($log);
         $this->em->flush();
+    }
+
+    public function getMessagesForBundleCatalogAndLocale(Project $project, $bundle, $catalog, $locale)
+    {
+        /** @var MessageRepository $messageRepository */
+        $messageRepository = $this->em->getRepository('TranslationsBundle:Message');
+
+        return $messageRepository->findAllMessagesOfProjectBundleCatalogAndLocale($project, $bundle, $catalog, $locale);
     }
 
     /**

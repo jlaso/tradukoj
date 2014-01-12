@@ -3,6 +3,9 @@
 namespace JLaso\TranslationsBundle\Command;
 
 use Doctrine\ORM\EntityManager;
+use Doctrine\ODM\MongoDB\DocumentManager;
+use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
+use JLaso\TranslationsBundle\Document\Translation;
 use JLaso\TranslationsBundle\Controller\RestController;
 use JLaso\TranslationsBundle\Entity\Key;
 use JLaso\TranslationsBundle\Entity\Message;
@@ -16,9 +19,11 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
-class ServerCommand extends ContainerAwareCommand
+class ServerMongoCommand extends ContainerAwareCommand
 {
     const CMD_SHUTDOWN            = 'shutdown';
+
+
     const CMD_PROJECTS            = 'project-index';
     const CMD_KEY_INDEX           = 'key-index';
     const CMD_BUNDLE_INDEX        = 'bundle-index';
@@ -27,11 +32,17 @@ class ServerCommand extends ContainerAwareCommand
     const CMD_GET_COMMENT         = 'get-comment';
     const CMD_PUT_MESSAGE         = 'put-message';
     const CMD_UPDATE_MESSAGE      = 'update-message-if-newest';
-    CONST CMD_UPDATE_COMMENT      = 'update-comment-if-newest';
+    const CMD_UPDATE_COMMENT      = 'update-comment-if-newest';
     const CMD_BLOCK_SYNC          = 'block-sync';
+
+    /** Mongo part */
+    const CMD_UPLOAD_KEYS   = 'upload-keys';
+    const CMD_DOWNLOAD_KEYS = 'download-keys';
 
     /** @var  EntityManager */
     protected $em;
+    /** @var  DocumentManager */
+    protected $dm;
     protected $socket;
     protected $msgsock;
     /** @var  Project */
@@ -48,7 +59,7 @@ class ServerCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('jlaso:translations:server-start')
+            ->setName('jlaso:translations:server-mongo-start')
             ->setDescription('Start the server')
             ->addArgument('port', InputArgument::REQUIRED, 'port number where start server');
     }
@@ -63,6 +74,7 @@ class ServerCommand extends ContainerAwareCommand
 
         $container                 = $this->getContainer();
         $this->em                  = $container->get('doctrine.orm.default_entity_manager');
+        $this->dm                  = $container->get('doctrine.odm.mongodb.document_manager');
         $this->translationsManager = $container->get('jlaso.translations_manager');
 
         $address = '127.0.0.1';
@@ -86,23 +98,24 @@ class ServerCommand extends ContainerAwareCommand
                 break;
             }
             /* Enviar instrucciones. */
-            $msg = "Welcome to TranslationsApiBundle v1.0." . PHP_EOL;
+            $msg = "Welcome to TranslationsApiBundle v1.1 (mongo-sockets)" . PHP_EOL;
             socket_write($this->msgsock, $msg, strlen($msg));
 
             do {
-                if (false === ($buf = socket_read($this->msgsock, 2048, PHP_NORMAL_READ))) {
+                if (false === ($buf = socket_read($this->msgsock, 2048 * 1024, PHP_BINARY_READ))) {
                     echo "socket_read() falló: razón: " . socket_strerror(socket_last_error($this->msgsock)) . "\n";
                     break 2;
                 }
-                if (!$buf = trim($buf)) {
+                /*if (!$buf = trim($buf)) {
                     continue;
-                }
+                }*/
 
                 $this->received += strlen($buf);
                 $size = $this->prettySize($this->received);
                 echo "v " , $size, "  ";
 
                 try{
+                    $buf      = lzf_decompress($buf);
                     $read     = json_decode($buf, true);
                     $command  = isset($read['command']) ? $read['command'] : '';
                     $bundle   = isset($read['bundle']) ? $read['bundle'] : '';
@@ -186,6 +199,20 @@ class ServerCommand extends ContainerAwareCommand
                             }
                             break;
 
+                        case self::CMD_UPLOAD_KEYS:
+                            if($this->validateRequest($buf)){
+                                $data = isset($read['data']) ? $read['data'] : null;
+                                $this->receiveKeys($this->project, $catalog, $data);
+                            }
+                            break;
+
+                        case self::CMD_DOWNLOAD_KEYS:
+                            if($this->validateRequest($buf)){
+                                $data = isset($read['data']) ? $read['data'] : null;
+                                $this->sendKeys($this->project, $data);
+                            }
+                            break;
+
                         case self::CMD_SHUTDOWN:
                             socket_close($this->msgsock);
                             socket_close($sock);
@@ -193,13 +220,14 @@ class ServerCommand extends ContainerAwareCommand
                             break 2;
 
                         default:
-                            $this->exception('command unknow');
+                            $this->exception(sprintf('command \'%s\' unknow', $command));
                             break;
                     }
                 }catch(\Exception $e){
-                    $this->exception($e->getCode() . ': ' . $e->getMessage() . ' in line ' . $e->getLine() . ' of file ' . $e->getFile());
+                    $msg = $e->getCode() . ': ' . $e->getMessage() . ' in line ' . $e->getLine() . ' of file ' . $e->getFile();
+                    $this->exception($msg);
                     if($e->getCode() == 0){
-                        die('error grave');
+                        die('error grave: ' . $msg);
                     }
                 }
 
@@ -562,6 +590,94 @@ class ServerCommand extends ContainerAwareCommand
         }
         $this->em->flush();
 
+        return $this->resultOk($result);
+    }
+
+    protected function getTranslationRepository()
+    {
+        return $this->dm->getRepository('TranslationsBundle:Translation');
+    }
+
+    /**
+     *
+     * $data[key][locale]
+     * {
+     *   message,
+     *   updatedAt
+     * }
+     *
+     */
+    protected function receiveKeys(Project $project, $catalog, $data)
+    {
+        if(!$project || !$catalog|| !$data){
+            return $this->exception('Validation exceptions, missing parameters');
+        }
+        $result = array();
+
+        /** @var Translation[] $messages */
+        $messages = $this->getTranslationRepository()->findBy(array('catalog' => $catalog));
+
+        foreach($messages as $message){
+
+            $key = $message->getKey();
+
+            $translations = $message->getTranslations();
+            foreach($translations as $locale=>$translation){
+
+                if(isset($data[$key][$locale])){
+
+                    $current = $data[$key][$locale];
+
+                    $updatedAt = new \DateTime($current['updatedAt']);
+
+                    if($message->getUpdatedAt() < $updatedAt){
+
+                        $result[$key][$locale] = $current['updatedAt'];
+                        $translation['message']   = $current['message'];
+                        $translation['updatedAt'] = $updatedAt;
+
+                    }
+
+                    unset($data[$key][$locale]);
+
+                }
+            }
+            $message->setTranslations($translations);
+
+            $this->dm->persist($message);
+        }
+
+        foreach($data as $key=>$dataLocale){
+
+            if(count($dataLocale)){
+
+                $translation = new Translation();
+                $translation->setCatalog($catalog);
+                $translation->setKey($key);
+                $translation->setProjectId($project->getId());
+
+                $translations = array();
+
+                foreach($dataLocale as $locale=>$message){
+
+                    $translations[$locale] = array(
+                        'message'   => $message['message'],
+                        'updatedAt' => new \DateTime($message['updatedAt']),
+                        'approved'  => true,
+                    );
+
+                }
+
+                $translation->setTranslations($translations);
+                $this->dm->persist($translation);
+
+            }
+
+        }
+
+        $this->dm->flush();
+
+        die('asdas');
         return $this->resultOk($result);
     }
 

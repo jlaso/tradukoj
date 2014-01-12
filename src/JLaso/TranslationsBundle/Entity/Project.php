@@ -65,10 +65,10 @@ class Project
      */
     protected $managedLocales;
 
-    /**
-     * @ORM\OneToMany(targetEntity="JLaso\TranslationsBundle\Entity\Key", mappedBy="project", cascade={"remove"})
-     */
-    protected $keys;
+//    /**
+//     * @ORM\OneToMany(targetEntity="JLaso\TranslationsBundle\Entity\Key", mappedBy="project", cascade={"remove"})
+//     */
+//    protected $keys;
 
     /**
      * @ORM\OneToMany(targetEntity="JLaso\TranslationsBundle\Entity\Permission", mappedBy="project", cascade={"remove"})
@@ -83,7 +83,7 @@ class Project
     public function __construct()
     {
         $this->createdAt      = new \DateTime();
-        $this->keys           = new ArrayCollection();
+//        $this->keys           = new ArrayCollection();
         $this->managedLocales = 'en';
         $this->users          = new ArrayCollection();
         $this->permissions    = new ArrayCollection();
@@ -188,21 +188,21 @@ class Project
         return $this->project;
     }
 
-    /**
-     * @param ArrayCollection $keys
-     */
-    public function setKeys($keys)
-    {
-        $this->keys = $keys;
-    }
-
-    /**
-     * @return Key[]
-     */
-    public function getKeys()
-    {
-        return $this->keys;
-    }
+//    /**
+//     * @param ArrayCollection $keys
+//     */
+//    public function setKeys($keys)
+//    {
+//        $this->keys = $keys;
+//    }
+//
+//    /**
+//     * @return Key[]
+//     */
+//    public function getKeys()
+//    {
+//        return $this->keys;
+//    }
 
     /**
      * @param string $managedLocales

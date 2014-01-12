@@ -24,19 +24,18 @@ class TranslationLog
     protected $id;
 
     /**
-     * @var integer $messageId
+     * @var integer $translationId
      *
-     * @ORM\Column(name="message_id", type="integer")
+     * @ORM\Column(name="translation_id", type="integer")
      */
-    protected $messageId;
+    protected $translationId;
 
     /**
-     * @var Message $message
+     * @var string $locale
      *
-     * @ORM\ManyToOne(targetEntity="JLaso\TranslationsBundle\Entity\Message", inversedBy="translation_logs")
-     * @ORM\JoinColumn(name="message_id", referencedColumnName="id")
+     * @ORM\Column(name="locale", type="string", length=20)
      */
-    protected $message;
+    protected $locale;
 
     /**
      * @var string $actionType
@@ -46,9 +45,9 @@ class TranslationLog
     protected $actionType;
 
     /**
-     * @ORM\Column(name="message_copy", type="text", nullable=true)
+     * @ORM\Column(name="message", type="text", nullable=true)
      */
-    protected $messageCopy;
+    protected $message;
 
     /**
      * @var User $user
@@ -74,7 +73,7 @@ class TranslationLog
 
     public function __toString()
     {
-        return sprintf('%s %d', $this->actionType, $this->messageId);
+        return sprintf('%s:%s-%s', $this->actionType, $this->translationId, $this->locale);
     }
 
     public static function getActionTypes()
@@ -82,6 +81,7 @@ class TranslationLog
         return array(
             self::TRANSLATE,
             self::APPROVE,
+            self::DISAPPROVE,
         );
     }
 
@@ -139,53 +139,6 @@ class TranslationLog
         return $this->actionType;
     }
 
-    /**
-     * @param int $messageId
-     */
-    public function setMessageId($messageId)
-    {
-        $this->messageId = $messageId;
-    }
-
-    /**
-     * @return int
-     */
-    public function getMessageId()
-    {
-        return $this->messageId;
-    }
-
-    /**
-     * @param Message $message
-     */
-    public function setMessage(Message $message)
-    {
-        $this->message = $message;
-    }
-
-    /**
-     * @return Message
-     */
-    public function getMessage()
-    {
-        return $this->message;
-    }
-
-    /**
-     * @param mixed $messageCopy
-     */
-    public function setMessageCopy($messageCopy)
-    {
-        $this->messageCopy = $messageCopy;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getMessageCopy()
-    {
-        return $this->messageCopy;
-    }
 
     /**
      * @param User $user
@@ -202,6 +155,55 @@ class TranslationLog
     {
         return $this->user;
     }
+
+    /**
+     * @param mixed $locale
+     */
+    public function setLocale($locale)
+    {
+        $this->locale = $locale;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLocale()
+    {
+        return $this->locale;
+    }
+
+    /**
+     * @param mixed $message
+     */
+    public function setMessage($message)
+    {
+        $this->message = $message;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMessage()
+    {
+        return $this->message;
+    }
+
+    /**
+     * @param int $translationId
+     */
+    public function setTranslationId($translationId)
+    {
+        $this->translationId = $translationId;
+    }
+
+    /**
+     * @return int
+     */
+    public function getTranslationId()
+    {
+        return $this->translationId;
+    }
+
 
 
 }
