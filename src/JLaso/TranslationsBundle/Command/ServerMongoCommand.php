@@ -61,6 +61,7 @@ class ServerMongoCommand extends ContainerAwareCommand
         $this
             ->setName('jlaso:translations:server-mongo-start')
             ->setDescription('Start the server')
+            ->addArgument('address', InputArgument::REQUIRED, 'server address')
             ->addArgument('port', InputArgument::REQUIRED, 'port number where start server');
     }
 
@@ -77,7 +78,7 @@ class ServerMongoCommand extends ContainerAwareCommand
         $this->dm                  = $container->get('doctrine.odm.mongodb.document_manager');
         $this->translationsManager = $container->get('jlaso.translations_manager');
 
-        $address =  '127.0.0.1';
+        $address =  $input->getArgument('address');
         $port = $input->getArgument('port');
 
         if (($sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) === false) {
