@@ -103,7 +103,7 @@ class ServerMongoCommand extends ContainerAwareCommand
             socket_write($this->msgsock, $msg, strlen($msg));
 
             do {
-                if (false === ($buf = socket_read($this->msgsock, 2048 * 1024, PHP_BINARY_READ))) {
+                if (false === ($buf = socket_read($this->msgsock, 2048 * 1024, PHP_NORMAL_READ))) {
                     echo "socket_read() falló: razón: " . socket_strerror(socket_last_error($this->msgsock)) . "\n";
                     break 2;
                 }
