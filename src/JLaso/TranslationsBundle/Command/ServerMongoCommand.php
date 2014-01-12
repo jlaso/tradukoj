@@ -77,7 +77,7 @@ class ServerMongoCommand extends ContainerAwareCommand
         $this->dm                  = $container->get('doctrine.odm.mongodb.document_manager');
         $this->translationsManager = $container->get('jlaso.translations_manager');
 
-        $address = '127.0.0.1';
+        $address =  '127.0.0.1';
         $port = $input->getArgument('port');
 
         if (($sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) === false) {
@@ -106,6 +106,8 @@ class ServerMongoCommand extends ContainerAwareCommand
                     echo "socket_read() falló: razón: " . socket_strerror(socket_last_error($this->msgsock)) . "\n";
                     break 2;
                 }
+                socket_write($this->msgsock, 'ACK' . PHP_EOL, 4);
+
                 /*if (!$buf = trim($buf)) {
                     continue;
                 }*/
@@ -115,7 +117,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                 echo "v " , $size, "  ";
 
                 try{
-                    $buf      = lzf_decompress($buf);
+                    //$buf      = lzf_decompress($buf);
                     $read     = json_decode($buf, true);
                     $command  = isset($read['command']) ? $read['command'] : '';
                     $bundle   = isset($read['bundle']) ? $read['bundle'] : '';
@@ -256,7 +258,7 @@ class ServerMongoCommand extends ContainerAwareCommand
 
     protected function send($buffer)
     {
-        $buffer = lzf_compress($buffer);
+        //$buffer = lzf_compress($buffer);
 
         $this->sended += strlen($buffer);
         $size = $this->prettySize($this->sended);
