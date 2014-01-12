@@ -680,7 +680,6 @@ class ServerMongoCommand extends ContainerAwareCommand
 
         $this->dm->flush();
 
-        die('asdas');
         return $this->resultOk($result);
     }
 
