@@ -271,6 +271,15 @@ class Translation
         return $this->comment;
     }
 
+    public static function genTranslationItem($message, $approved = false, $updatedAt = null)
+    {
+        return array(
+            'message'   => $message,
+            'approved'  => $approved,
+            'updatedAt' => $updatedAt ? clone updatedAt : new \DateTime(),
+        );
+    }
+
     public function getHash()
     {
         return base64_encode(sha1($this->getId()));

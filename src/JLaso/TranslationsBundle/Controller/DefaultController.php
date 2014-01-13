@@ -329,22 +329,23 @@ class DefaultController extends Controller
      */
     protected function genericActionOnMessage(Message $msg, $action)
     {
-        switch($action){
-            case self::APPROVE:
-                $msg->setApproved(true);
-                break;
-
-            case self::DISAPPROVE:
-                $msg->setApproved(false);
-                break;
-
-            default:
-                throw new \Exception("genericActionOnMessage: unknown action " . $action);
-        }
-
-        $this->em->persist($msg);
-        $this->em->flush($msg);
-        $this->translationsManager->saveLog($msg, $action, $this->user);
+        die('not implemented yet!');
+//        switch($action){
+//            case self::APPROVE:
+//                $msg->setApproved(true);
+//                break;
+//
+//            case self::DISAPPROVE:
+//                $msg->setApproved(false);
+//                break;
+//
+//            default:
+//                throw new \Exception("genericActionOnMessage: unknown action " . $action);
+//        }
+//
+//        $this->em->persist($msg);
+//        $this->em->flush($msg);
+//        $this->translationsManager->saveLog($msg, $action, $this->user);
     }
 
     /**
@@ -475,6 +476,101 @@ class DefaultController extends Controller
                 'message' => $message,
             )
         );
+    }
+
+
+    /**
+     * @Route("/normalize/{projectId}", name="normalize")
+     * @ Method("POST")
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function normalizeAction(Request $request, Project $project)
+    {
+        $this->init();
+
+        //$this->translationsManager->userHasProject($this->user, $project);
+        $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+        $permissions = $permissions->getPermissions();
+
+        if($permissions['general'] != Permission::OWNER){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => 'not enough permissions to do this',
+                )
+            );
+        }
+
+        $managedLocales = explode(',',$project->getManagedLocales());
+
+        /** @var Translation[] $translations */
+        $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId() ));
+
+        foreach($translations as $translation){
+
+            $transArray = $translation->getTranslations();
+            foreach($managedLocales as $locale){
+                if(!isset($transArray[$locale])){
+                    $transArray[$locale] = Translation::genTranslationItem('');
+                }
+            }
+            $translation->setTranslations($transArray);
+            $this->dm->persist($translation);
+
+        }
+
+        $this->dm->flush();
+
+        return $this->printResult(array(
+                'result' => true,
+            )
+        );
+    }
+
+    /**
+     * @Route("/search/{projectId}", name="search")
+     * @Method("POST")
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function searchAction(Request $request, Project $project)
+    {
+        $this->init();
+        $search = $request->get('search');
+
+        $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+
+        if(!$permissions){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => 'not enough permissions to do this',
+                )
+            );
+        }
+
+        $managedLocales = explode(',',$project->getManagedLocales());
+
+        /** @var Translation[] $translations */
+        $translations = $this->getTranslationRepository()->searchKeys($project->getId(), $search);
+
+        die(count($translations));
+//        foreach($translations as $translation){
+//
+//            $transArray = $translation->getTranslations();
+//            foreach($managedLocales as $locale){
+//                if(!isset($transArray[$locale])){
+//                    $transArray[$locale] = Translation::genTranslationItem('');
+//                }
+//            }
+//            $translation->setTranslations($transArray);
+//            $this->dm->persist($translation);
+//
+//        }
+//
+//        $this->dm->flush();
+//
+//        return $this->printResult(array(
+//                'result' => true,
+//            )
+//        );
     }
 
     /**

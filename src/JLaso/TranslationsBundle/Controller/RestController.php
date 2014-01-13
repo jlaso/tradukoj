@@ -30,7 +30,7 @@ class RestController extends Controller
 
     const DEFAULT_CATALOG = "messages";
     const MIN_PORT = 10000;
-    const MAX_PORT = 10500;
+    const MAX_PORT = 10050;
 
     /**
      *
@@ -136,15 +136,24 @@ class RestController extends Controller
     public function createSocketAction(Request $request, Project $project)
     {
         $this->init();
+        ob_implicit_flush();
+
         if($this->validateRequest($request, $project)){
-            $host = '127.0.0.1';
+            $host = php_uname('n'); //
+            if(strpos($host, '.local') !== false){
+                $host = '127.0.0.1';
+            }
+            //die(gethostbyname($host));
             $found = false;
+            $errno = null;
+            $errtxt = '';
             for ($port = self::MIN_PORT; $port < self::MAX_PORT; $port++)
             {
-                $connection = @fsockopen($host, $port);
+                $connection = @fsockopen($host, $port, $errno, $errtxt, 500);
                 if (is_resource($connection))
                 {
                     fclose($connection);
+                }else{
                     $found = true;
                     break;
                 }
@@ -161,19 +170,24 @@ class RestController extends Controller
 //                $kernel->getRootDir();
 
                 $srcDir = dirname($this->get('kernel')->getRootDir());
-                $cmd = 'php ' . $srcDir . '/app/console jlaso:translations:sync2 --port=' . $port . ' >/dev/nul &2>/dev/nul &';
-                exec($cmd);
+                $cmd = array(
+                    $srcDir . '/app/console',
+                    'jlaso:translations:server-mongo-start',
+                    '--port=' . $port,
+                    '--address='. $host,
+                );
 
-                return $this->resultOk(
-                    array(
+                pcntl_exec('php', $cmd);
+
+                return $this->resultOk(array(
+                        'host' => $host,
                         'port' => $port,
                         'cmd'  => $cmd,
                     )
                 );
-
             }
 
-            return $this->exception('unable to start socket server');
+            return $this->exception(sprintf('unable to start socket server on %s, port %d, %d:%s', $host, $port, $errno, $errtxt));
 
         }
 

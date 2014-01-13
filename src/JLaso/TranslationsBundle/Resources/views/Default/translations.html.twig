@@ -107,6 +107,7 @@
         </div>
         <div class="span12">
             <input type="text" name="search" placeholder="search..."/>
+            <a href="#" class="btn btn-primary" id="search"><i class="icon icon-search"></i></a>
         </div>
     </div>
 
@@ -321,6 +322,12 @@
                         alert(data);
                     }
                 })
+            });
+
+            $('#search').click(function(e){
+                e.preventDefault();
+                var search = $('input[name="search"]').val();
+                console.log('searching '+search+' ...');
             });
 
         });
