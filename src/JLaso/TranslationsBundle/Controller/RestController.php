@@ -142,8 +142,9 @@ class RestController extends Controller
             $host = php_uname('n'); //
             if(strpos($host, '.local') !== false){
                 $host = '127.0.0.1';
+            }else{
+                $host = gethostbyname($host);
             }
-            //die(gethostbyname($host));
             $found = false;
             $errno = null;
             $errtxt = '';
