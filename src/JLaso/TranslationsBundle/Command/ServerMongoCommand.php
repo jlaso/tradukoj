@@ -2,16 +2,23 @@
 
 namespace JLaso\TranslationsBundle\Command;
 
+/**
+ *
+ *
+ * {"command":"key index", "key":"1234", "secret":1234, "project_id":1, ...}
+ *
+ * {"command":"bundle index", "key":"1234", "secret":1234, "project_id":1, ...}
+ *
+ *
+ *
+ */
+
 use Doctrine\ORM\EntityManager;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
 use JLaso\TranslationsBundle\Document\Translation;
 use JLaso\TranslationsBundle\Controller\RestController;
-use JLaso\TranslationsBundle\Entity\Key;
-use JLaso\TranslationsBundle\Entity\Message;
 use JLaso\TranslationsBundle\Entity\Project;
-use JLaso\TranslationsBundle\Entity\Repository\KeyRepository;
-use JLaso\TranslationsBundle\Entity\Repository\MessageRepository;
 use JLaso\TranslationsBundle\Entity\Repository\ProjectRepository;
 use JLaso\TranslationsBundle\Service\Manager\TranslationsManager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -21,23 +28,26 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 class ServerMongoCommand extends ContainerAwareCommand
 {
+    /** Shutdowns the server */
     const CMD_SHUTDOWN            = 'shutdown';
 
-
     const CMD_PROJECTS            = 'project-index';
-    const CMD_KEY_INDEX           = 'key-index';
-    const CMD_BUNDLE_INDEX        = 'bundle-index';
-    const CMD_TRANSLATION_DETAILS = 'translation-details';
-    const CMD_TRANSLATIONS        = 'translations';
-    const CMD_GET_COMMENT         = 'get-comment';
-    const CMD_PUT_MESSAGE         = 'put-message';
-    const CMD_UPDATE_MESSAGE      = 'update-message-if-newest';
-    const CMD_UPDATE_COMMENT      = 'update-comment-if-newest';
-    const CMD_BLOCK_SYNC          = 'block-sync';
+//    const CMD_KEY_INDEX           = 'key-index';
+//    const CMD_BUNDLE_INDEX        = 'bundle-index';
+//    const CMD_TRANSLATION_DETAILS = 'translation-details';
+//    const CMD_TRANSLATIONS        = 'translations';
+//    const CMD_GET_COMMENT         = 'get-comment';
+//    const CMD_PUT_MESSAGE         = 'put-message';
+//    const CMD_UPDATE_MESSAGE      = 'update-message-if-newest';
+//    const CMD_UPDATE_COMMENT      = 'update-comment-if-newest';
+//    const CMD_BLOCK_SYNC          = 'block-sync';
 
     /** Mongo part */
     const CMD_UPLOAD_KEYS   = 'upload-keys';
     const CMD_DOWNLOAD_KEYS = 'download-keys';
+
+    const ACK = 'ACK';
+    const NO_ACK = 'NO-ACK';
 
     /** @var  EntityManager */
     protected $em;
@@ -50,12 +60,16 @@ class ServerMongoCommand extends ContainerAwareCommand
     /** @var  TranslationsManager */
     protected $translationsManager;
 
+    /** statistics and debug properties */
     protected $debug = false;
     protected $showCommand = false;
     protected $showExceptions = false;
     protected $sended = 0;
     protected $received = 0;
 
+    /**
+     * configure the command that starts the server
+     */
     protected function configure()
     {
         $this
@@ -65,12 +79,91 @@ class ServerMongoCommand extends ContainerAwareCommand
             ->addArgument('port', InputArgument::REQUIRED, 'port number where start server');
     }
 
+    /**
+     * Atomic send of a string trough the socket
+     *
+     * @param $msg
+     *
+     * @return int
+     */
+    protected function sendMessage($msg)
+    {
+        $msg .= PHP_EOL;
+
+        return socket_write($this->msgsock, $msg, strlen($msg));
+    }
+
+    /**
+     * Reads the socket
+     *
+     * @param bool $compress
+     *
+     * @return int|string
+     */
+    protected function readSocket($compress = true)
+    {
+        $buffer = '';
+        do{
+            $buf = socket_read($this->msgsock, 15 + 4096, PHP_BINARY_READ);
+            if($buf === false){
+                echo "socket_read() falló: razón: " . socket_strerror(socket_last_error($this->msgsock)) . "\n";
+                return -2;
+            }
+
+            if(!trim($buf)){
+                return '';
+            }
+
+            if(substr_count($buf, ":") < 3){
+                var_dump($buf);
+                die('error in format');
+            }
+            list($size, $block, $blocks)  = explode(":", $buf);
+            $aux = substr($buf, 15);
+
+            if($this->debug){
+                echo sprintf("%d/%d blocks (start of block %s)\n", $block, $blocks, substr($aux, 0, 10));
+            }
+
+            if($size == strlen($aux)){
+                $this->sendMessage(self::ACK);
+            }else{
+                $this->sendMessage(self::NO_ACK);
+                die(sprintf('error in size read %d vs %d', $size, strlen($aux)));
+            }
+
+            $buffer .= $aux;
+
+        }while($block < $blocks);
+
+        $this->received += strlen($buffer);
+        $size = $this->prettySize($this->received);
+        echo "v " , $size, "  ";
+
+        $result = lzf_decompress($buffer);
+
+        if($this->debug){
+            $aux = json_decode($result, true);
+            if(isset($aux['data'])){
+                //var_dump($aux);
+                echo sprintf("received %d keys\n", count($aux['data']));
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Body of the command
+     *
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return int|null|void
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         set_time_limit(0);
-
-        /* Activar el volcado de salida implícito, así veremos lo que estamo obteniendo
-         * mientras llega. */
         ob_implicit_flush();
 
         $container                 = $this->getContainer();
@@ -78,159 +171,151 @@ class ServerMongoCommand extends ContainerAwareCommand
         $this->dm                  = $container->get('doctrine.odm.mongodb.document_manager');
         $this->translationsManager = $container->get('jlaso.translations_manager');
 
-        $address =  $input->getArgument('address');
-        $port = $input->getArgument('port');
+        $address = $input->getArgument('address');
+        $port    = $input->getArgument('port');
 
         if (($sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) === false) {
-            echo "socket_create() falló: razón: " . socket_strerror(socket_last_error()) . "\n";
+            echo "socket_create() error: " . socket_strerror(socket_last_error()) . "\n";
         }
 
         if (socket_bind($sock, $address, $port) === false) {
-            echo "socket_bind() falló: razón: " . socket_strerror(socket_last_error($sock)) . "\n";
+            echo "socket_bind() error: " . socket_strerror(socket_last_error($sock)) . "\n";
         }
 
         if (socket_listen($sock, 5) === false) {
-            echo "socket_listen() falló: razón: " . socket_strerror(socket_last_error($sock)) . "\n";
+            echo "socket_listen() error: " . socket_strerror(socket_last_error($sock)) . "\n";
         }
 
         do {
             if (($this->msgsock = socket_accept($sock)) === false) {
-                echo "socket_accept() falló: razón: " . socket_strerror(socket_last_error($sock)) . "\n";
+                echo "socket_accept() error: " . socket_strerror(socket_last_error($sock)) . "\n";
                 break;
             }
             /* Enviar instrucciones. */
-            $msg = "Welcome to TranslationsApiBundle v1.1 (mongo-sockets)" . PHP_EOL;
-            socket_write($this->msgsock, $msg, strlen($msg));
+            $this->sendMessage("Welcome to TranslationsApiBundle v1.2 (mongo-sockets)");
 
             do {
-                if (false === ($buf = socket_read($this->msgsock, 2048 * 1024, PHP_NORMAL_READ))) {
-                    echo "socket_read() falló: razón: " . socket_strerror(socket_last_error($this->msgsock)) . "\n";
-                    break 2;
-                }
-                if (!$buf = trim($buf)) {
-                    continue;
-                }
-                socket_write($this->msgsock, 'ACK' . PHP_EOL, 4);
+                $buf = $this->readSocket();
 
+                if($buf){
+                    try{
+                        $read     = json_decode($buf, true);
+                        /**
+                         * fixed or not data that comes with the data received
+                         */
+                        $command  = isset($read['command']) ? $read['command'] : '';
+                        $bundle   = isset($read['bundle']) ? $read['bundle'] : '';
+                        $key      = isset($read['key']) ? $read['key'] : '';
+                        $language = isset($read['language']) ? $read['language'] : '';
+                        $catalog  = isset($read['catalog']) ? $read['catalog'] : RestController::DEFAULT_CATALOG;
+                        $message  = isset($read['message']) ? $read['message'] : '';
+                        $comment  = isset($read['comment']) ? $read['comment'] : '';
+                        $lastModification = isset($read['last_modification']) ? new \DateTime($read['last_modification']) : null;
 
-                $this->received += strlen($buf);
-                $size = $this->prettySize($this->received);
-                echo "v " , $size, "  ";
+                        if($this->showCommand){
+                            $output->writeln($command);
+                        }
 
-                try{
-                    //$buf      = lzf_decompress($buf);
-                    $read     = json_decode($buf, true);
-                    $command  = isset($read['command']) ? $read['command'] : '';
-                    $bundle   = isset($read['bundle']) ? $read['bundle'] : '';
-                    $key      = isset($read['key']) ? $read['key'] : '';
-                    $language = isset($read['language']) ? $read['language'] : '';
-                    $catalog  = isset($read['catalog']) ? $read['catalog'] : RestController::DEFAULT_CATALOG;
-                    $message  = isset($read['message']) ? $read['message'] : '';
-                    $comment  = isset($read['comment']) ? $read['comment'] : '';
-                    $lastModification = isset($read['last_modification']) ? new \DateTime($read['last_modification']) : null;
+                        switch($command){
 
-                    if($this->showCommand){
-                        $output->writeln($command);
-                    }
+                            case self::CMD_PROJECTS:
+                                $projects = $this->getProjectIndex();
+                                $this->resultOk($projects);
+                                break;
+//
+//                            case self::CMD_KEY_INDEX:
+//                                if($this->validateRequest($buf)){
+//                                    $keyRepository = $this->getKeyRepository();
+//                                    $keys          = $keyRepository->findAllKeysForProjectAndBundle($this->project, $bundle);
+//                                    foreach($keys as $key){
+//                                        $keysResult[] = $key->getKey();
+//                                    }
+//                                    $this->resultOk(array('keys' => $keysResult));
+//                                };
+//                                break;
+//
+//                            case self::CMD_BUNDLE_INDEX:
+//                                if($this->validateRequest($buf)){
+//                                    $keyRepository = $this->getKeyRepository();
+//                                    $bundles       = $keyRepository->findAllBundlesForProject($this->project);
+//                                    $this->resultOk(array('bundles' => $bundles));
+//                                };
+//                                break;
+//
+//                            case self::CMD_TRANSLATION_DETAILS:
+//                                if($this->validateRequest($buf)){
+//                                    $this->getTranslationDetails($this->project, $bundle, $key, $language, $catalog);
+//                                };
+//                                break;
+//
+//                            case self::CMD_TRANSLATIONS:
+//                                if($this->validateRequest($buf)){
+//                                    $this->getTranslations($this->project, $bundle, $key, $catalog);
+//                                };
+//                                break;
+//
+//                            case self::CMD_GET_COMMENT:
+//                                if($this->validateRequest($buf)){
+//                                    $this->getComment($this->project, $bundle, $key, $catalog);
+//                                }
+//                                break;
+//
+//                            case self::CMD_PUT_MESSAGE:
+//                                if($this->validateRequest($buf)){
+//                                    $this->putMessage($this->project, $bundle, $key, $language, $catalog, $message);
+//                                }
+//                                break;
+//
+//                            case self::CMD_UPDATE_COMMENT:
+//                                if($this->validateRequest($buf)){
+//                                    $this->updateCommentIfNewest($this->project, $bundle, $key, $catalog, $lastModification, $comment);
+//                                }
+//                                break;
+//
+//                            case self::CMD_UPDATE_MESSAGE:
+//                                if($this->validateRequest($buf)){
+//                                    $this->updateMessageIfNewest($this->project, $bundle, $key, $language, $catalog, $lastModification, $message);
+//                                }
+//                                break;
+//
+//                            case self::CMD_BLOCK_SYNC:
+//                                if($this->validateRequest($buf)){
+//                                    $data = isset($read['data']) ? $read['data'] : null;
+//                                    $this->blockSync($this->project, $catalog, $language, $bundle, $data);
+//                                }
+//                                break;
 
-                    switch($command){
-
-                        case self::CMD_PROJECTS:
-                            $projects = $this->getProjectIndex();
-                            $this->resultOk($projects);
-                            break;
-
-                        case self::CMD_KEY_INDEX:
-                            if($this->validateRequest($buf)){
-                                $keyRepository = $this->getKeyRepository();
-                                $keys          = $keyRepository->findAllKeysForProjectAndBundle($this->project, $bundle);
-                                foreach($keys as $key){
-                                    $keysResult[] = $key->getKey();
+                            case self::CMD_UPLOAD_KEYS:
+                                if($this->validateRequest($buf)){
+                                    $data = isset($read['data']) ? $read['data'] : null;
+                                    $this->receiveKeys($this->project, $catalog, $data);
                                 }
-                                $this->resultOk(array('keys' => $keysResult));
-                            };
-                            break;
+                                break;
 
-                        case self::CMD_BUNDLE_INDEX:
-                            if($this->validateRequest($buf)){
-                                $keyRepository = $this->getKeyRepository();
-                                $bundles       = $keyRepository->findAllBundlesForProject($this->project);
-                                $this->resultOk(array('bundles' => $bundles));
-                            };
-                            break;
+                            case self::CMD_DOWNLOAD_KEYS:
+                                if($this->validateRequest($buf)){
+                                    $data = isset($read['data']) ? $read['data'] : null;
+                                    $this->sendKeys($this->project, $data);
+                                }
+                                break;
 
-                        case self::CMD_TRANSLATION_DETAILS:
-                            if($this->validateRequest($buf)){
-                                $this->getTranslationDetails($this->project, $bundle, $key, $language, $catalog);
-                            };
-                            break;
+                            case self::CMD_SHUTDOWN:
+                                //socket_close($sock);
+                                $this->resultOk();
+                                sleep(1);
+                                socket_close($this->msgsock);
+                                exit;
 
-                        case self::CMD_TRANSLATIONS:
-                            if($this->validateRequest($buf)){
-                                $this->getTranslations($this->project, $bundle, $key, $catalog);
-                            };
-                            break;
-
-                        case self::CMD_GET_COMMENT:
-                            if($this->validateRequest($buf)){
-                                $this->getComment($this->project, $bundle, $key, $catalog);
-                            }
-                            break;
-
-                        case self::CMD_PUT_MESSAGE:
-                            if($this->validateRequest($buf)){
-                                $this->putMessage($this->project, $bundle, $key, $language, $catalog, $message);
-                            }
-                            break;
-
-                        case self::CMD_UPDATE_COMMENT:
-                            if($this->validateRequest($buf)){
-                                $this->updateCommentIfNewest($this->project, $bundle, $key, $catalog, $lastModification, $comment);
-                            }
-                            break;
-
-                        case self::CMD_UPDATE_MESSAGE:
-                            if($this->validateRequest($buf)){
-                                $this->updateMessageIfNewest($this->project, $bundle, $key, $language, $catalog, $lastModification, $message);
-                            }
-                            break;
-
-                        case self::CMD_BLOCK_SYNC:
-                            if($this->validateRequest($buf)){
-                                $data = isset($read['data']) ? $read['data'] : null;
-                                $this->blockSync($this->project, $catalog, $language, $bundle, $data);
-                            }
-                            break;
-
-                        case self::CMD_UPLOAD_KEYS:
-                            if($this->validateRequest($buf)){
-                                $data = isset($read['data']) ? $read['data'] : null;
-                                $this->receiveKeys($this->project, $catalog, $data);
-                            }
-                            break;
-
-                        case self::CMD_DOWNLOAD_KEYS:
-                            if($this->validateRequest($buf)){
-                                $data = isset($read['data']) ? $read['data'] : null;
-                                $this->sendKeys($this->project, $data);
-                            }
-                            break;
-
-                        case self::CMD_SHUTDOWN:
-                            socket_close($this->msgsock);
-                            socket_close($sock);
-                            exit;
-                            break 2;
-
-                        default:
-                            $this->exception(sprintf('command \'%s\' unknow', $command));
-                            break;
-                    }
-                }catch(\Exception $e){
-                    $msg = $e->getCode() . ': ' . $e->getMessage() . ' in line ' . $e->getLine() . ' of file ' . $e->getFile();
-                    $this->exception($msg);
-                    if($e->getCode() == 0){
-                        die('error grave: ' . $msg);
+                            default:
+                                $this->exception(sprintf('command \'%s\' unknow', $command));
+                                break;
+                        }
+                    }catch(\Exception $e){
+                        $msg = $e->getCode() . ': ' . $e->getMessage() . ' in line ' . $e->getLine() . ' of file ' . $e->getFile();
+                        $this->exception($msg);
+                        if($e->getCode() == 0){
+                            die('error grave: ' . $msg);
+                        }
                     }
                 }
 
@@ -257,9 +342,11 @@ class ServerMongoCommand extends ContainerAwareCommand
         return $result;
     }
 
-    protected function send($buffer)
+    protected function send($buffer, $compressed = false)
     {
-        //$buffer = lzf_compress($buffer);
+        if($compressed){
+            $buffer = lzf_compress($buffer);
+        }
 
         $this->sended += strlen($buffer);
         $size = $this->prettySize($this->sended);
@@ -270,7 +357,7 @@ class ServerMongoCommand extends ContainerAwareCommand
 
         echo str_repeat(chr(8), 80);
 
-        return socket_write($this->msgsock, $buffer, strlen($buffer));
+        return $this->sendMessage($buffer);
     }
 
     protected function resultOk($data = array())
@@ -451,18 +538,6 @@ class ServerMongoCommand extends ContainerAwareCommand
         );
     }
 
-    /**
-     */
-    public function putMessage(Project $project, $bundle, $key, $language, $catalog, $message)
-    {
-        // message puede estar en blanco
-        if(!$project || !$bundle || !$key || !$language || !$catalog){
-            return $this->exception('missing parameters');
-        }
-        $this->insertOrUpdateMessage($project, $bundle, $catalog, $key, $language, $message);
-
-        return $this->resultOk();
-    }
 
     /**
      */
@@ -618,7 +693,16 @@ class ServerMongoCommand extends ContainerAwareCommand
         $result = array();
 
         /** @var Translation[] $messages */
-        $messages = $this->getTranslationRepository()->findBy(array('catalog' => $catalog));
+        $messages = $this->getTranslationRepository()->findBy(
+            array(
+                'projectId' => $project->getId(),
+                'catalog'   => $catalog,
+            )
+        );
+
+        if($this->debug){
+            echo sprintf("found %d in translations\n", count($messages));
+        }
 
         foreach($messages as $message){
 
@@ -650,9 +734,17 @@ class ServerMongoCommand extends ContainerAwareCommand
             $this->dm->persist($message);
         }
 
+        if($this->debug){
+            echo sprintf("found %d keys in data\n", count($data));
+        }
+
         foreach($data as $key=>$dataLocale){
 
             if(count($dataLocale)){
+
+                if($this->debug){
+                    echo sprintf("processing key %s\n", $key);
+                }
 
                 $translation = new Translation();
                 $translation->setCatalog($catalog);
@@ -691,80 +783,5 @@ class ServerMongoCommand extends ContainerAwareCommand
         return $this->em->getRepository('TranslationsBundle:Project');
     }
 
-    /**
-     * @return MessageRepository
-     */
-    private function getMessageRepository()
-    {
-        return $this->em->getRepository('TranslationsBundle:Message');
-    }
-
-    /**
-     * @return KeyRepository
-     */
-    private function getKeyRepository()
-    {
-        return $this->em->getRepository('TranslationsBundle:Key');
-    }
-
-    /**
-     * @param Project $project
-     * @param string  $bundleName
-     * @param string  $catalog
-     * @param string  $key
-     * @param string  $language
-     * @param string  $msg
-     *
-     * @return Message
-     */
-    protected function insertOrUpdateMessage(Project $project, $bundleName, $catalog, $key, $language, $msg)
-    {
-        /** @var Key $keyRecord */
-        $keyRecord = $this->getKeyRepository()->findOneBy(array(
-                'project'  => $project,
-                'bundle'   => $bundleName,
-                'catalog'  => $catalog,
-                'key'      => $key,
-            )
-        );
-
-        if(!$keyRecord){
-            $keyRecord = new Key();
-            $keyRecord->setProject($project);
-            $keyRecord->setBundle($bundleName);
-            $keyRecord->setCatalog($catalog);
-            $keyRecord->setKey($key);
-            $this->em->persist($keyRecord);
-            $this->em->flush();
-        }
-        /** @var Message $message */
-        $message = $this->getMessageRepository()->findOneBy(array(
-                'key'      => $keyRecord,
-                'language' => $language,
-            )
-        );
-        if(!$message){
-            $message = new Message();
-            $message->setKey($keyRecord);
-            $message->setLanguage($language);
-        }
-        $message->setMessage($msg);
-        $message->setUpdatedAt();
-        $this->em->persist($message);
-        $this->em->flush();
-
-        return $message;
-    }
 
 }
-
-/**
- *
- *
- * {"command":"key index", "key":"1234", "secret":1234, "project_id":1}
- *
- * {"command":"bundle index", "key":"1234", "secret":1234, "project_id":1}
- *
- *
- *
- */
