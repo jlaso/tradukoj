@@ -104,7 +104,7 @@ class ServerMongoCommand extends ContainerAwareCommand
     {
         $buffer = '';
         do{
-            $buf = socket_read($this->msgsock, 15 + 4096, PHP_BINARY_READ);
+            $buf = socket_read($this->msgsock, 15 + 1024, PHP_BINARY_READ);
             if($buf === false){
                 echo "socket_read() falló: razón: " . socket_strerror(socket_last_error($this->msgsock)) . "\n";
                 return -2;
@@ -129,7 +129,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                 $this->sendMessage(self::ACK);
             }else{
                 $this->sendMessage(self::NO_ACK);
-                die(sprintf('error in size read %d vs %d', $size, strlen($aux)));
+                die(sprintf('error in size (block %d of %d): informed %d vs %d read', $block, $blocks, $size, strlen($aux)));
             }
 
             $buffer .= $aux;
