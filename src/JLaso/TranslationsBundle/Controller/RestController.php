@@ -136,7 +136,7 @@ class RestController extends Controller
     public function createSocketAction(Request $request, Project $project)
     {
         $this->init();
-        ob_implicit_flush();
+        //ob_implicit_flush();
 
         if($this->validateRequest($request, $project)){
             $host = php_uname('n'); //
@@ -165,19 +165,20 @@ class RestController extends Controller
                 $app->run(null, new NullOutput());
                 */
 
-//                /** @var Kernel $kernel */
-//                $kernel = $this->get('kernel');
-//                $kernel->getRootDir();
-
                 $srcDir = dirname($this->get('kernel')->getRootDir());
                 $cmd = array(
                     $srcDir . '/app/console',
                     'jlaso:translations:server-mongo-start',
-                    '--port=' . $port,
-                    '--address='. $host,
+                    $host,
+                    $port,
                 );
 
-                pcntl_exec('php', $cmd);
+                if(function_exists('pcntl_exec')){
+                    pcntl_exec('php', $cmd);
+                }else{
+                    $cmd = "php " . implode(" ",$cmd). " >/dev/null 2>/dev/null &";
+                    exec($cmd);
+                }
 
                 return $this->resultOk(array(
                         'host' => $host,
