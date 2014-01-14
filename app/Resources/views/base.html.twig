@@ -37,8 +37,56 @@
             }
         </style>
         {% endblock stylesheets %}
+        <style type="text/css">
+            .flash-notice img{
+                vertical-align: middle;
+            }
+
+            .flash-notice{
+                background-color: #ADD8E6;
+                border-radius: 5px;
+                color: #00008B;
+                font-size: 16px;
+                font-weight: normal;
+                margin-bottom: 27px;
+                padding: 6px;
+                text-align: center;
+            }
+            .flash-error{
+                color: red;
+                font-weight: bolder;
+                font-size: 16px;
+                /*width: 100%;*/
+                /*float: left;*/
+                background-color: pink;
+                border-radius: 2px;
+                border: 1px solid pink;
+                margin-bottom: 27px;
+                text-align: center;
+            }
+            .flash-success{
+                color: limegreen;
+                font-weight: bolder;
+                font-size: 16px;
+                /*width: 100%;*/
+                /*float: left;*/
+                background-color: lightgreen;
+                border-radius: 2px;
+                border: 1px solid pink;
+                margin-bottom: 27px;
+                text-align: center;
+            }
+        </style>
     </head>
     <body>
+
+    {% for key, flash in app.session.flashBag %}
+        <div class="flash flash-{{key}} container">
+            {% for message in flash %}
+            <p class="flash-message">{{ message|raw }}</p>
+            {% endfor %}
+        </div>
+    {% endfor %}
 
         {% block body %}
 
@@ -308,10 +356,13 @@
     <script type="text/javascript" src="{{ asset('bundles/translations/js/jstree/jquery.jstree.js') }}"></script>
     <script type="text/javascript" src="{{ asset('bundles/translations/bootstrap/js/bootstrap.js') }}"></script>
     {% block javascripts %}
-        <script type="text/javascript">
-            $(function(){
-
-            });
-        </script>
     {% endblock javascripts %}
+    <script type="text/javascript">
+        $(function(){
+            {# eliminar los mensajes flash a los cinco segundos #}
+            setTimeout(function(){
+                $('.flash').fadeOut() /*.remove()*/;
+            },5000);
+        });
+    </script>
 </html>

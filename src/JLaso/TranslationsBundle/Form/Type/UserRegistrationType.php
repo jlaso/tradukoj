@@ -44,7 +44,7 @@ class UserRegistrationType extends AbstractType
 
             ->add('confirmation', 'checkbox', array(
                     'label' => 'register.placeholder.terms',
-                    'property_path' => false,
+                    'mapped' => false,
                     'constraints' => new NotBlank()
                 ))
         ;

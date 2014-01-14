@@ -24,7 +24,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 /**
  * @Cache(maxage="0")
  */
-class SecurityController extends Controller
+class SecurityController extends BaseController
 {
 
     const CLIENT_ID = '0334c2cebd3ec46632a3';
@@ -207,6 +207,10 @@ class SecurityController extends Controller
                 /** @var MailerService $mailer */
                 $mailer = $this->get('jlaso.mailer_service');
                 $send = $mailer->sendWelcomeMessage($user);
+
+                if(is_string($send)){
+                    $this->addNoticeFlash($send);
+                }
 
                 $session = $this->get('session')->all();
 

@@ -59,7 +59,14 @@ class MailerService
             $message->setReplyTo($replyTo);
         }
 
-        return $this->mailer->send($message);
+        try{
+            $result = $this->mailer->send($message);
+        }catch(\Exception $e){
+            $result = $e->getMessage();
+            //print $result;
+        }
+
+        return $result;
     }
 
     /**
