@@ -249,10 +249,10 @@ class Translation
     public function getTranslations()
     {
         $translations = $this->translations;
-        foreach($translations as $locale=>$translation){
-            //$translation['message'] = isset($translation['message']) ? utf8_decode($translation['message']) : '';
-            $translation['updatedAt'] = json_decode($translation[])
-        }
+//        foreach($translations as $locale=>$translation){
+//            //$translation['message'] = isset($translation['message']) ? utf8_decode($translation['message']) : '';
+//            $translation['updatedAt'] = json_decode($translation[])
+//        }
         return $translations;
     }
 
