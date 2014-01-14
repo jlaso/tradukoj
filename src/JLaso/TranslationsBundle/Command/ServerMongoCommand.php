@@ -32,6 +32,7 @@ class ServerMongoCommand extends ContainerAwareCommand
     const CMD_SHUTDOWN            = 'shutdown';
 
     const CMD_PROJECTS            = 'project-index';
+    const CMD_CATALOG_INDEX       = 'catalog-index';
 //    const CMD_KEY_INDEX           = 'key-index';
 //    const CMD_BUNDLE_INDEX        = 'bundle-index';
 //    const CMD_TRANSLATION_DETAILS = 'translation-details';
@@ -49,6 +50,8 @@ class ServerMongoCommand extends ContainerAwareCommand
     const ACK = 'ACK';
     const NO_ACK = 'NO-ACK';
 
+    const BLOCK_SIZE = 1024;
+
     /** @var  EntityManager */
     protected $em;
     /** @var  DocumentManager */
@@ -62,7 +65,7 @@ class ServerMongoCommand extends ContainerAwareCommand
 
     /** statistics and debug properties */
     protected $debug = false;
-    protected $showCommand = false;
+    protected $showCommand = true;
     protected $showExceptions = false;
     protected $sended = 0;
     protected $received = 0;
@@ -86,7 +89,7 @@ class ServerMongoCommand extends ContainerAwareCommand
      *
      * @return int
      */
-    protected function sendMessage($msg)
+    protected function send($msg)
     {
         $msg .= PHP_EOL;
 
@@ -126,9 +129,9 @@ class ServerMongoCommand extends ContainerAwareCommand
             }
 
             if($size == strlen($aux)){
-                $this->sendMessage(self::ACK);
+                $this->send(self::ACK);
             }else{
-                $this->sendMessage(self::NO_ACK);
+                $this->send(self::NO_ACK);
                 die(sprintf('error in size (block %d of %d): informed %d vs %d read', $block, $blocks, $size, strlen($aux)));
             }
 
@@ -192,7 +195,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                 break;
             }
             /* Enviar instrucciones. */
-            $this->sendMessage("Welcome to TranslationsApiBundle v1.2 (mongo-sockets)");
+            $this->send("Welcome to TranslationsApiBundle v1.2 (mongo-sockets)");
 
             do {
                 $buf = $this->readSocket();
@@ -222,6 +225,13 @@ class ServerMongoCommand extends ContainerAwareCommand
                                 $projects = $this->getProjectIndex();
                                 $this->resultOk($projects);
                                 break;
+
+                            case self::CMD_CATALOG_INDEX:
+                                if($this->validateRequest($buf)){
+                                    $this->getCatalogIndex($this->project->getId());
+                                };
+                                break;
+
 //
 //                            case self::CMD_KEY_INDEX:
 //                                if($this->validateRequest($buf)){
@@ -295,7 +305,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                             case self::CMD_DOWNLOAD_KEYS:
                                 if($this->validateRequest($buf)){
                                     $data = isset($read['data']) ? $read['data'] : null;
-                                    $this->sendKeys($this->project, $data);
+                                    $this->sendKeys($this->project, $catalog);
                                 }
                                 break;
 
@@ -342,13 +352,47 @@ class ServerMongoCommand extends ContainerAwareCommand
         return $result;
     }
 
-    protected function send($buffer, $compressed = false)
+    protected function getCatalogIndex($projectId)
     {
-        if($compressed){
-            $buffer = lzf_compress($buffer);
+        $catalogs = $this->getTranslationRepository()->getCatalogs($projectId);
+
+        return $this->resultOk(array('catalogs' => $catalogs));
+    }
+
+    protected function sendMessage($msg, $compress = true)
+    {
+        if($compress){
+            $msg = lzf_compress($msg);
+        }else{
+            $msg .= PHP_EOL;
         }
 
-        $this->sended += strlen($buffer);
+        $len = strlen($msg);
+        if($this->debug){
+            print "sending {$len} chars" . PHP_EOL;
+        }
+
+        $blocks = ceil($len / self::BLOCK_SIZE);
+        for($i=0; $i<$blocks; $i++){
+
+            $block = substr($msg, $i * self::BLOCK_SIZE,
+                ($i == $blocks-1) ? $len - ($i-1) * self::BLOCK_SIZE : self::BLOCK_SIZE);
+            $prefix = sprintf("%06d:%03d:%03d:", strlen($block), $i+1, $blocks);
+            $aux =  $prefix . $block;
+            if($this->debug){
+                print sprintf("sending block %d from %d, prefix = %s\n", $i+1, $blocks, $prefix);
+            }
+
+            if(false === socket_write($this->msgsock, $aux, strlen($aux))){
+                die('error');
+            };
+
+            do{
+                $read = socket_read($this->msgsock, 10, PHP_NORMAL_READ);
+                //print $read;
+            }while(strpos($read, self::ACK) !== 0);
+        }
+        $this->sended += strlen($msg);
         $size = $this->prettySize($this->sended);
         echo '^ ' ,$size, "    ";
 
@@ -357,7 +401,7 @@ class ServerMongoCommand extends ContainerAwareCommand
 
         echo str_repeat(chr(8), 80);
 
-        return $this->sendMessage($buffer);
+        return true;
     }
 
     protected function resultOk($data = array())
@@ -368,7 +412,7 @@ class ServerMongoCommand extends ContainerAwareCommand
             print $result;
         }
 
-        return $this->send($result);
+        return $this->sendMessage($result);
     }
 
     protected function exception($reason)
@@ -671,6 +715,9 @@ class ServerMongoCommand extends ContainerAwareCommand
         return $this->resultOk($result);
     }
 
+    /**
+     * @return TranslationRepository
+     */
     protected function getTranslationRepository()
     {
         return $this->dm->getRepository('TranslationsBundle:Translation');
@@ -773,6 +820,43 @@ class ServerMongoCommand extends ContainerAwareCommand
         $this->dm->flush();
 
         return $this->resultOk($result);
+    }
+
+    /**
+     *
+     * $data[key][locale]
+     * {
+     *   message,
+     *   updatedAt
+     * }
+     *
+     */
+    protected function sendKeys(Project $project, $catalog)
+    {
+        if(!$project || !$catalog){
+            return $this->exception("Validation exceptions, missing parameters project={$project->getId()}, catalog=$catalog");
+        }
+
+        /** @var Translation[] $messages */
+        $messages = $this->getTranslationRepository()->findBy(
+            array(
+                'projectId' => $project->getId(),
+                'catalog'   => $catalog,
+                'deleted'   => false,
+            )
+        );
+
+        if($this->debug){
+        }
+        echo sprintf("found %d in translations\n", count($messages));
+
+        $data = array();
+        foreach($messages as $message){
+            $key = $message->getKey();
+            $data[$key] = $message->getTranslations();
+        }
+
+        return $this->resultOk(array('data' => $data));
     }
 
     /**

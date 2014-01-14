@@ -106,6 +106,15 @@ class RestController extends Controller
     }
 
     /**
+     * @Route("/ping")
+     * @Method("GET")
+     */
+    public function pingAction()
+    {
+        die('pong');
+    }
+
+    /**
      * Devuelve el indice de las keys de ese bundle
      *
      * @Route("/key/index/{projectId}/{bundle}")

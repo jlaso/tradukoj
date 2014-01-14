@@ -4,11 +4,13 @@ namespace JLaso\TranslationsBundle\Entity;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass="JLaso\TranslationsBundle\Entity\Repository\PermissionRepository")
  * @ORM\Table(name="translations_permission")
  * @ORM\HasLifecycleCallbacks
+ * @UniqueEntity(fields="project_id,user_id", message="errors.only_one_permission_per_project_and_user")
  */
 class Permission
 {
