@@ -244,20 +244,23 @@ class DefaultController extends Controller
         /** @var TranslatableDocumentRepository $translationRepository */
         $transDocRepository = $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
 
-        /** @var TranslatableDocument[] $documents */
-        $documents = $transDocRepository->findAll(
-            array(
-                'projectId' => $project->getId(),
-                'bundle'    => $bundle
-            )
-        );
-
         $keysAssoc = array();
-        foreach($documents as $document){
 
-            $keysAssoc = $this->translationsManager->iniToAssoc($document->getKey(), $keysAssoc);
-
+        /** @var TranslatableDocument[] $documents */
+        if($bundle){
+            $documents = $transDocRepository->findAll(
+                array(
+                    'projectId' => $project->getId(),
+                    'bundle'    => $bundle
+                )
+            );
+            foreach($documents as $document){
+                $keysAssoc = $this->translationsManager->iniToAssoc($document->getKey(), $keysAssoc);
+            }
+        }else{
+            $documents = null;
         }
+
 
         $managedLocales = explode(',',$project->getManagedLocales());
 
@@ -265,30 +268,30 @@ class DefaultController extends Controller
         $projects  = $this->translationsManager->getProjectsForUser($this->user);
         $bundles   = $transDocRepository->getBundles($project->getId());
 
-        if($key){
-            /** @var TranslatableDocumentRepository $translationRepository */
-            $transDocRepository = $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
-            /** @var TranslatableDocument $document */
-            $translation = $transDocRepository->findOneBy(
-                array(
-                    'projectId' => $project->getId(),
-                    'bundle'    => $bundle,
-                    'key'       => $key,
-                )
-            );
-            $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
-            $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
-
-            $html = $this->renderView("TranslationsBundle:Default:document-messages.html.twig",array(
-                    'translation'     => $translation,
-                    'managed_locales' => $managedLocales,
-                    'permissions'     => $permission->getPermissions(),
-                    'languages'       => $languages,
-                )
-            );
-        }else{
-            $html = '';
-        }
+//        if($key){
+//            /** @var TranslatableDocumentRepository $translationRepository */
+//            $transDocRepository = $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
+//            /** @var TranslatableDocument $document */
+//            $translation = $transDocRepository->findOneBy(
+//                array(
+//                    'projectId' => $project->getId(),
+//                    'bundle'    => $bundle,
+//                    'key'       => $key,
+//                )
+//            );
+//            $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+//            $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+//
+//            $html = $this->renderView("TranslationsBundle:Default:document-messages.html.twig",array(
+//                    'translation'     => $translation,
+//                    'managed_locales' => $managedLocales,
+//                    'permissions'     => $permission->getPermissions(),
+//                    'languages'       => $languages,
+//                )
+//            );
+//        }else{
+//            $html = '';
+//        }
 
         return array(
             'action'            => 'documents',
@@ -300,7 +303,7 @@ class DefaultController extends Controller
             'managed_languages' => $managedLocales,
             'languages'         => $languages,
             'permissions'       => $permission->getPermissions(),
-            'html_translations' => $html,
+//            'html_translations' => $html,
         );
     }
 
@@ -621,7 +624,7 @@ class DefaultController extends Controller
         $bundle   = $request->get('bundle');
         $locale   = $request->get('locale');
         $key      = $request->get('key');
-        $message  = $request->get('message');
+        $message  = str_replace("\'","'",$request->get('message'));
 
         //@TODO: comprobar que el usuario que esta logado tiene permiso para hacer esto
         if(!$bundle || !$locale || !$key || !$message){

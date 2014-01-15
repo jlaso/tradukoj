@@ -52,4 +52,5 @@ security:
         - { path: ^/user/do-github-login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/logout, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/translations, roles: ROLE_TRANSLATOR }
+        - { path: ^/documents, roles: ROLE_TRANSLATOR }
         - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY }

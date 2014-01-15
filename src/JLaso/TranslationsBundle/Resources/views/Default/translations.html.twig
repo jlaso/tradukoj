@@ -10,6 +10,53 @@
             height: 400px;
             overflow: scroll;
         }
+        .h300{
+            min-height: 300px;
+            max-height: 300px;
+            height: 300px;
+            overflow: scroll;
+        }
+        #editor{
+            background: none repeat scroll 0 0 rgba(255, 255, 255, 0.95);
+            display: none;
+            height: 99%;
+            left: 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1050;
+        }
+        #editor #left,
+        #editor #right{
+            border: 2px solid;
+            border-radius: 6px;
+            float: left;
+            height: 100%;
+            margin: 0;
+            overflow: scroll;
+            padding: 0;
+            width: 49%;
+        }
+        #editor .jqte{
+            margin: 0 !important;
+        }
+        #editor .save-button{
+            position: absolute;
+            right: 25px;
+            top: 5px;
+            z-index: 1051;
+        }
+        #ajax_loader{
+            background: url(/bundles/translations/img/220.GIF) no-repeat scroll center center rgba(255, 255, 255, 0.75);
+            /*background: url(/bundles/translations/img/465.GIF) no-repeat scroll center center rgba(255, 255, 255, 0.9);*/
+            display: none;
+            height: 99%;
+            left: 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1060;
+        }
     </style>
 {% endblock stylesheets %}
 
@@ -134,17 +181,39 @@
 
     {# messages detail #}
 
-    {% if html_translations is defined %}
+{#    {% if html_translations is defined %}
         {{ html_translations|raw }}
-    {% endif %}
+    {% endif %}#}
 
 </div>
+
+    <div id="ajax_loader">
+
+    </div>
+
+    <div id="editor">
+        <div id="left">
+
+        </div>
+        <div id="right">
+
+            <div id="wysiwyg">
+
+            </div>
+
+            <div class="btn btn-primary save-button">
+                <i class="icon-save"></i>
+            </div>
+
+        </div>
+    </div>
 {% endblock content %}
 
 {% block javascripts %}
     <script type="text/javascript">
 
         var currentKey = null;
+        var editorContentFrom = null;
 
         function logEvent(message)
         {
@@ -168,25 +237,31 @@
             if(!currentKey) return false;
             console.log(id);
             idTemp = id;
-            var button  = $(id).find('a.btn');
-            current = button;
-            interval = setInterval(function() { $(current).toggleClass('btn-primary'); }, 80);
+            //var button  = $(id).find('a.btn');
+            //current = button;
+            //interval = setInterval(function() { $(current).toggleClass('btn-primary'); }, 80);
 
             {% if action=='documents' %}
 
-                var message = $(id).parent().find('.wysiwyg').cleanHtml();
+                var message = $(id).html();
+                var locale = $(id).attr('locale');
+
+                console.log(message);
+
+                if(!message || !locale) return false;
+
                 $.ajax({
                     type: 'post',
                     url: '{{ path('save_document', {'projectId': project.id}) }}',
                     data: {
                         bundle: '{{ current }}',
-                        locale: $(id).attr('locale'),
+                        locale: locale,
                         key: currentKey,
                         message: message
                     },
                     success: function(data){
-                        clearInterval(interval);
-                        $(current).addClass('btn-primary');
+                        //clearInterval(interval);
+                        //$(current).addClass('btn-primary');
                         //console.log(data);
                         if(data.result){
                             $(id).parent().find('.wysiwyg').val(data.message);
@@ -195,8 +270,8 @@
                         }
                     },
                     error: function(){
-                        clearInterval(interval);
-                        $(current).addClass('btn-primary');
+                        //clearInterval(interval);
+                        //$(current).addClass('btn-primary');
                         logEvent('Error');
                     }
                 });
@@ -214,8 +289,8 @@
                         message: message
                     },
                     success: function(data){
-                        clearInterval(interval);
-                        $(current).addClass('btn-primary');
+                        //clearInterval(interval);
+                        //$(current).addClass('btn-primary');
                         //console.log(data);
                         if(data.result){
                             $(id).parent().find('textarea').val(data.message);
@@ -224,8 +299,8 @@
                         }
                     },
                     error: function(){
-                        clearInterval(interval);
-                        $(current).addClass('btn-primary');
+                        //clearInterval(interval);
+                        //$(current).addClass('btn-primary');
                         logEvent('Error');
                     }
                 });
@@ -269,6 +344,16 @@
 
         $(function(){
 
+            $(document).ajaxStart(function(){
+                $('#ajax_loader').show();
+            });
+
+            $(document).ajaxStop(function(){
+                $('#ajax_loader').hide();
+            });
+
+            $('#wysiwyg').jqte();
+
             $('.accordion-heading').click(function(e){
                 $('.accordion-body.in').collapse('toggle');
             });
@@ -277,6 +362,35 @@
                 e.preventDefault();
                 console.log('saving-message');
                 saveMessage($(this).parent());
+            });
+
+            $('#editor .save-button').click(function(e){
+                e.preventDefault();
+                var content = $("#editor .jqte_editor").html();
+                //console.log(content);
+                $(editorContentFrom).html(content);
+                //console.log('saving-message');
+                saveMessage($(editorContentFrom));
+                $('#editor').hide();
+            });
+
+            $("#translations-group").on("click", ".edit-message", function(e){
+                e.preventDefault();
+                console.log('edit-message');
+                var leftContent = $('input[name="scroll-mark"]:checked').parent().parent().parent().find('.message').html();
+                editorContentFrom = $(this).parent().parent().find('.wysiwyg');
+                var rightContent = $(editorContentFrom).html();
+                $("#left").html(leftContent);
+                $("#editor .jqte").jqteVal(rightContent);
+                $("#editor").show();
+                $('#right .jqte_editor').on('scroll', function () {
+                    //console.log('scrolling');
+                    $('#left').scrollTop($(this).scrollTop());
+                });
+                $('#left').on('scroll', function () {
+                    //console.log('scrolling');
+                    $('#right .jqte_editor').scrollTop($(this).scrollTop());
+                });
             });
 
             /*$(".key-row textarea").blur(function(e){
@@ -333,11 +447,10 @@
                                 $(currentNode).removeClass('btn-primary').addClass('btn-danger');
                                 $('#translations-group').html(data.html);
                                 currentKey = data.key;
-                                /*$('#translations-group .summernote').summernote({
-                                    height: 300,   //set editable area's height
-                                    focus: true    //set focus editable area after Initialize summernote
-                                });*/
-                                $('#translations-group .wysiwyg').wysiwyg();
+                                //$('#translations-group .wysiwyg').jqte();
+                                $('.scroll-ctrl').on('scroll', function () {
+                                    $('.scroll-ctrl').scrollTop($(this).scrollTop());
+                                });
                             }else{
                                 $('.key-tree-node').removeClass('btn btn-primary');
                                 logEvent('error: '+data.reason);
