@@ -102,14 +102,19 @@ class TranslationsManager
     }
 
     /**
-     * @param int    $translation
+     * @param        $group
+     * @param        $translationId
      * @param string $locale
+     * @param        $message
      * @param string $action
      * @param User   $user
+     *
+     * @internal param int $translation
      */
-    public function saveLog($translationId, $locale, $message, $action, User $user)
+    public function saveLog($translationId, $locale, $message, $action, User $user, $group = TranslationLog::TRANSLATIONS_GROUP)
     {
         $log = new TranslationLog();
+        $log->setGroup($group);
         $log->setTranslationId($translationId);
         $log->setMessage($message);
         $log->setActionType($action);

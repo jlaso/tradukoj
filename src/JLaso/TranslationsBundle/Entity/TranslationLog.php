@@ -14,6 +14,9 @@ class TranslationLog
     const APPROVE    = 'approve';
     const DISAPPROVE = 'disapprove';
 
+    const TRANSLATIONS_GROUP = 'trans-keys';
+    const DOCUMENTS_GROUP    = 'trans-docs';
+
     /**
      * @var integer $id
      *
@@ -26,9 +29,16 @@ class TranslationLog
     /**
      * @var integer $translationId
      *
-     * @ORM\Column(name="translation_id", type="integer")
+     * @ORM\Column(name="translation_id", type="string", length=255)
      */
     protected $translationId;
+
+    /**
+     * @var string $locale
+     *
+     * @ORM\Column(name="`group`", type="string", length=20)
+     */
+    protected $group;
 
     /**
      * @var string $locale
@@ -68,7 +78,8 @@ class TranslationLog
 
     public function __construct()
     {
-        $this->createdAt       = new \DateTime();
+        $this->group     = self::TRANSLATIONS_GROUP;
+        $this->createdAt = new \DateTime();
     }
 
     public function __toString()
@@ -202,6 +213,22 @@ class TranslationLog
     public function getTranslationId()
     {
         return $this->translationId;
+    }
+
+    /**
+     * @param string $group
+     */
+    public function setGroup($group)
+    {
+        $this->group = $group;
+    }
+
+    /**
+     * @return string
+     */
+    public function getGroup()
+    {
+        return $this->group;
     }
 
 

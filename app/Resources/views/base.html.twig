@@ -22,6 +22,9 @@
         <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{{ asset('bundles/translations/bootstrap/ico/bootstrap-apple-114x114.png') }}">
         <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{{ asset('bundles/translations/bootstrap/ico/bootstrap-apple-72x72.png') }}">
         <link rel="apple-touch-icon-precomposed" href="{{ asset('bundles/translations/bootstrap/ico/bootstrap-apple-57x57.png') }}">
+
+        <link href="http://netdna.bootstrapcdn.com/font-awesome/3.0.2/css/font-awesome.css" rel="stylesheet">
+
         {% block stylesheets %}
         <style type="text/css">
             body {
@@ -108,23 +111,29 @@
                                 <ul class="nav">
                                     <li class="divider-vertical"></li>
                                     <li>
-                                        <a href="#"><i class="icon-comments-alt"></i> <span class="label label-important">3</span></a>
+                                        <a href="#">
+                                            <i class="icon-comments-alt"></i> {#<span class="label label-important">3</span>#}
+                                        </a>
                                     </li>
 
                                     <li>
-                                        <a href="#"><i class="icon-envelope"></i> <span class="label label-important">3 new</span></a>
+                                        <a href="#">
+                                            <i class="icon-envelope"></i> {#<span class="label label-important">3 new</span>#}
+                                        </a>
                                     </li>
 
                                     <li>
-                                        <a href="#"><i class="icon-refresh"></i> <span class="label label-info">3 updates</span></a>
+                                        <a href="#">
+                                            <i class="icon-refresh"></i> {#<span class="label label-info">3 updates</span>#}
+                                        </a>
                                     </li>
                                     <li class="divider-vertical"></li>
-                                    <li class="active">
-                                        <a href="">{{ "catalogs"|trans|raw }}</a>
+                                    <li class="{{ action=="catalogs" ? "active" : "" }}">
+                                        <a href="{{ path("translations", {"projectId": project.id}) }}">{{ "catalogs"|trans|raw }}</a>
                                     </li>
                                     <li class="divider-vertical"></li>
-                                    <li>
-                                        <a href="">{{ "documents"|trans|raw }}</a>
+                                    <li class="{{ action=="documents" ? "active" : "" }}">
+                                        <a href="{{ path("documents", {"projectId": project.id}) }}">{{ "documents"|trans|raw }}</a>
                                     </li>
                                 </ul>
                                 <ul class="nav pull-right">
@@ -362,9 +371,14 @@
     </body>
     {#<script type="text/javascript" src="{{ asset('bundles/translations/js/jquery-1.7.2.min.js') }}"></script>#}
     {#<script type="text/javascript" src="{{ asset('bundles/translations/bootstrap/js/jquery.js') }}"></script>#}
+
     <script type="text/javascript" src="{{ asset('bundles/translations/js/jstree/_lib/jquery.js') }}"></script>
     <script type="text/javascript" src="{{ asset('bundles/translations/js/jstree/jquery.jstree.js') }}"></script>
     <script type="text/javascript" src="{{ asset('bundles/translations/bootstrap/js/bootstrap.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('bundles/translations/js/jquery.hotkeys.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('bundles/translations/js/prettify.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('bundles/translations/js/bootstrap-wysiwyg.js') }}"></script>
+
     {% block javascripts %}
     {% endblock javascripts %}
     <script type="text/javascript">
@@ -373,6 +387,8 @@
             setTimeout(function(){
                 $('.flash').fadeOut() /*.remove()*/;
             },5000);
+
+            $('.wysiwyg').wysiwyg();
         });
     </script>
 </html>

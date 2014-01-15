@@ -29,7 +29,11 @@
 {# cron periodico para releer si hay cambios por parte de otro usuario o de la api #}
 
 {% block sidebar %}
+    
     <div class="span2">
+
+        {% block sidebar_interior %}
+
         <div class="well sidebar-nav">
             <ul class="nav nav-list">
                 <li>
@@ -41,13 +45,13 @@
                         <div class="accordion-group">
                             <div class="accordion-heading">
                                 <a style="text-decoration: none;text-align: left"
-                                   class="accordion-toggle btn {{ current_catalog==catalog ? 'btn-danger' : '' }}"
+                                   class="accordion-toggle btn {{ current==catalog ? 'btn-danger' : '' }}"
                                    href="{{ path('translations', {'projectId':project.id, 'catalog':catalog}) }}">
-                                    <i class="icon-tasks {{ current_catalog==catalog ? 'icon-white' : '' }}"></i>
+                                    <i class="icon-tasks {{ current==catalog ? 'icon-white' : '' }}"></i>
                                     <span> {{ catalog }}</span>
                                 </a>
                             </div>
-                            {#{% if current_catalog == bundle %}
+                            {#{% if current == bundle %}
                             <div id="collapse_bundle_{{ bundle }}" class="accordion-body collapse in">
                                 <div class="container">
                                     {{ _self.node(keys) }}
@@ -60,6 +64,9 @@
                 </li>
             </ul>
         </div><!--/.well -->
+
+        {% endblock sidebar_interior %}
+
 
         <div class="well">
             <div class="accordion" id="accordionEvent">
@@ -107,10 +114,10 @@
 
     <div class="row-fluid">
         <div class="btn span12">
-            {{ current_catalog }}
+            {{ current }}
         </div>
         <div class="span12">
-            <input type="text" name="search" placeholder="search..."/>
+            <input type="text" name="search" class="span10" style="display:inline-block;" placeholder="search..."/>
             <a href="#" class="btn btn-primary" id="search"><i class="icon icon-search"></i></a>
         </div>
     </div>
@@ -126,6 +133,10 @@
 <div class="span9" id="translations-group">
 
     {# messages detail #}
+
+    {% if html_translations is defined %}
+        {{ html_translations|raw }}
+    {% endif %}
 
 </div>
 {% endblock content %}
@@ -157,37 +168,69 @@
             if(!currentKey) return false;
             console.log(id);
             idTemp = id;
-            var message = $(id).parent().find('textarea').val();
             var button  = $(id).find('a.btn');
             current = button;
             interval = setInterval(function() { $(current).toggleClass('btn-primary'); }, 80);
-            var data = {
-                catalog: '{{ current_catalog }}',
-                locale: $(id).attr('locale'),
-                key: currentKey,
-                message: message
-            };
-            console.log(data);
-            $.ajax({
-                type: 'post',
-                url: '{{ path('save_message', {'projectId': project.id}) }}',
-                data: data,
-                success: function(data){
-                    clearInterval(interval);
-                    $(current).addClass('btn-primary');
-                    //console.log(data);
-                    if(data.result){
-                        $(id).parent().find('textarea').val(data.message);
-                    }else{
-                        logEvent(data.reason);
+
+            {% if action=='documents' %}
+
+                var message = $(id).parent().find('.wysiwyg').cleanHtml();
+                $.ajax({
+                    type: 'post',
+                    url: '{{ path('save_document', {'projectId': project.id}) }}',
+                    data: {
+                        bundle: '{{ current }}',
+                        locale: $(id).attr('locale'),
+                        key: currentKey,
+                        message: message
+                    },
+                    success: function(data){
+                        clearInterval(interval);
+                        $(current).addClass('btn-primary');
+                        //console.log(data);
+                        if(data.result){
+                            $(id).parent().find('.wysiwyg').val(data.message);
+                        }else{
+                            logEvent(data.reason);
+                        }
+                    },
+                    error: function(){
+                        clearInterval(interval);
+                        $(current).addClass('btn-primary');
+                        logEvent('Error');
                     }
-                },
-                error: function(){
-                    clearInterval(interval);
-                    $(current).addClass('btn-primary');
-                    logEvent('Error');
-                }
-            });
+                });
+
+            {% else %}
+
+                var message = $(id).parent().find('textarea').val();
+                $.ajax({
+                    type: 'post',
+                    url: '{{ path('save_message', {'projectId': project.id}) }}',
+                    data: {
+                        catalog: '{{ current }}',
+                        locale: $(id).attr('locale'),
+                        key: currentKey,
+                        message: message
+                    },
+                    success: function(data){
+                        clearInterval(interval);
+                        $(current).addClass('btn-primary');
+                        //console.log(data);
+                        if(data.result){
+                            $(id).parent().find('textarea').val(data.message);
+                        }else{
+                            logEvent(data.reason);
+                        }
+                    },
+                    error: function(){
+                        clearInterval(interval);
+                        $(current).addClass('btn-primary');
+                        logEvent('Error');
+                    }
+                });
+
+            {% endif %}
         }
 
         function saveComment(id)
@@ -197,7 +240,7 @@
             current = button;
             interval = setInterval(function() { $(current).toggleClass('btn-primary'); }, 80);
             var data = {
-                bundle: '{{ current_catalog }}',
+                bundle: '{{ current }}',
                 key: $(button).attr('key'),
                 comment: comment
             };
@@ -245,19 +288,19 @@
                 }
             });*/
 
-            $(".key-row textarea").change(function(e){
-                e.preventDefault();
-                console.log('bluring...');
-                var id = $(this).parent().parent().find('a.btn').attr('data-role');
-                saveMessage(id);
-            });
-
-            $(".comment-row input").change(function(e){
-                e.preventDefault();
-                console.log('bluring...');
-                var id = $(this).parent().parent().find('a.btn').attr('data-role');
-                saveComment(id);
-            });
+//            $(".key-row textarea").change(function(e){
+//                e.preventDefault();
+//                console.log('bluring...');
+//                var id = $(this).parent().parent().find('a.btn').attr('data-role');
+//                saveMessage(id);
+//            });
+//
+//            $(".comment-row input").change(function(e){
+//                e.preventDefault();
+//                console.log('bluring...');
+//                var id = $(this).parent().parent().find('a.btn').attr('data-role');
+//                saveComment(id);
+//            });
 
             $("#bundle-keys").jstree({
                 "plugins" : [ "themes", "html_data", "search" ]
@@ -276,29 +319,60 @@
                 $(currentNode).addClass('btn btn-primary');
                 $('#translations-group').html('Loading...');
 
-                $.ajax({
-                    url: '{{ path('translations_messages') }}',
-                    type: 'post',
-                    data:{
-                        projectId: {{ project.id }},
-                        catalog: "{{ current_catalog }}",
-                        key: key
-                    },
-                    success: function(data){
-                        if(data.result){
-                            $(currentNode).removeClass('btn-primary').addClass('btn-danger');
-                            $('#translations-group').html(data.html);
-                            currentKey = data.key;
-                        }else{
+                {% if action=='documents' %}
+                    $.ajax({
+                        url: '{{ path('documents_messages') }}',
+                        type: 'post',
+                        data:{
+                            projectId: {{ project.id }},
+                            bundle: "{{ current }}",
+                            key: key
+                        },
+                        success: function(data){
+                            if(data.result){
+                                $(currentNode).removeClass('btn-primary').addClass('btn-danger');
+                                $('#translations-group').html(data.html);
+                                currentKey = data.key;
+                                /*$('#translations-group .summernote').summernote({
+                                    height: 300,   //set editable area's height
+                                    focus: true    //set focus editable area after Initialize summernote
+                                });*/
+                                $('#translations-group .wysiwyg').wysiwyg();
+                            }else{
+                                $('.key-tree-node').removeClass('btn btn-primary');
+                                logEvent('error: '+data.reason);
+                            }
+                        },
+                        error: function(data){
                             $('.key-tree-node').removeClass('btn btn-primary');
                             logEvent('error: '+data.reason);
                         }
-                    },
-                    error: function(data){
-                        $('.key-tree-node').removeClass('btn btn-primary');
-                        logEvent('error: '+data.reason);
-                    }
-                });
+                    });
+                {% else %}
+                    $.ajax({
+                        url: '{{ path('translations_messages') }}',
+                        type: 'post',
+                        data:{
+                            projectId: {{ project.id }},
+                            catalog: "{{ current }}",
+                            key: key
+                        },
+                        success: function(data){
+                            if(data.result){
+                                $(currentNode).removeClass('btn-primary').addClass('btn-danger');
+                                $('#translations-group').html(data.html);
+                                currentKey = data.key;
+                            }else{
+                                $('.key-tree-node').removeClass('btn btn-primary');
+                                logEvent('error: '+data.reason);
+                            }
+                        },
+                        error: function(data){
+                            $('.key-tree-node').removeClass('btn btn-primary');
+                            logEvent('error: '+data.reason);
+                        }
+                    });
+                {% endif %}
             });
 
             $('.approve').click(function(e){

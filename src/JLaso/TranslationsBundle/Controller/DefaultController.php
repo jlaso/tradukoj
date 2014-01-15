@@ -4,13 +4,12 @@ namespace JLaso\TranslationsBundle\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
-use JLaso\TranslationsBundle\Entity\Key;
-use JLaso\TranslationsBundle\Entity\Message;
+use JLaso\TranslationsBundle\Document\File;
+use JLaso\TranslationsBundle\Document\Repository\TranslatableDocumentRepository;
+use JLaso\TranslationsBundle\Document\TranslatableDocument;
 use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
-use JLaso\TranslationsBundle\Entity\Repository\KeyRepository;
 use JLaso\TranslationsBundle\Entity\Repository\LanguageRepository;
-use JLaso\TranslationsBundle\Entity\Repository\MessageRepository;
 use JLaso\TranslationsBundle\Entity\Repository\ProjectRepository;
 use JLaso\TranslationsBundle\Entity\TranslationLog;
 use JLaso\TranslationsBundle\Entity\User;
@@ -212,13 +211,13 @@ class DefaultController extends Controller
         $catalogs  = $translationRepository->getCatalogs($project->getId());
 
         return array(
-            'action'            => 'translations',
+            'action'            => 'catalogs',
             'projects'          => $projects,
             'project'           => $project,
             'catalogs'          => $catalogs,
             'keys'              => $keysAssoc,
             ////'keys_raw'        => $keys,
-            'current_catalog'   => $catalog,
+            'current'           => $catalog,
             'managed_languages' => $managedLocales,
             'trans_data'        => $transData,
             //'current_key'       => $currentKey,
@@ -229,11 +228,11 @@ class DefaultController extends Controller
 
 
     /**
-     * @Route("/documents/{projectId}/{bundle}", name="documents")
+     * @Route("/documents/{projectId}/{bundle}/{key}", name="documents")
      * @Template()
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function documentssAction(Project $project, $bundle ='')
+    public function documentsAction(Project $project, $bundle ='', $key = '')
     {
         $this->init();
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
@@ -242,34 +241,66 @@ class DefaultController extends Controller
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
-        /** @var TranslationRepository $translationRepository */
-        $translationRepository = $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
+        /** @var TranslatableDocumentRepository $translationRepository */
+        $transDocRepository = $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
 
-        $documents = $translationRepository->findAll(
+        /** @var TranslatableDocument[] $documents */
+        $documents = $transDocRepository->findAll(
             array(
                 'projectId' => $project->getId(),
-                '' => $bundle
+                'bundle'    => $bundle
             )
         );
 
+        $keysAssoc = array();
+        foreach($documents as $document){
+
+            $keysAssoc = $this->translationsManager->iniToAssoc($document->getKey(), $keysAssoc);
+
+        }
+
         $managedLocales = explode(',',$project->getManagedLocales());
-        $transData = array();
 
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
         $projects  = $this->translationsManager->getProjectsForUser($this->user);
-        $catalogs  = $translationRepository->getCatalogs($project->getId());
+        $bundles   = $transDocRepository->getBundles($project->getId());
+
+        if($key){
+            /** @var TranslatableDocumentRepository $translationRepository */
+            $transDocRepository = $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
+            /** @var TranslatableDocument $document */
+            $translation = $transDocRepository->findOneBy(
+                array(
+                    'projectId' => $project->getId(),
+                    'bundle'    => $bundle,
+                    'key'       => $key,
+                )
+            );
+            $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+            $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+
+            $html = $this->renderView("TranslationsBundle:Default:document-messages.html.twig",array(
+                    'translation'     => $translation,
+                    'managed_locales' => $managedLocales,
+                    'permissions'     => $permission->getPermissions(),
+                    'languages'       => $languages,
+                )
+            );
+        }else{
+            $html = '';
+        }
 
         return array(
             'action'            => 'documents',
             'projects'          => $projects,
             'project'           => $project,
-            'catalogs'          => $catalogs,
+            'bundles'           => $bundles,
             'keys'              => $keysAssoc,
-            'current_catalog'   => $catalog,
+            'current'           => $bundle,
             'managed_languages' => $managedLocales,
-            'trans_data'        => $transData,
             'languages'         => $languages,
             'permissions'       => $permission->getPermissions(),
+            'html_translations' => $html,
         );
     }
 
@@ -287,7 +318,7 @@ class DefaultController extends Controller
 
     /**
      * @Route("/translations-messages", name="translations_messages")
-     * @ Method("POST")
+     * @Method("POST")
      */
     public function getMessages(Request $request)
     {
@@ -317,6 +348,57 @@ class DefaultController extends Controller
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
 
         $html = $this->renderView("TranslationsBundle:Default:messages.html.twig",array(
+                'translation'     => $translation,
+                'managed_locales' => $managedLocales,
+                'permissions'     => $permission->getPermissions(),
+                'languages'       => $languages,
+            )
+        );
+        $this->printResult(array(
+                'result' => true,
+                'key'    => $translation->getKey(),
+                'html'   => $html,
+            )
+        );
+    }
+
+    /**
+     * @Route("/documents-messages", name="documents_messages")
+     * @Method("POST")
+     */
+    public function getDocuments(Request $request)
+    {
+        $this->init();
+        $projectId = intval($request->get('projectId'));
+        $bundle    = $request->get('bundle');
+        $key       = $request->get('key');
+        /** @var Project $project */
+        $project   = $this->getProjectRepository()->find($projectId);
+
+        if(!$project){
+            $this->printResult(array(
+                    'result' => false,
+                    'reason' => 'project '.$projectId.' not exists',
+                )
+            );
+        };
+
+        $managedLocales = explode(',',$project->getManagedLocales());
+
+        /** @var TranslatableDocumentRepository $translationRepository */
+        $transDocRepository = $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
+        /** @var TranslatableDocument $document */
+        $translation = $transDocRepository->findOneBy(
+            array(
+                'projectId' => $projectId,
+                'bundle'    => $bundle,
+                'key'       => $key,
+            )
+        );
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+        $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+
+        $html = $this->renderView("TranslationsBundle:Default:document-messages.html.twig",array(
                 'translation'     => $translation,
                 'managed_locales' => $managedLocales,
                 'permissions'     => $permission->getPermissions(),
@@ -526,6 +608,73 @@ class DefaultController extends Controller
     }
 
 
+
+    /**
+     * @Route("/save-document/{projectId}", name="save_document")
+     * @Method("POST")
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function saveDocumentAction(Request $request, Project $project)
+    {
+        $this->init();
+
+        $bundle   = $request->get('bundle');
+        $locale   = $request->get('locale');
+        $key      = $request->get('key');
+        $message  = $request->get('message');
+
+        //@TODO: comprobar que el usuario que esta logado tiene permiso para hacer esto
+        if(!$bundle || !$locale || !$key || !$message){
+            die('validation exception, request content = ' . $request->getContent());
+        }
+
+        $transDocRepository = $this->getTranslatableDocumentRepository();
+
+        /** @var TranslatableDocument $translation */
+        $translation = $transDocRepository->findOneBy(array(
+                'projectId' => $project->getId(),
+                'bundle'    => $bundle,
+                'key'       => $key,
+            )
+        );
+        if(!$translation){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => 'document not found',
+                )
+            );
+        }
+        /** @var File[] $translations */
+        $files = $translation->getFiles();
+        $found = false;
+        foreach($files as $file){
+            if($file->getLocale() == $locale){
+                $found = true;
+                break;
+            }
+        }
+        if(!$found){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => 'locale not found',
+                )
+            );
+        }
+
+        $file->setMessage($message);
+        $this->dm->persist($translation);
+        $this->dm->flush();
+
+        $this->translationsManager->saveLog($translation->getId(), $locale, $message, TranslationLog::TRANSLATE, $this->user, TranslationLog::DOCUMENTS_GROUP);
+
+        $this->printResult(array(
+                'result'  => true,
+                'message' => $message,
+            )
+        );
+    }
+
+
     /**
      * @Route("/normalize/{projectId}", name="normalize")
      * @ Method("POST")
@@ -629,27 +778,11 @@ class DefaultController extends Controller
     }
 
     /**
-     * @return MessageRepository
-     */
-    protected function getMessageRepository()
-    {
-        return $this->em->getRepository('TranslationsBundle:Message');
-    }
-
-    /**
      * @return LanguageRepository
      */
     protected function getLanguageRepository()
     {
         return $this->em->getRepository('TranslationsBundle:Language');
-    }
-
-    /**
-     * @return KeyRepository
-     */
-    protected function getKeyRepository()
-    {
-        return $this->em->getRepository('TranslationsBundle:Key');
     }
 
     /**
@@ -659,6 +792,15 @@ class DefaultController extends Controller
     {
         return $this->dm->getRepository('TranslationsBundle:Translation');
     }
+
+    /**
+     * @return TranslatableDocumentRepository
+     */
+    protected function getTranslatableDocumentRepository()
+    {
+        return $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
+    }
+
 
 
 }

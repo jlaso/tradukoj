@@ -47,6 +47,11 @@ class File
      */
     protected $deleted;
 
+    /**
+     * @MongoDB\Boolean
+     */
+    protected $approved;
+
     public function __construct()
     {
         $this->locale    = null;
@@ -54,6 +59,8 @@ class File
         $this->createdAt = new \MongoTimestamp();
         $this->updatedAt = new \MongoTimestamp();
         $this->fileName  = null;
+        $this->deleted   = false;
+        $this->approved  = false;
     }
 
     /**
@@ -152,7 +159,21 @@ class File
         return $this->fileName;
     }
 
+    /**
+     * @param mixed $approved
+     */
+    public function setApproved($approved)
+    {
+        $this->approved = $approved;
+    }
 
+    /**
+     * @return mixed
+     */
+    public function getApproved()
+    {
+        return $this->approved;
+    }
 
 
 }
