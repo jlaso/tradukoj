@@ -105,18 +105,28 @@
                             </a>
 
                             <div class="nav-collapse">
-                                {#<ul class="nav">
+                                <ul class="nav">
                                     <li class="divider-vertical"></li>
-                                    <li><a href="#"><i class="icon-comments-alt"></i> <span class="label label-important">3</span></a>
+                                    <li>
+                                        <a href="#"><i class="icon-comments-alt"></i> <span class="label label-important">3</span></a>
                                     </li>
 
-                                    <li><a href="#"><i class="icon-envelope"></i> <span class="label label-important">3 new</span></a>
+                                    <li>
+                                        <a href="#"><i class="icon-envelope"></i> <span class="label label-important">3 new</span></a>
                                     </li>
 
-                                    <li><a href="#"><i class="icon-refresh"></i> <span class="label label-info">3 updates</span></a>
+                                    <li>
+                                        <a href="#"><i class="icon-refresh"></i> <span class="label label-info">3 updates</span></a>
                                     </li>
-
-                                </ul>#}
+                                    <li class="divider-vertical"></li>
+                                    <li class="active">
+                                        <a href="">{{ "catalogs"|trans|raw }}</a>
+                                    </li>
+                                    <li class="divider-vertical"></li>
+                                    <li>
+                                        <a href="">{{ "documents"|trans|raw }}</a>
+                                    </li>
+                                </ul>
                                 <ul class="nav pull-right">
                                     {#<li>
                                         <form class="navbar-search pull-left" action="">

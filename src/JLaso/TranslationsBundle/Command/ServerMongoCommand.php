@@ -13,9 +13,13 @@ namespace JLaso\TranslationsBundle\Command;
  *
  */
 
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ODM\MongoDB\DocumentManager;
+use JLaso\TranslationsBundle\Document\File;
+use JLaso\TranslationsBundle\Document\Repository\TranslatableDocumentRepository;
 use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
+use JLaso\TranslationsBundle\Document\TranslatableDocument;
 use JLaso\TranslationsBundle\Document\Translation;
 use JLaso\TranslationsBundle\Controller\RestController;
 use JLaso\TranslationsBundle\Entity\Project;
@@ -33,6 +37,10 @@ class ServerMongoCommand extends ContainerAwareCommand
 
     const CMD_PROJECTS            = 'project-index';
     const CMD_CATALOG_INDEX       = 'catalog-index';
+    const CMD_TRANSDOC_INDEX      = 'transdoc-index';
+    const CMD_TRANSDOC_SYNC       = 'transdoc-sync';
+    const CMD_TRANSDOC_GET        = 'transdoc-get';
+
 //    const CMD_KEY_INDEX           = 'key-index';
 //    const CMD_BUNDLE_INDEX        = 'bundle-index';
 //    const CMD_TRANSLATION_DETAILS = 'translation-details';
@@ -208,8 +216,9 @@ class ServerMongoCommand extends ContainerAwareCommand
                          */
                         $command  = isset($read['command']) ? $read['command'] : '';
                         $bundle   = isset($read['bundle']) ? $read['bundle'] : '';
+                        $fileName = isset($read['file_name']) ? $read['file_name'] : '';
                         $key      = isset($read['key']) ? $read['key'] : '';
-                        $language = isset($read['language']) ? $read['language'] : '';
+                        $locale   = isset($read['locale']) ? $read['locale'] : '';
                         $catalog  = isset($read['catalog']) ? $read['catalog'] : RestController::DEFAULT_CATALOG;
                         $message  = isset($read['message']) ? $read['message'] : '';
                         $comment  = isset($read['comment']) ? $read['comment'] : '';
@@ -227,6 +236,24 @@ class ServerMongoCommand extends ContainerAwareCommand
                                 break;
 
                             case self::CMD_CATALOG_INDEX:
+                                if($this->validateRequest($buf)){
+                                    $this->getCatalogIndex($this->project->getId());
+                                };
+                                break;
+
+                            case self::CMD_TRANSDOC_INDEX:
+                                if($this->validateRequest($buf)){
+                                    $this->getCatalogIndex($this->project->getId());
+                                };
+                                break;
+
+                            case self::CMD_TRANSDOC_SYNC:
+                                if($this->validateRequest($buf)){
+                                    $this->transDocSync($this->project->getId(), $bundle, $key, $locale, $fileName, $message, $lastModification);
+                                };
+                                break;
+
+                            case self::CMD_TRANSDOC_GET:
                                 if($this->validateRequest($buf)){
                                     $this->getCatalogIndex($this->project->getId());
                                 };
@@ -357,6 +384,100 @@ class ServerMongoCommand extends ContainerAwareCommand
         $catalogs = $this->getTranslationRepository()->getCatalogs($projectId);
 
         return $this->resultOk(array('catalogs' => $catalogs));
+    }
+
+    protected function getTransDocIndex($projectId)
+    {
+        /** @var TranslatableDocument[] $documents */
+        $documents = $this->getTranslatableDocumentRepository()->findBy(array('projectId' => intval($projectId)));
+
+        $index = array();
+
+        foreach($documents as $document){
+
+            $files = $document->getFiles();
+
+            foreach($files as $file){
+                $index[] = array(
+                    'bundle'    => $document->getBundle(),
+                    'key'       => $document->getKey(),
+                    'file'      => $document->getFilename(),
+                    'locale'    => $file->getLocale(),
+                    'updatedAt' => $file->getUpdatedAt()->format('c'),
+                );
+            }
+
+        }
+
+        return $this->resultOk(array('documents' => $index));
+    }
+
+    protected function transDocSync($projectId, $bundle, $key, $locale, $fileName, $message, \DateTime $lastModification)
+    {
+        $projectId = intval($projectId);
+
+        /** @var TranslatableDocument[] $documents */
+        $document = $this->getTranslatableDocumentRepository()->findOneBy(
+            array(
+                'projectId' => $projectId,
+                'bundle'    => $bundle,
+                'key'       => $key,
+            )
+        );
+
+        if(!$document){
+            $document = new TranslatableDocument();
+            $document->setProjectId($projectId);
+            $document->setBundle($bundle);
+            $document->setKey($key);
+        }
+
+        $files = $document->getFiles();
+
+        $found = false;
+
+        if($files){
+            foreach($files as $file){
+
+                if($file->getLocale() == $locale){
+                    $found = true;
+                    break;
+                }
+
+            }
+        }else{
+            $files = new ArrayCollection();
+        }
+
+        $updatedAt = $lastModification->getTimestamp();
+        if($found){
+            if($file->getUpdatedAt() < $updatedAt){
+                $file->setMessage($message);
+                $file->setUpdatedAt($updatedAt);
+            }else{
+                return $this->resultOk(
+                    array(
+                        'updated'   => false,
+                        'message'   => $file->getMessage(),
+                        'updatedAt' => $file->getUpdatedAt()->format('c'),
+                    )
+                );
+            }
+        }else{
+            $file = new File();
+            $file->setMessage($message);
+            $file->setUpdatedAt($updatedAt);
+            $file->setLocale($locale);
+            $file->setFileName($fileName);
+            $files->add($file);
+        }
+
+        $document->setFiles($files);
+
+        $this->dm->persist($document);
+        $this->dm->flush();
+
+        return $this->resultOk(array('updated' => true));
     }
 
     protected function sendMessage($msg, $compress = true)
@@ -721,6 +842,14 @@ class ServerMongoCommand extends ContainerAwareCommand
     protected function getTranslationRepository()
     {
         return $this->dm->getRepository('TranslationsBundle:Translation');
+    }
+
+    /**
+     * @return TranslatableDocumentRepository
+     */
+    protected function getTranslatableDocumentRepository()
+    {
+        return $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
     }
 
     /**

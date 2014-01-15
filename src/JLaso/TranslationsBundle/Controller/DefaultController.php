@@ -212,6 +212,7 @@ class DefaultController extends Controller
         $catalogs  = $translationRepository->getCatalogs($project->getId());
 
         return array(
+            'action'            => 'translations',
             'projects'          => $projects,
             'project'           => $project,
             'catalogs'          => $catalogs,
@@ -221,6 +222,52 @@ class DefaultController extends Controller
             'managed_languages' => $managedLocales,
             'trans_data'        => $transData,
             //'current_key'       => $currentKey,
+            'languages'         => $languages,
+            'permissions'       => $permission->getPermissions(),
+        );
+    }
+
+
+    /**
+     * @Route("/documents/{projectId}/{bundle}", name="documents")
+     * @Template()
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function documentssAction(Project $project, $bundle ='')
+    {
+        $this->init();
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+
+        if(!$permission instanceof Permission){
+            throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
+        }
+
+        /** @var TranslationRepository $translationRepository */
+        $translationRepository = $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
+
+        $documents = $translationRepository->findAll(
+            array(
+                'projectId' => $project->getId(),
+                '' => $bundle
+            )
+        );
+
+        $managedLocales = explode(',',$project->getManagedLocales());
+        $transData = array();
+
+        $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+        $projects  = $this->translationsManager->getProjectsForUser($this->user);
+        $catalogs  = $translationRepository->getCatalogs($project->getId());
+
+        return array(
+            'action'            => 'documents',
+            'projects'          => $projects,
+            'project'           => $project,
+            'catalogs'          => $catalogs,
+            'keys'              => $keysAssoc,
+            'current_catalog'   => $catalog,
+            'managed_languages' => $managedLocales,
+            'trans_data'        => $transData,
             'languages'         => $languages,
             'permissions'       => $permission->getPermissions(),
         );

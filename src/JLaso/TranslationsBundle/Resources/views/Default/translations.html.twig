@@ -6,6 +6,10 @@
         input.transparent{
             background: transparent;
         }
+        #bundle-keys{
+            height: 400px;
+            overflow: scroll;
+        }
     </style>
 {% endblock stylesheets %}
 
@@ -256,7 +260,7 @@
             });
 
             $("#bundle-keys").jstree({
-                "plugins" : [ "themes", "html_data" ]
+                "plugins" : [ "themes", "html_data", "search" ]
             });
 
             var currentNode = null;
@@ -264,7 +268,7 @@
                 e.preventDefault();
                 var key = $(this).attr('key'); //.replace(" ","-");
                 if(!key) {
-                    $("#bundle-keys").jstree("open_node",$(this));
+                    $("#bundle-keys").jstree("open_node", $(this));
                     return false;
                 }
                 $('.key-tree-node').removeClass('btn btn-primary btn-danger');
@@ -324,10 +328,20 @@
                 })
             });
 
+//            var to = false;
+//            $('#plugins4_q').keyup(function () {
+//                if(to) { clearTimeout(to); }
+//                to = setTimeout(function () {
+//                    var v = $('#plugins4_q').val();
+//                    $('#plugins4').jstree(true).search(v);
+//                }, 250);
+//            });
+
             $('#search').click(function(e){
                 e.preventDefault();
                 var search = $('input[name="search"]').val();
                 console.log('searching '+search+' ...');
+                $("#bundle-keys").jstree("search", search);
             });
 
         });
