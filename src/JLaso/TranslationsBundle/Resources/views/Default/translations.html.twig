@@ -47,7 +47,7 @@
             z-index: 1051;
         }
         #ajax_loader{
-            background: url(/bundles/translations/img/220.GIF) no-repeat scroll center center rgba(255, 255, 255, 0.75);
+            background: url(/bundles/translations/img/220.GIF) no-repeat scroll center center rgba(255, 255, 255, 0.25);
             /*background: url(/bundles/translations/img/465.GIF) no-repeat scroll center center rgba(255, 255, 255, 0.9);*/
             display: none;
             height: 99%;
@@ -345,11 +345,11 @@
         $(function(){
 
             $(document).ajaxStart(function(){
-                $('#ajax_loader').show();
+                $('#ajax_loader').fadeIn();
             });
 
             $(document).ajaxStop(function(){
-                $('#ajax_loader').hide();
+                $('#ajax_loader').fadeOut();
             });
 
             $('#wysiwyg').jqte();
@@ -431,7 +431,7 @@
                 $('.key-tree-node').removeClass('btn btn-primary btn-danger');
                 currentNode = $(this);
                 $(currentNode).addClass('btn btn-primary');
-                $('#translations-group').html('Loading...');
+                $('#translations-group').slideUp("slow").html('Loading...').fadeIn();
 
                 {% if action=='documents' %}
                     $.ajax({
