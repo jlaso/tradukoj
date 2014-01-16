@@ -679,13 +679,15 @@ class DefaultController extends Controller
 
 
     /**
-     * @Route("/normalize/{projectId}", name="normalize")
+     * @Route("/normalize/{projectId}/{erase}", name="normalize")
      * @ Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function normalizeAction(Request $request, Project $project)
+    public function normalizeAction(Request $request, Project $project, $erase = '')
     {
         $this->init();
+
+        // completar los documentos  a los que le falten subdocumentos de traducciones
 
         //$this->translationsManager->userHasProject($this->user, $project);
         $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
@@ -718,6 +720,21 @@ class DefaultController extends Controller
         }
 
         $this->dm->flush();
+
+        if($erase === 'erase-duplicates')
+        {
+            // eliminar los documentos que no tengan translation en ingles (para borrar duplicados)
+
+            foreach($translations as $translation){
+                $transArray = $translation->getTranslations();
+                if(!$transArray['en']['message']){
+                    print 'erasing ... ' . $translation->getId() . '<br/>';
+                    $this->dm->remove($translation);
+                }
+            }
+
+            $this->dm->flush();
+        }
 
         return $this->printResult(array(
                 'result' => true,
