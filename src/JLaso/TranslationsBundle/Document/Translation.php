@@ -32,6 +32,17 @@ class Translation
      * @MongoDB\String
      */
     protected $catalog;
+ /**
+     *
+     * @MongoDB\String
+     */
+    protected $bundle;
+
+    /**
+     *
+     * @MongoDB\String
+     */
+    protected $fileName;
 
     /**
      *
@@ -270,6 +281,38 @@ class Translation
     public function getComment()
     {
         return $this->comment;
+    }
+
+    /**
+     * @param mixed $bundle
+     */
+    public function setBundle($bundle)
+    {
+        $this->bundle = $bundle;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBundle()
+    {
+        return $this->bundle;
+    }
+
+    /**
+     * @param mixed $fileName
+     */
+    public function setFileName($fileName)
+    {
+        $this->fileName = $fileName;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFileName()
+    {
+        return $this->fileName;
     }
 
     public static function genTranslationItem($message, $approved = false, $updatedAt = null)
