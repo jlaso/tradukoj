@@ -38,7 +38,7 @@ class HomeController extends Controller
 {
 
     /**
-     * @Route("/timeline", name="home")
+     * @Route("/timeline", name="timeline")
      */
     public function indexAction()
     {

@@ -857,7 +857,9 @@ class ServerMongoCommand extends ContainerAwareCommand
      * $data[key][locale]
      * {
      *   message,
-     *   updatedAt
+     *   updatedAt,
+     *   bundle,
+     *   fileName,
      * }
      *
      */
@@ -883,6 +885,7 @@ class ServerMongoCommand extends ContainerAwareCommand
         foreach($messages as $message){
 
             $key = $message->getKey();
+            $bundle = '';
 
             $translations = $message->getTranslations();
             foreach($translations as $locale=>$translation){
@@ -895,15 +898,21 @@ class ServerMongoCommand extends ContainerAwareCommand
 
                     if($message->getUpdatedAt() < $updatedAt){
 
-                        $result[$key][$locale] = $current['updatedAt'];
-                        $translation['message']   = $current['message'];
-                        $translation['updatedAt'] = $updatedAt;
+                        $result[$key][$locale]    = $current['updatedAt'];
+                        $translations[$locale]['message']   = $current['message'];
+                        $translations[$locale]['updatedAt'] = $updatedAt;
 
                     }
 
+                    $translations[$locale]['fileName']  = $current['fileName'];
+
+                    $bundle = isset($current['bundle']) ? $current['bundle'] : $bundle;
                     unset($data[$key][$locale]);
 
                 }
+            }
+            if($bundle){
+                $message->setBundle($bundle);
             }
             $message->setTranslations($translations);
 
@@ -935,6 +944,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                         'message'   => $message['message'],
                         'updatedAt' => new \DateTime($message['updatedAt']),
                         'approved'  => true,
+                        'fileName'  => $message['fileName'],
                     );
 
                 }
@@ -947,6 +957,8 @@ class ServerMongoCommand extends ContainerAwareCommand
         }
 
         $this->dm->flush();
+
+        // normalize ?
 
         return $this->resultOk($result);
     }
@@ -979,13 +991,20 @@ class ServerMongoCommand extends ContainerAwareCommand
         }
         echo sprintf("found %d in translations\n", count($messages));
 
-        $data = array();
+        $data    = array();
+        $bundles = array();
         foreach($messages as $message){
-            $key = $message->getKey();
-            $data[$key] = $message->getTranslations();
+            $key           = $message->getKey();
+            $data[$key]    = $message->getTranslations();
+            $bundles[$key] = $message->getBundle();
         }
 
-        return $this->resultOk(array('data' => $data));
+        return $this->resultOk(
+            array(
+                'data'    => $data,
+                'bundles' => $bundles,
+            )
+        );
     }
 
     /**

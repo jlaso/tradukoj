@@ -32,17 +32,12 @@ class Translation
      * @MongoDB\String
      */
     protected $catalog;
- /**
-     *
-     * @MongoDB\String
-     */
-    protected $bundle;
 
     /**
      *
      * @MongoDB\String
      */
-    protected $fileName;
+    protected $bundle;
 
     /**
      *
@@ -63,6 +58,7 @@ class Translation
      *   message,
      *   updatedAt,
      *   approved,
+     *   filename,
      * }
      * @MongoDB\Hash
      */
@@ -108,6 +104,7 @@ class Translation
         $this->imageMaps            = null;
         $this->catalog              = null;
         $this->deleted              = false;
+        $this->bundle               = null;
     }
 
     /**
@@ -299,28 +296,13 @@ class Translation
         return $this->bundle;
     }
 
-    /**
-     * @param mixed $fileName
-     */
-    public function setFileName($fileName)
-    {
-        $this->fileName = $fileName;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getFileName()
-    {
-        return $this->fileName;
-    }
-
-    public static function genTranslationItem($message, $approved = false, $updatedAt = null)
+    public static function genTranslationItem($message, $approved = false, $updatedAt = null, $fileName = '')
     {
         return array(
             'message'   => $message,
             'approved'  => $approved,
             'updatedAt' => $updatedAt ? clone updatedAt : new \DateTime(),
+            'fileName'  => $fileName,
         );
     }
 
