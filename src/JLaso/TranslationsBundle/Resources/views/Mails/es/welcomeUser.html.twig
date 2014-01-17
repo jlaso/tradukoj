@@ -1,1 +1,18 @@
-Welcome {{ user.email }}
+{% extends 'TranslationsBundle:Mails:layoutEmail.html.twig' %}
+
+{% block content %}
+
+    <h3>Hi, {{ user.email }}</h3>
+    <p class="lead">
+        Welcome to translations by JLaso for symfony2 projects
+    </p>
+    <p>
+        We hope that this application meets your expectations.
+        Please, feel free to send us inquiries and improvements.
+    </p>
+    <!-- Callout Panel -->
+    <p class="callout">
+        Now, you can create a project and install TranslationsApiBundle to synchronize translations. <a href="https://bitbucket.org/jlaso/translations-apibundle">Here the bundle! &raquo;</a>
+    </p><!-- /Callout Panel -->
+
+{% endblock content %}
