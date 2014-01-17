@@ -57,6 +57,10 @@
             width: 100%;
             z-index: 1060;
         }
+        a.only.active code{
+            background: #DD1144;
+            color: antiquewhite;
+        }
     </style>
 {% endblock stylesheets %}
 
@@ -168,6 +172,26 @@
             <a href="#" class="btn btn-primary" id="search"><i class="icon icon-search"></i></a>
         </div>
     </div>
+
+    <div class="row-fluid">
+
+      {% spaceless %}
+        <span class="badge">{{ "show_only"|trans|raw }}:</span>
+        &nbsp;
+        <a href="#" class="only only-disapproved>
+            <code><icon icon-thumbs-down"></code>
+        </a>
+        {% for locale in managed_languages %}
+            &nbsp;
+            <a href="#" class="only only-locale" locale="{{ locale }}">
+                <code>{{ locale }}</code>
+            </a>
+        {% endfor %}
+      {% endspaceless %}
+
+    </div>
+
+    <div class="row-fluid"></div>
 
     <div class="row-fluid">
         <div id="bundle-keys" class="span12">
@@ -530,6 +554,14 @@
                 console.log('searching '+search+' ...');
                 $("#bundle-keys").jstree("search", search);
             });
+
+
+            {# filtros only #}
+            $('.only-locale').click(function(e){
+                e.preventDefault();
+                var locale = $(this).attr("locale");
+                $(this).toggleClass('active');
+            })
 
         });
     </script>
