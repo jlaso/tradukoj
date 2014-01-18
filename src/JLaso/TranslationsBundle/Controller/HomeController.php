@@ -38,9 +38,18 @@ class HomeController extends Controller
 {
 
     /**
-     * @Route("/timeline", name="timeline")
+     * @Route("/", name="home")
+     * @Template()
      */
     public function indexAction()
+    {
+        return array();
+    }
+
+    /**
+     * @Route("/timeline", name="timeline")
+     */
+    public function timelineAction()
     {
         print <<<EOD
 
