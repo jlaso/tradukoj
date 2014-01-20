@@ -8,8 +8,8 @@
 <title>{% block title %}Translations by JLaso for symfony2 projects{% endblock %}</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Translation interface that allows developers to concentrate on symfony programming tasks and leave the translations to professionals">
+<meta name="keywords" content="translations,symfony,symfony2,php,projects,jlaso,bundle"/>
 <meta name="author" content="Joseluis Laso">
-
 
 <link href="{{ asset('bundles/translations/bootstrap/css/bootstrap.css') }}" type="text/css" rel="stylesheet">
 {#<link href="{{ asset('bundles/translations/resource/css/style.css') }}" type="text/css" rel="stylesheet">#}
@@ -46,7 +46,7 @@
                 <span class="icon-bar"></span>
             </button>
             <a class="brand" href="{{ path('home') }}">
-                <small>Translations by JLaso for symfony2 projects</small>
+                Translations by JLaso&nbsp;<small class="media400">for symfony2 projects</small>
             </a>
 
             <div class="nav-collapse collapse ">
@@ -80,7 +80,7 @@
         <div class="container">
             <div class="row">
                 <div class="span12 text-center">
-                    <h1 class="">WELLCOME TO TRANSLATIONS</h1>
+                    <h1 class="">WELCOME TO TRANSLATIONS</h1>
 
                     <p class="lead">
 
@@ -224,7 +224,7 @@
 
         <div class="row">
             <div class="span12 page-header text-center color-white">
-                <h3 style="padding-top:250px;">DO NOT FEEL ALONE</h3>
+                <h3 style="padding-top:250px;">YOU ARE NOT ALONE DEVELOPING!</h3>
             </div>
         </div>
 
@@ -232,7 +232,27 @@
             <div class="span12 text-center color-white">
                 <p>© 2014 Joseluis Laso <a class="" href="http://www.joseluislaso.es">www.joseluislaso.es</a></p>
                 <br/>
-                <small>Pictures from <a class="" href="http://www.sxc.hu">www.sxc.hu</a></small>
+                <p><small>Pictures from <a class="" href="http://www.sxc.hu">www.sxc.hu</a></small></p>
+                <br/>
+                <p>Do you want to collaborate?, send an e-mail to <a href="mailto:admin@translations.com.es">admin(@)translations.com.es</a></p>
+                <br/>
+                <p>
+                <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                    <input type="hidden" name="cmd" value="_donations">
+                    <input type="hidden" name="business" value="wld1373@gmail.com">
+                    <input type="hidden" name="lc" value="ES">
+                    <input type="hidden" name="item_name" value="Translations by JLaso">
+                    <input type="hidden" name="item_number" value="translations.com.es">
+                    <input type="hidden" name="no_note" value="0">
+                    <input type="hidden" name="currency_code" value="USD">
+                    <input type="hidden" name="bn" value="PP-DonationsBF:btn_donate_SM.gif:NonHostedGuest">
+                    <input type="image" class="paypal-donate" src="{{ asset('/bundles/translations/img/btn_donate_SM.gif') }}" border="0"
+                           name="submit" alt="PayPal - The safer, easier way to pay online!">
+                    {#<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0"
+                           name="submit" alt="PayPal - The safer, easier way to pay online!">#}
+                    <img alt="" border="0" src="https://www.paypalobjects.com/es_XC/i/scr/pixel.gif" width="1" height="1">
+                </form>
+                </p>
             </div>
         </div>
 

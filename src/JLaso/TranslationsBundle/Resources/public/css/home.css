@@ -305,3 +305,16 @@ footer {
         padding-top: 100px !important;
     }
 }
+
+input.paypal-donate{
+    height: 21px;
+    width: 70px;
+}
+
+@media screen and (max-width: 525px) {
+
+    .media400{
+        display: none;
+    }
+
+}

@@ -75,17 +75,38 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/translations", name="user_index")
+     * @Route("/translations/{projectId}", name="user_index")
      * @Template()
      */
-    public function userIndexAction()
+    public function userIndexAction($projectId = 0)
     {
         $this->init();
 
-        $projects = $this->translationsManager->getProjectsForUser($this->user);
+        $projects  = $this->translationsManager->getProjectsForUser($this->user);
+        $project   = null;
+        $langInfo  = array();
+        $keysInfo  = array();
+
+        foreach($projects as $prj){
+            $prjId = $prj->getId();
+            if(($projectId) && ($projectId == $prjId)){
+                $project = $prj;
+            }
+            $managedLocales = explode(',',$prj->getManagedLocales());
+            $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+            foreach($managedLocales as $locale){
+                $langInfo[$prjId][$locale] = array(
+                    'keys' => 10,
+                    'info' => $languages[$locale],
+                );
+            }
+        }
 
         return array(
-            'projects' => $projects,
+            'action'    => 'user-index',
+            'projects'  => $projects,
+            'project'   => $project,
+            'languages' => $langInfo,
         );
     }
 

@@ -125,6 +125,7 @@
                                         </a>
                                     </li>
                                     <li class="divider-vertical"></li>
+                                    {% if project is not null %}
                                     <li class="{{ action=="catalogs" ? "active" : "" }}">
                                         <a href="{{ path("translations", {"projectId": project.id}) }}">{{ "catalogs"|trans|raw }}</a>
                                     </li>
@@ -132,6 +133,7 @@
                                     <li class="{{ action=="documents" ? "active" : "" }}">
                                         <a href="{{ path("documents", {"projectId": project.id}) }}">{{ "documents"|trans|raw }}</a>
                                     </li>
+                                    {% endif %}
                                 </ul>
                                 <ul class="nav pull-right">
                                     {#<li>
@@ -172,7 +174,7 @@
                                                                         <a href="#"><i class="icon-cogs"></i> Settings Account</a>
                                                                         <a href="#"><i class="icon-cogs"></i> Settings Privacy</a>
                                                                     </div>#}
-                                                                    {% if projects is defined %}
+                                                                    {% if projects is defined and project is not null %}
                                                                     <div class="span12">
                                                                         <h4>{{ "label.projects"|trans|raw }}</h4>
                                                                         {% for current in projects %}
