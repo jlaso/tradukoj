@@ -499,6 +499,7 @@
                                 $(currentNode).removeClass('btn-primary').addClass('btn-danger');
                                 $('#translations-group').html(data.html);
                                 currentKey = data.key;
+                                $('#translations-group .wysiwyg').jqte();
                             }else{
                                 $('.key-tree-node').removeClass('btn btn-primary');
                                 logEvent('error: '+data.reason);
