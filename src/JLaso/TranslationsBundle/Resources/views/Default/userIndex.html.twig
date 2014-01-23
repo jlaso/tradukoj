@@ -79,16 +79,38 @@
 {% block content %}
     <div class="container">
 
-        <div class="row">
+        {% if permissions %}
+        <div class="row-fluid">
+            <div class="span12 well">
+                <div class="accordion" id="usersAccordion">
+                    <div class="accordion-group">
+                        <div class="accordion-heading">
+                            <a style="text-align: left;text-decoration: none" class="accordion-toggle btn btn-danger"
+                               data-toggle="collapse" data-parent="#usersInfo" href="#usersAccordion">
+                                <i class="icon-eye-open"></i> {{ "Users"|trans|raw }} <i class="icon-minus pull-right"></i>
+                            </a>
+                        </div>
+                        <div id="usersInfo" class="accordion-body collapse in">
+                            <div class="accordion-inner" style="background-color: #ffffff;">
 
-
-
+                                <div class="row-fluid">
+                                    <div class="span12">
+{{ permissions|ld }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+        {% endif %}
 
         <div class="row">
 
             <div class="span4 offset4">
 
+                adios
 
             </div>
 

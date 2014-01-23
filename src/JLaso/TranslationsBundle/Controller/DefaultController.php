@@ -102,11 +102,16 @@ class DefaultController extends Controller
             }
         }
 
+        /** @var User $user */
+        $user = $this->getUser();
+        $permissions = $user->getPermission();
+
         return array(
-            'action'    => 'user-index',
-            'projects'  => $projects,
-            'project'   => $project,
-            'languages' => $langInfo,
+            'action'      => 'user-index',
+            'projects'    => $projects,
+            'project'     => $project,
+            'languages'   => $langInfo,
+            'permissions' => $permissions,
         );
     }
 
