@@ -7,24 +7,30 @@ namespace JLaso\TranslationsBundle\Service\Manager;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
-use JLaso\TranslationsBundle\Entity\Message;
 use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
-use JLaso\TranslationsBundle\Entity\Repository\MessageRepository;
 use JLaso\TranslationsBundle\Entity\Repository\PermissionRepository;
 use JLaso\TranslationsBundle\Entity\TranslationLog;
 use JLaso\TranslationsBundle\Entity\User;
 use JLaso\TranslationsBundle\Document\Translation;
+use Doctrine\ODM\MongoDB\DocumentManager;
+use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
+use JLaso\TranslationsBundle\Entity\Repository\TranslationLogRepository;
+
+
 
 class TranslationsManager
 {
 
     /** @var  EntityManagerInterface */
     protected $em;
+    /** @var  DocumentManager */
+    protected $dm;
 
-    function __construct(EntityManagerInterface $em)
+    function __construct(EntityManagerInterface $em, DocumentManager $dm)
     {
         $this->em = $em;
+        $this->dm = $dm;
     }
 
     /**
@@ -76,6 +82,87 @@ class TranslationsManager
     }
 
     /**
+     * @param Project $project
+     * @param         $catalog
+     * @param         $key
+     *
+     * @return Translation
+     */
+    public function getTranslation(Project $project, $catalog, $key)
+    {
+        $translation = $this->getTranslationRepository()->getTranslation($project->getId(), $catalog, $key);
+        if(!$translation){
+            return null;
+        }
+        $managedLocales = explode(',',$project->getManagedLocales());
+
+        return $this->normalizeTranslation($translation, $managedLocales);
+    }
+
+    /**
+     * Normalize the translations array info, creating locales and deleting if case
+     *
+     * @param Translation $translation
+     * @param array       $managedLocales
+     * @param bool        $deletesIfNotExistsLocaleInManaged
+     *
+     * @return Translation
+     */
+    protected function normalizeTranslation(Translation $translation, $managedLocales = array(), $deletesIfNotExistsLocaleInManaged = false)
+    {
+        $transArray = $translation->getTranslations();
+        // normalize the translation array
+        foreach($managedLocales as $locale){
+            if(!isset($transArray[$locale])){
+                $transArray[$locale] = Translation::genTranslationItem('');
+            }
+        }
+        // deletes message if locale do not exists yet in managed locales
+        if($deletesIfNotExistsLocaleInManaged){
+            foreach($transArray as $locale=>$data){
+                if(!in_array($locale, $managedLocales)){
+                    unset($transArray[$locale]);
+                }
+            }
+        }
+        $translation->setTranslations($transArray);
+
+        return $translation;
+    }
+
+    /**
+     * saves the message into $translation[$key][$locale][$message] and normalize rest of translations of this key
+     *
+     * @param Project $project
+     * @param         $catalog
+     * @param         $key
+     * @param         $locale
+     * @param         $message
+     *
+     * @return Translation
+     */
+    public function putTranslation(Project $project, $catalog, $key, $locale, $message)
+    {
+        // first get the record
+        $translation = $this->getTranslationRepository()->getTranslation($project->getId(), $catalog, $key);
+        if(!$translation){
+            return null;
+        }
+        $managedLocales = explode(',',$project->getManagedLocales());
+        $translation = $this->normalizeTranslation($translation, $managedLocales);
+        // now normalize (creates items for managed locales that not exists)
+        $transArray = $translation->getTranslations();
+        $transArray[$locale] = array_merge(
+            $transArray[$locale],
+            Translation::genTranslationItem($message)
+        );
+        $translation->setTranslations($transArray);
+        // last, return
+
+        return $translation;
+    }
+
+    /**
      * @param User $user
      *
      * @return Project[]
@@ -124,14 +211,6 @@ class TranslationsManager
         $this->em->flush();
     }
 
-    public function getMessagesForBundleCatalogAndLocale(Project $project, $bundle, $catalog, $locale)
-    {
-        /** @var MessageRepository $messageRepository */
-        $messageRepository = $this->em->getRepository('TranslationsBundle:Message');
-
-        return $messageRepository->findAllMessagesOfProjectBundleCatalogAndLocale($project, $bundle, $catalog, $locale);
-    }
-
     /**
      * @return PermissionRepository
      */
@@ -146,6 +225,14 @@ class TranslationsManager
     protected function getTranslationLogRepository()
     {
         return $this->em->getRepository('TranslationsBundle:TranslationLog');
+    }
+
+    /**
+     * @return TranslationRepository
+     */
+    protected function getTranslationRepository()
+    {
+        return $this->dm->getRepository('TranslationsBundle:Translation');
     }
 
 

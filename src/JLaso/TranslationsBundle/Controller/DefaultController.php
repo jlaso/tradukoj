@@ -75,7 +75,7 @@ class DefaultController extends Controller
     }
 
     /**
-     * @Route("/translations/{projectId}", name="user_index")
+     * @Route("/translations", name="user_index")
      * @Template()
      */
     public function userIndexAction($projectId = 0)
@@ -361,15 +361,10 @@ class DefaultController extends Controller
             );
         };
 
-        $managedLocales = explode(',',$project->getManagedLocales());
-        /** @var DocumentManager $dm */
-        $dm = $this->container->get('doctrine.odm.mongodb.document_manager');
-        /** @var TranslationRepository $translationRepository */
-        $translationRepository = $dm->getRepository('TranslationsBundle:Translation');
-        /** @var Translation $document */
-        $translation = $translationRepository->getMessagesDocument($projectId, $catalog, $key);
-        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
-        $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+        $managedLocales = explode(',', $project->getManagedLocales());
+        $translation    = $this->translationsManager->getTranslation($project, $catalog, $key);
+        $permission     = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+        $languages      = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
 
         $html = $this->renderView("TranslationsBundle:Default:messages.html.twig",array(
                 'translation'     => $translation,
@@ -593,13 +588,8 @@ class DefaultController extends Controller
         if(!$catalog || !$locale || !$key || !$message){
             die('validation exception, request content = ' . $request->getContent());
         }
-        /** @var Translation $translation */
-        $translation = $this->getTranslationRepository()->findOneBy(array(
-                'projectId' => $project->getId(),
-                'catalog'   => $catalog,
-                'key'       => $key,
-            )
-        );
+
+        $translation = $this->translationsManager->putTranslation($project, $catalog, $key, $locale, $message);
         if(!$translation){
             $this->printResult(array(
                     'result' => false,
@@ -607,18 +597,6 @@ class DefaultController extends Controller
                 )
             );
         }
-        $translations = $translation->getTranslations();
-        if(!isset($translations[$locale])){
-            $translations[$locale] = array(
-                'message' => '',
-                'approved' => false,
-                'updatedAt' => null,
-            );
-        }
-        $translations[$locale]['message'] = $message;
-        $translations[$locale]['updatedAt'] = new \DateTime();
-        $translation->setTranslations($translations);
-
         $this->dm->persist($translation);
         $this->dm->flush();
 

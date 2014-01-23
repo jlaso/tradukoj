@@ -69,7 +69,14 @@ class TranslationRepository extends DocumentRepository
         return $keys;
     }
 
-    public function getMessagesDocument($projectId, $catalog, $key)
+    /**
+     * @param $projectId
+     * @param $catalog
+     * @param $key
+     *
+     * @return Translation
+     */
+    public function getTranslation($projectId, $catalog, $key)
     {
 //        /** @var Translation $result */
 //        $query = $this
@@ -87,8 +94,8 @@ class TranslationRepository extends DocumentRepository
 
         $result = $this
             ->findOneBy(array(
-                    //'projectId' => intval($projectId),
-                    //'catalog'   => trim($catalog),
+                    'projectId' => intval($projectId),
+                    'catalog'   => trim($catalog),
                     'key'       => trim($key),
                 )
             );

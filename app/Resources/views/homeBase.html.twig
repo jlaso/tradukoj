@@ -64,7 +64,11 @@
                         <a href="#foot-sec">Footer</a>
                     </li>
                     <li>
-                        <a href="{{ path('user_login') }}">Login</a>
+                        {% if app.user %}
+                            <a href="{{ url('user_index') }}">My area</a>
+                        {% else %}
+                            <a href="{{ url('user_login') }}">Login</a>
+                        {% endif %}
                     </li>
                 </ul>
             </div>

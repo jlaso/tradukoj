@@ -8,6 +8,7 @@
 
         <service id="jlaso.translations_manager" class="JLaso\TranslationsBundle\Service\Manager\TranslationsManager" >
             <argument type="service" id="doctrine.orm.entity_manager" />
+            <argument type="service" id="doctrine.odm.mongodb.document_manager" />
         </service>
 
     </services>
