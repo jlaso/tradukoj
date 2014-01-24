@@ -199,7 +199,7 @@ class DefaultController extends Controller
 //            );
 //        }
         //$keyRepository = $this->getKeyRepository();
-        //$bundles       = $keyRepository->findAllBundlesForProject($project);
+        $bundles         = $this->translationsManager->getAllBundlesForProject($project);
         //$keys          = $keyRepository->findAllKeysForProjectBundleAndCatalog($project, $bundle, $catalog);
         $keys = $translationRepository->getKeys($project->getId(), $catalog);
         $keysAssoc = array();
@@ -249,6 +249,65 @@ class DefaultController extends Controller
             //'current_key'       => $currentKey,
             'languages'         => $languages,
             'permissions'       => $permission->getPermissions(),
+            'bundles'           => $bundles,
+        );
+    }
+
+
+    /**
+     * @Route("/translations/{projectId}/{catalog}/new-key", name="translations_new_key")
+     * @Template()
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function newKeyAction(Request $request, Project $project, $catalog)
+    {
+        $this->init();
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+        if(!$permission instanceof Permission){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => $this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'),
+                )
+            );
+        }
+        $bundle = $request->get('bundle');
+        $keyName = $request->get('key');
+        if(!$bundle || !$keyName){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => $this->translator->trans('translations.new_key_dialog.error.not_enough_parameters'),
+                )
+            );
+        }
+        $translationRepository = $this->getTranslationRepository();
+
+        $key = $translationRepository->findOneBy(array(
+                'projectId' => $project->getId(),
+                'catalog'   => $catalog,
+                'key'       => $keyName,
+            )
+        );
+        if($key){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => $this->translator->trans('translations.new_key_dialog.error.key_already_exists', array('%key%' => $keyName)),
+                )
+            );
+        }
+        $managedLocales = explode(',',$project->getManagedLocales());
+
+        $translation = new Translation();
+        $translation->setProjectId($project->getId());
+        $translation->setCatalog($catalog);
+        $translation->setBundle($bundle);
+        $translation->setKey($keyName);
+        $translation = $this->translationsManager->normalizeTranslation($translation, $managedLocales);
+        $this->dm->persist($translation);
+        $this->dm->flush($translation);
+
+        return $this->printResult(array(
+                'result'            => true,
+            )
         );
     }
 

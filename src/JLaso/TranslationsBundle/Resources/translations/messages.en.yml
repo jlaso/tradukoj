@@ -7,23 +7,7 @@ button:
     save: Save
     approve: Approve
     disapprove: Disapprove
-general:
-    test: prueba
-    test2:
-        t1: t1
-        t2: t2
-    test3: test3
-normal:
-    definition: 'File definition'
-root: root
-index:
-    header:
-        subheader:
-            body:
-                hmtl: html
-        subheader2:
-            body2: body2
-    header2: header2
+
 label:
     actions: Actions
     comment: Comment

@@ -22,7 +22,8 @@ parameters:
     secret:            asThisfTokenIsNoq1tSoSecretChangeIte
 
     jlaso_translations_api_access:
-        project_id: 1 #translations
-        key:  1234
-        secret: 1234
-        url: http://translations.com.dev/app_dev.php/api/
+        project_id: 2
+        key:  translations.com.es
+        secret: 3ejduAS2i
+        url: https://translations.com.es/api/
+        managed_locales: ['es', 'en']

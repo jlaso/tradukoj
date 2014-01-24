@@ -78,10 +78,7 @@ swiftmailer:
     auth_mode:  %mailer_auth_mode%
     #spool:      { type: memory }
 
-jlaso_translations:
+translations_api:
     default_locale: %locale%
-    managed_locales: ['es', 'en', 'fr', 'ca']
+    managed_locales: ['es', 'en']
 
-#lexik_translation:
-#    fallback_locale: en      # (required) default locale to use
-#    managed_locales: [en]    # (required) locales that the bundle have to manage

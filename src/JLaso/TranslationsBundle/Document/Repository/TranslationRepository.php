@@ -23,6 +23,21 @@ class TranslationRepository extends DocumentRepository
         return array_keys($catalogs);
     }
 
+    public function getBundles($projectId)
+    {
+        $dm = $this->getDocumentManager();
+
+        /** @var Translation[] $result */
+        $result = $dm->getRepository('TranslationsBundle:Translation')->findBy(array('projectId'=>$projectId));
+
+        $bundles = array();
+        foreach($result as $item){
+            $bundles[$item->getBundle()] = null;
+        }
+
+        return array_keys($bundles);
+    }
+
     public function getKeys($projectId, $catalog)
     {
         $dm = $this->getDocumentManager();

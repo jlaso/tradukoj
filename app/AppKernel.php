@@ -22,6 +22,7 @@ class AppKernel extends Kernel
             new JMS\DiExtraBundle\JMSDiExtraBundle($this),
             new JMS\SecurityExtraBundle\JMSSecurityExtraBundle(),
             new JLaso\TranslationsBundle\TranslationsBundle(),
+            // translations api bundle
             new JLaso\TranslationsApiBundle\TranslationsApiBundle(),
         );
 

@@ -101,6 +101,22 @@ class SecurityController extends BaseController
     }
 
     /**
+     * @param $access_token
+     *
+     * @return mixed
+     */
+    protected function getDataFromGitHub($access_token)
+    {
+        $ch = curl_init('https://api.github.com/user?access_token=' . $access_token);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'translations.com.es');
+        $response = curl_exec($ch);
+        //print_r($response);
+
+        return json_decode($response, true);
+    }
+
+    /**
      * @Route("/user/do-github-login", name="do_github_login")
      */
     public function doGithubLoginAction()
@@ -124,8 +140,45 @@ class SecurityController extends BaseController
             sleep(1);
             if(isset($out[1])){
                 $access_token = $out[1];
-                $response     = file_get_contents('https://api.github.com/user?access_token=' . $access_token);
-                $data         = json_decode($response, true);
+                /**
+                 * {
+                "login": "jlaso",
+                "id": 1332197,
+                "avatar_url": "https://gravatar.com/avatar/05294fb8badbde3c6999bae2c0024165?d=https%3A%2F%2Fidenticons.github.com%2Fce92b9ab89941caa47947924ac110d1f.png&r=x",
+                "gravatar_id": "05294fb8badbde3c6999bae2c0024165",
+                "url": "https://api.github.com/users/jlaso",
+                "html_url": "https://github.com/jlaso",
+                "followers_url": "https://api.github.com/users/jlaso/followers",
+                "following_url": "https://api.github.com/users/jlaso/following{/other_user}",
+                "gists_url": "https://api.github.com/users/jlaso/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/jlaso/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/jlaso/subscriptions",
+                "organizations_url": "https://api.github.com/users/jlaso/orgs",
+                "repos_url": "https://api.github.com/users/jlaso/repos",
+                "events_url": "https://api.github.com/users/jlaso/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/jlaso/received_events",
+                "type": "User",
+                "site_admin": false,
+                "name": "Joseluis Laso",
+                "company": "Joseluislaso",
+                "blog": "http://www.joseluislaso.es",
+                "location": "Valencia",
+                "email": "wld1373@gmail.com",
+                "hireable": true,
+                "bio": "Web developper apasionate, with PHP, jQuery, jQuerymobile, Symfony, Doctrine, Slim, CSS3, HTML5 ...",
+                "public_repos": 57,
+                "public_gists": 2,
+                "followers": 2,
+                "following": 16,
+                "created_at": "2012-01-15T20:51:17Z",
+                "updated_at": "2014-01-24T13:24:19Z"
+                }
+                 */
+                $data         = $this->getDataFromGitHub($access_token);
+                if(!count($data)){
+                    $this->addNoticeFlash('error.github_connect_not_possible');
+                    $this->redirect($this->generateUrl('user_login'));
+                }
                 //ld($data); sleep(4);
                 try{
                     $login        = $data['login'];

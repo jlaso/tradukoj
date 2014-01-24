@@ -1,5 +1,11 @@
 {% extends '::base.html.twig' %}
 
+{% if permissions.general == 'OWNER' or permissions.general == 'ADMIN' %}
+    {% set canCreateKeys = true %}
+{% else %}
+    {% set canCreateKeys = false %}
+{% endif %}
+
 {% block stylesheets %}
     {{ parent() }}
     <style type="text/css">
@@ -212,6 +218,18 @@
         </div>
     </div>
 
+    <div class="row-fluid">
+        <br/>
+    </div>
+
+    <div class="row-fluid">
+        {% if canCreateKeys %}
+            <a href="#new_key" role="button" data-toggle="modal" class="btn btn-danger">
+                <i class="icon icon-plus-sign"></i>
+            </a>
+        {% endif %}
+    </div>
+
 {% endif %}
 
 </div>
@@ -246,6 +264,65 @@
 
         </div>
     </div>
+
+    {% if canCreateKeys %}
+
+    <div id="new_key" class="modal hide fade" tabindex="-1"
+         role="dialog" aria-labelledby="new_key_label" aria-hidden="true">
+
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="new_key_label">
+                <i class="icon-list-alt"></i> {{ "translations.new_key_dialog.title"|trans|raw }}
+            </h3>
+        </div>
+
+        <form class="form-horizontal" id="form_new_key">
+
+            <div class="modal-body">
+
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="key_name">{{ "translations.new_key_dialog.key"|trans|raw }}</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" name="key_name">
+                            <p class="help-block">{{ "translations.new_key_dialog.help"|trans|raw }}</p>
+                        </div>
+                    </div>
+                    {#<div class="control-group">
+                        <label class="control-label" for="optionsCheckbox">Checkbox</label>
+                        <div class="controls">
+                            <label class="checkbox">
+                                <input type="checkbox" id="optionsCheckbox" value="option1">
+                                Option one is this and that—be sure to include why it's great
+                            </label>
+                        </div>
+                    </div>#}
+                    <div class="control-group">
+                        <label class="control-label" for="select01">Bundle</label>
+                        <div class="controls">
+                            <select name="bundle">
+                                <option value="">{{ "translations.new_key_dialog.select_one"|trans|raw }}</option>
+                                {% for b in bundles %}
+                                    <option value="{{ b }}">{{ b }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </fieldset>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">{{ "translations.new_key_dialog.button.close"|trans|raw }}</button>
+                <button class="btn btn-primary">{{ "translations.new_key_dialog.button.save"|trans|raw }}</button>
+            </div>
+
+        </form>
+    </div>
+
+    {% endif %}
+
 {% endblock content %}
 
 {% block javascripts %}
@@ -577,7 +654,49 @@
                 e.preventDefault();
                 var locale = $(this).attr("locale");
                 $(this).toggleClass('active');
-            })
+            });
+
+            {% if canCreateKeys %}
+
+                {# new key form #}
+                $('#form_new_key').submit(function(e){
+                    e.preventDefault();
+                    console.log('new key form submit');
+                    var key = $('#form_new_key input[name="key_name"]').val();
+                    if(!key){
+                        alert('{{ "translations.new_key_dialog.error.key_blank"|trans|raw }}');
+                        return false;
+                    }
+                    var bundle = $('#form_new_key select[name="bundle"] option:selected').val();
+                    if(!bundle){
+                        alert('{{ "translations.new_key_dialog.error.bundle_blank"|trans|raw }}');
+                        return false;
+                    }
+                    //$('#new_key').modal('hide');
+                    $.ajax({
+                        url: '{{ path('translations_new_key', {'projectId': project.id, 'catalog': current}) }}',
+                        type: 'post',
+                        data: {
+                            key: key,
+                            bundle: bundle
+                        },
+                        success: function(data){
+                            if(data.result){
+                                document.window.reload(true);
+                            }else{
+                                console.log(data.reason);
+                                alert(data.reason);
+                            }
+                        },
+                        error: function(data){
+                            console.log(data);
+                            alert(data);
+                        }
+                    });
+                    return true;
+                });
+
+            {% endif %}
 
         });
     </script>

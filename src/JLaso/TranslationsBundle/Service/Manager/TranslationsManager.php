@@ -108,7 +108,7 @@ class TranslationsManager
      *
      * @return Translation
      */
-    protected function normalizeTranslation(Translation $translation, $managedLocales = array(), $deletesIfNotExistsLocaleInManaged = false)
+    public function normalizeTranslation(Translation $translation, $managedLocales = array(), $deletesIfNotExistsLocaleInManaged = false)
     {
         $transArray = $translation->getTranslations();
         // normalize the translation array
@@ -128,6 +128,16 @@ class TranslationsManager
         $translation->setTranslations($transArray);
 
         return $translation;
+    }
+
+    /**
+     * @param Project $project
+     *
+     * @return array
+     */
+    public function getAllBundlesForProject(Project $project)
+    {
+        return $this->getTranslationRepository()->getBundles($project->getId());
     }
 
     /**
