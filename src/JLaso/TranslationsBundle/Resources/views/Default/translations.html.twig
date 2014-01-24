@@ -1,6 +1,6 @@
 {% extends '::base.html.twig' %}
 
-{% if permissions.general == 'OWNER' or permissions.general == 'ADMIN' %}
+{% if (permissions.general == 'OWNER' or permissions.general == 'ADMIN') and current and action == "catalogs" %}
     {% set canCreateKeys = true %}
 {% else %}
     {% set canCreateKeys = false %}
@@ -682,7 +682,7 @@
                         },
                         success: function(data){
                             if(data.result){
-                                document.window.reload(true);
+                                window.location.reload(true);
                             }else{
                                 console.log(data.reason);
                                 alert(data.reason);

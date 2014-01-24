@@ -270,8 +270,9 @@ class DefaultController extends Controller
                 )
             );
         }
-        $bundle = $request->get('bundle');
-        $keyName = $request->get('key');
+        $catalog = trim($catalog);
+        $bundle  = trim($request->get('bundle'));
+        $keyName = trim($request->get('key'));
         if(!$bundle || !$keyName){
             return $this->printResult(array(
                     'result' => false,
