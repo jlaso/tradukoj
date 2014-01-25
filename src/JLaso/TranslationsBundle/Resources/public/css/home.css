@@ -311,6 +311,13 @@ input.paypal-donate{
     width: 70px;
 }
 
+/* language selector */
+
+#lang_selector{
+    margin-top: 9px;
+    width: 50px;
+}
+
 @media screen and (max-width: 525px) {
 
     .media400{
