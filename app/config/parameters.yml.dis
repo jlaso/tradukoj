@@ -19,6 +19,7 @@ parameters:
     mailer_auth_mode:  plain
 
     locale:            es
+    languages:         ['en','es']
     secret:            asThisfTokenIsNoq1tSoSecretChangeIte
 
     jlaso_translations_api_access:

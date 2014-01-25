@@ -394,6 +394,49 @@ class DefaultController extends Controller
     }
 
     /**
+     * @Route("/bundles/{projectId}/{bundle}", name="bundles")
+     * @Template()
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function bundlesAction(Project $project, $bundle ='')
+    {
+        $this->init();
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+
+        if(!$permission instanceof Permission){
+            throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
+        }
+
+        /** @var TranslationRepository $translationRepository */
+        $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
+        $bundles         = $this->translationsManager->getAllBundlesForProject($project);
+        $keys = $translationRepository->getKeysByBundle($project->getId(), $bundle);
+        $keysAssoc = array();
+        foreach($keys as $key){
+            $keysAssoc = $this->translationsManager->iniToAssoc($key['key'], $keysAssoc);
+        }
+
+        $managedLocales = explode(',',$project->getManagedLocales());
+        $transData = array();
+        $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+        $projects  = $this->translationsManager->getProjectsForUser($this->user);
+        $catalogs  = $translationRepository->getCatalogs($project->getId());
+
+        return array(
+            'action'            => 'catalogs',
+            'projects'          => $projects,
+            'project'           => $project,
+            'bundles'           => $bundles,
+            'keys'              => $keysAssoc,
+            'current'           => $bundle,
+            'managed_languages' => $managedLocales,
+            'trans_data'        => $transData,
+            'languages'         => $languages,
+            'permissions'       => $permission->getPermissions(),
+        );
+    }
+
+    /**
      * @param $data
      *
      * @return mixed
@@ -414,6 +457,7 @@ class DefaultController extends Controller
         $this->init();
         $projectId = $request->get('projectId');
         $catalog   = $request->get('catalog');
+        $bundle    = $request->get('bundle');
         $key       = $request->get('key');
         /** @var Project $project */
         $project   = $this->getProjectRepository()->find($projectId);
@@ -427,7 +471,7 @@ class DefaultController extends Controller
         };
 
         $managedLocales = explode(',', $project->getManagedLocales());
-        $translation    = $this->translationsManager->getTranslation($project, $catalog, $key);
+        $translation    = $this->translationsManager->getTranslation($project, $catalog ?: $bundle, $key);
         $permission     = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
         $languages      = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
 

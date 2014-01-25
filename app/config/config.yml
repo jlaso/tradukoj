@@ -24,6 +24,8 @@ framework:
 twig:
     debug:            %kernel.debug%
     strict_variables: %kernel.debug%
+    globals:
+        languages: %languages%
 
 # Assetic Configuration
 assetic:
@@ -78,7 +80,13 @@ swiftmailer:
     auth_mode:  %mailer_auth_mode%
     #spool:      { type: memory }
 
+
+jms_i18n_routing:
+    default_locale: %locale%
+    locales: %languages%
+    strategy: prefix_except_default
+
 translations_api:
     default_locale: %locale%
-    managed_locales: ['es', 'en']
+    managed_locales: %languages%
 

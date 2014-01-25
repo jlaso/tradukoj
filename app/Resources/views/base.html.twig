@@ -76,6 +76,12 @@
                 margin-bottom: 27px;
                 text-align: center;
             }
+            #lang_selector{
+                background: none repeat scroll 0 0 rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.19);
+                margin-top: 14px;
+                width: 50px;
+            }
         </style>
     </head>
     <body>
@@ -126,13 +132,17 @@
                                     </li>
                                     <li class="divider-vertical"></li>
                                     {% if project is not null %}
-                                    <li class="{{ action=="catalogs" ? "active" : "" }}">
-                                        <a href="{{ path("translations", {"projectId": project.id}) }}">{{ "catalogs"|trans|raw }}</a>
-                                    </li>
-                                    <li class="divider-vertical"></li>
-                                    <li class="{{ action=="documents" ? "active" : "" }}">
-                                        <a href="{{ path("documents", {"projectId": project.id}) }}">{{ "documents"|trans|raw }}</a>
-                                    </li>
+                                        <li class="{{ action=="catalogs" ? "active" : "" }}">
+                                            <a href="{{ path("translations", {"projectId": project.id}) }}">{{ "menu.catalogs"|trans|raw }}</a>
+                                        </li>
+                                        <li class="divider-vertical"></li>
+                                        <li class="{{ action=="bundles" ? "active" : "" }}">
+                                            <a href="{{ path("bundles", {"projectId": project.id}) }}">{{ "menu.bundles"|trans|raw }}</a>
+                                        </li>
+                                        <li class="divider-vertical"></li>
+                                        <li class="{{ action=="documents" ? "active" : "" }}">
+                                            <a href="{{ path("documents", {"projectId": project.id}) }}">{{ "menu.documents"|trans|raw }}</a>
+                                        </li>
                                     {% endif %}
                                 </ul>
                                 <ul class="nav pull-right">

@@ -304,7 +304,9 @@
                             <select name="bundle">
                                 <option value="">{{ "translations.new_key_dialog.select_one"|trans|raw }}</option>
                                 {% for b in bundles %}
-                                    <option value="{{ b }}">{{ b }}</option>
+                                    <option value="{{ b }}" {% if bundles|length == 1 %}selected="selected"{% endif %}>
+                                        {{ b }}
+                                    </option>
                                 {% endfor %}
                             </select>
                         </div>

@@ -83,14 +83,25 @@ class TranslationsManager
 
     /**
      * @param Project $project
-     * @param         $catalog
+     * @param         $criteria
      * @param         $key
      *
      * @return Translation
      */
-    public function getTranslation(Project $project, $catalog, $key)
+    public function getTranslation(Project $project, $criteria, $key)
     {
-        $translation = $this->getTranslationRepository()->getTranslation($project->getId(), $catalog, $key);
+        if(strpos($criteria, "Bundle") !== false){
+            $bundle = $criteria;
+            $translation = $this->getTranslationRepository()->findOneBy(array(
+                    'projectId' => intval($project->getId()),
+                    'bundle'    => trim($bundle),
+                    'key'       => trim($key),
+                )
+            );
+        }else{
+            $catalog = $criteria;
+            $translation = $this->getTranslationRepository()->getTranslation($project->getId(), $catalog, $key);
+        }
         if(!$translation){
             return null;
         }

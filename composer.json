@@ -9,18 +9,25 @@
         "php": ">=5.3.3",
         "symfony/symfony": "*",
         "symfony/yaml": "*",
+
         "doctrine/orm": "*",
         "doctrine/mongodb-odm-bundle": "*",
         "doctrine/doctrine-bundle": "*",
+
         "twig/extensions": "*",
+
         "symfony/assetic-bundle": "*",
         "symfony/swiftmailer-bundle": "*",
         "symfony/monolog-bundle": "*",
+
         "sensio/distribution-bundle": "*",
         "sensio/framework-extra-bundle": "*",
         "sensio/generator-bundle": "*",
+
         "jms/security-extra-bundle": "*",
         "jms/di-extra-bundle": "*",
+        "jms/i18n-routing-bundle": "dev-master",
+
         "raulfraile/ladybug-bundle": "v0.7",
 
         "behat/behat": "*",

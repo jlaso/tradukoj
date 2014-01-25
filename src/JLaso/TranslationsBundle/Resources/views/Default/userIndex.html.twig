@@ -20,7 +20,7 @@
         <div class="well sidebar-nav">
             <ul class="nav nav-list">
                 <li>
-                    <div class="nav-collapse">
+                   {# <div class="nav-collapse">
                         <ul class="nav pull-right">
                             <li class="divider-vertical"></li>
                             <ul class="nav">
@@ -42,8 +42,8 @@
                                 </li>
                             </ul>
                         </ul>
-                    </div>
-                    <h3>{{ "projects"|trans|raw }}</h3>
+                    </div>#}
+                    <h3>{{ "labelH3.projects"|trans|raw }}</h3>
                 </li>
                 <li>
                     <div class="accordion" id="accordion_sidebar">
@@ -66,6 +66,16 @@
                                 {% endif %}#}
                             </div>
                         {% endfor %}
+                        <div class="accordion-group">
+                            <div class="accordion-heading">
+                                <a style="text-decoration: none;text-align: left"
+                                   class="accordion-toggle btn btn-warning"
+                                   href="{{ path('new_project') }}">
+                                    <i class="icon icon-plus-sign"></i>
+                                    <span> {{ "label.project_new"|trans|raw }}</span>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </li>
             </ul>
@@ -106,7 +116,7 @@
         </div>
         {% endif %}
 
-        <div class="row">
+        {#<div class="row">
 
             <div class="span4 offset4">
 
@@ -115,7 +125,7 @@
             </div>
 
         </div>
-
+#}
         <div class="row-fluid">
             <div class="span12 well">
                 <div class="accordion" id="accordionQuickV">

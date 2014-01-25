@@ -70,6 +70,9 @@
                             <a href="{{ url('user_login') }}">Login</a>
                         {% endif %}
                     </li>
+                    <li>
+                        {% include ':Languages:languages-select.html.twig' %}
+                    </li>
                 </ul>
             </div>
             <!--/.nav-collapse -->
@@ -125,12 +128,22 @@
 
                 <div class="row-fluid">
                     <div class="span12">
-                        <a class="btn btn-start " href="https://bitbucket.org/jlaso/translations-apibundle">
+                        <a class="btn btn-start" target="_blank" href="https://github.com/jlaso/translations-apibundle">
                             GET THE BUNDLE
                         </a>
                     </div>
                 </div>
                 <!-- /INNER ROW-FLUID-->
+
+                <div class="row-fluid">
+                    <iframe id="forum_embed"
+                            src="https://groups.google.com/forum/embed/?place=forum/translations_sf&showsearch=true&showpopout=true&showtabs=false&parenturl=https://translations.com.es'"
+                            scrolling="no"
+                            frameborder="0"
+                            width="100%"
+                            height="100%">
+                    </iframe>
+                </div>
             </div>
             <!-- SPAN6-->
             <div class="span6">
@@ -191,9 +204,9 @@
                     <hr>
 
                     <div class="pricing-table-features">
-                        <p>Up to <strong>10</strong> projects per user account</p>
+                        <p><strong>Unlimited</strong> projects per user account</p>
 
-                        <p>Up to <strong>10</strong> users per project with role hierarchy</p>
+                        <p><strong>Unlimited</strong> users per project with role hierarchy</p>
 
                         <p><strong>Unlimited</strong> keys per project</p>
 
@@ -247,6 +260,13 @@
                 <p>
                     <a href="https://twitter.com/translations_sf" class="twitter-follow-button" data-show-count="false" data-size="large">Follow @translations_sf</a>
                     <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+'://platform.twitter.com/widgets.js';fjs.parentNode.insertBefore(js,fjs);}}(document, 'script', 'twitter-wjs');</script>
+                </p>
+                <p>
+                    <h3>
+                        <a target="_blank" href="https://groups.google.com/d/forum/translations_sf" style="color:#ddd !important;">
+                            Enter to the google group
+                        </a>
+                    </h3>
                 </p>
                 <p>
                 <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">

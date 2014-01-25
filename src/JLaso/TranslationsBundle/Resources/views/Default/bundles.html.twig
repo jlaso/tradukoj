@@ -16,7 +16,7 @@
                     <div class="accordion-heading">
                         <a style="text-decoration: none;text-align: left"
                            class="accordion-toggle btn {{ current==bundle ? 'btn-danger' : '' }}"
-                           href="{{ path('documents', {'projectId':project.id, 'bundle':bundle}) }}">
+                           href="{{ path('bundles', {'projectId':project.id, 'bundle':bundle}) }}">
                             <i class="icon-tasks {{ current==bundle ? 'icon-white' : '' }}"></i>
                             <span> {{ bundle }}</span>
                         </a>
