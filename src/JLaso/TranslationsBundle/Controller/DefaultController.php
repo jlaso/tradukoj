@@ -273,6 +273,7 @@ class DefaultController extends Controller
         $catalog = trim($catalog);
         $bundle  = trim($request->get('bundle'));
         $keyName = trim($request->get('key'));
+        $current = trim($request->get('current'));
         if(!$bundle || !$keyName){
             return $this->printResult(array(
                     'result' => false,
@@ -306,8 +307,30 @@ class DefaultController extends Controller
         $this->dm->persist($translation);
         $this->dm->flush($translation);
 
+        /** @var TranslationRepository $translationRepository */
+        $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
+        if(strpos($current, "Bundle") !== false){
+            $keys = $translationRepository->getKeysByBundle($project->getId(), $current);
+        }else{
+            $keys = $translationRepository->getKeys($project->getId(), $current);
+        }
+        $tree = $this->keysToPlainArray($keys);
+
+        $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+
+        $html = $this->renderView("TranslationsBundle:Default:messages.html.twig",array(
+                'translation'     => $translation,
+                'managed_locales' => $managedLocales,
+                'permissions'     => $permission->getPermissions(),
+                'languages'       => $languages,
+            )
+        );
+
         return $this->printResult(array(
-                'result'            => true,
+                'result' => true,
+                'tree'   => $tree,
+                'key'    => $keyName,
+                'html'   => $html,
             )
         );
     }
@@ -446,6 +469,68 @@ class DefaultController extends Controller
         header('Content-type: application/json');
         print json_encode($data);
         exit;
+    }
+
+    /**
+     * @Route("/tree-{projectId}-{criteria}.json", name="tree.json")
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function treeJsonAction(Project $project, $criteria)
+    {
+        /**
+          * [
+                { "id" : "ajson1", "parent" : "#", "text" : "Simple root node" },
+                { "id" : "ajson2", "parent" : "#", "text" : "Root node 2" },
+                { "id" : "ajson3", "parent" : "ajson2", "text" : "Child 1" },
+                { "id" : "ajson4", "parent" : "ajson2", "text" : "Child 2" },
+            ]
+         */
+        $this->init();
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+
+        if(!$permission instanceof Permission){
+            throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
+        }
+
+        /** @var TranslationRepository $translationRepository */
+        $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
+        if(strpos($criteria, "Bundle") !== false){
+            $keys = $translationRepository->getKeysByBundle($project->getId(), $criteria);
+        }else{
+            $keys = $translationRepository->getKeys($project->getId(), $criteria);
+        }
+        $keysAssoc = $this->keysToPlainArray($keys);
+
+        return $this->printResult($keysAssoc);
+    }
+
+    protected function keysToPlainArray($keys)
+    {
+        $keysAssoc = array();
+        foreach($keys as $key){
+            $this->keyed2Plain($key['key'], $keysAssoc);
+        }
+
+        return array_values($keysAssoc);
+    }
+
+    protected function keyed2Plain($keyedArray, &$arrayAssoc)
+    {
+        $keys = explode('.', $keyedArray);
+        $id = '';
+        $i = count($keys) - 1;
+        foreach($keys as $k){
+            $idAnt = $id;
+            $id    = $id . '_' . $k;
+            $arrayAssoc[$id] = array(
+                'id'     => $i ? $id : $keyedArray, //substr($id,1,strlen($id)),
+                'parent' => $idAnt ?: '#',
+                'text'   => $k,
+                //'key'    => $i ? '' : $keyedArray,
+
+            );
+            $i--;
+        }
     }
 
     /**

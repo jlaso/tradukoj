@@ -64,7 +64,7 @@ class SecurityController extends BaseController
             /** @var User $user */
             $user = $token->getUser();
             if($user instanceof User){
-                die('asd');
+               // die('asd');
                 if ($this->get('security.context')->isGranted('IS_FULLY_AUTHENTICATED')){
                     switch(true){
                         case ($user->hasRole(User::ROLE_DEVELOPER)):

@@ -13,8 +13,13 @@
             background: transparent;
         }
         #bundle-keys{
-            height: 400px;
+            background: none repeat scroll 0 0 rgba(0, 0, 0, 0.18);
+            border: 2px solid rgba(127, 127, 127, 0.5);
+            border-radius: 4px;
+            height: 480px;
+            margin-top: 10px;
             overflow: scroll;
+            padding: 1px;
         }
         .h300{
             min-height: 300px;
@@ -214,7 +219,7 @@
 
     <div class="row-fluid">
         <div id="bundle-keys" class="span12">
-            {{ _self.node(keys) }}
+            {# { _self.node(keys) } #}
         </div>
     </div>
 
@@ -332,6 +337,10 @@
 
         var currentKey = null;
         var editorContentFrom = null;
+        var bundleKeysTree = null;
+        var current = null;
+        var interval = null;
+        var idTemp = null;
 
         function logEvent(message)
         {
@@ -345,10 +354,6 @@
                        '<hr>';
             $('#event_list').append(html);
         }
-
-        var current = null;
-        var interval = null;
-        var idTemp = null;
 
         function saveMessage(id)
         {
@@ -534,21 +539,30 @@
 //                saveComment(id);
 //            });
 
+//            $("#bundle-keys").jstree({
+//                "plugins" : [ "themes", "html_data", "search" ]
+//            });
+//            bundleKeysTree = $("#bundle-keys").jstree(true);
             $("#bundle-keys").jstree({
-                "plugins" : [ "themes", "html_data", "search" ]
+                core: {
+                    'data' : {
+                        url: '{{ path('tree.json', {'projectId':project.id, 'criteria':current}) }}',
+                        data : function (node) {
+                            return { 'id' : node.id };
+                        }
+                    }
+                }
             });
 
-            var currentNode = null;
-            $('#bundle-keys').on('click','.key-tree-node',function(e){
-                e.preventDefault();
-                var key = $(this).attr('key'); //.replace(" ","-");
-                if(!key) {
-                    $("#bundle-keys").jstree("open_node", $(this));
-                    return false;
+            $('#bundle-keys').on('click','.jstree-node',function(e){
+                console.log(this);
+                var tree = $("#bundle-keys").jstree(true);
+                if(tree.is_parent(this)){
+                    tree.toggle_node(this);
+                    return true;
                 }
-                $('.key-tree-node').removeClass('btn btn-primary btn-danger');
-                currentNode = $(this);
-                $(currentNode).addClass('btn btn-primary');
+                e.preventDefault();
+                var key = $(this).attr('id');
                 $('#translations-group').slideUp("slow").html('Loading...').fadeIn();
 
                 {% if action=='documents' %}
@@ -562,7 +576,6 @@
                         },
                         success: function(data){
                             if(data.result){
-                                $(currentNode).removeClass('btn-primary').addClass('btn-danger');
                                 $('#translations-group').html(data.html);
                                 currentKey = data.key;
                                 //$('#translations-group .wysiwyg').jqte();
@@ -570,12 +583,10 @@
                                     $('.scroll-ctrl').scrollTop($(this).scrollTop());
                                 });
                             }else{
-                                $('.key-tree-node').removeClass('btn btn-primary');
                                 logEvent('error: '+data.reason);
                             }
                         },
                         error: function(data){
-                            $('.key-tree-node').removeClass('btn btn-primary');
                             logEvent('error: '+data.reason);
                         }
                     });
@@ -590,21 +601,19 @@
                         },
                         success: function(data){
                             if(data.result){
-                                $(currentNode).removeClass('btn-primary').addClass('btn-danger');
                                 $('#translations-group').html(data.html);
                                 currentKey = data.key;
                                 $('#translations-group .wysiwyg').jqte();
                             }else{
-                                $('.key-tree-node').removeClass('btn btn-primary');
                                 logEvent('error: '+data.reason);
                             }
                         },
                         error: function(data){
-                            $('.key-tree-node').removeClass('btn btn-primary');
                             logEvent('error: '+data.reason);
                         }
                     });
                 {% endif %}
+                return false;
             });
 
             $('.approve').click(function(e){
@@ -680,11 +689,25 @@
                         type: 'post',
                         data: {
                             key: key,
-                            bundle: bundle
+                            bundle: bundle,
+                            current: '{{ current }}'
                         },
                         success: function(data){
                             if(data.result){
-                                window.location.reload(true);
+                                //window.location.reload(true);
+                                //$("#bundle-keys").jstree("destroy");
+                                var tree = $("#bundle-keys").jstree(true);
+                                tree.destroy();
+                                $("#bundle-keys").jstree({ 'core' : { 'data' : data.tree } });
+                                tree = $("#bundle-keys").jstree(true);
+                                tree.open_node(data.key);
+                                tree.select_node(data.key);
+                                tree.redraw('all');
+                                // translations
+                                $('#translations-group').html(data.html);
+                                currentKey = data.key;
+                                $('#translations-group .wysiwyg').jqte();
+                                $('#new_key').modal('hide');
                             }else{
                                 console.log(data.reason);
                                 alert(data.reason);
@@ -699,6 +722,11 @@
                 });
 
             {% endif %}
+
+            setTimeout(function(){
+                var H = parseInt( 0.75 * document.body.clientHeight);
+                $('#bundle-keys').css('height', (H - 50) + 'px');
+            },1000);
 
         });
     </script>
