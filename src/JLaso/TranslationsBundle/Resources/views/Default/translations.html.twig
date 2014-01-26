@@ -87,7 +87,6 @@
     </ul>
 {% endmacro %}
 
-
 {# cron periodico para releer si hay cambios por parte de otro usuario o de la api #}
 
 {% block sidebar %}
@@ -201,10 +200,15 @@
 
       {% spaceless %}
         <span class="badge">{{ "show_only"|trans|raw }}:</span>
+       {#
+
+        To filter only disapproved messages
         &nbsp;
         <a href="#" class="only only-disapproved>
             <code><icon icon-thumbs-down"></code>
         </a>
+
+        #}
         {% for locale in managed_languages %}
             &nbsp;
             <a href="#" class="only only-locale" locale="{{ locale }}">
@@ -465,6 +469,41 @@
             });
         }
 
+        {% if current %}
+        function loadTree(language)
+        {
+            var language = language || "";
+            if('{{ current }}'){
+                $.ajax({
+                    url: '{{ path('tree.json', {'projectId':project.id, 'criteria':current|default('')}) }}',
+                    data: {
+                        language: language
+                    },
+                    success: function(data){
+                        putDataIntoTree(data);
+                    },
+                    error: function(){
+                        logEvent('{{ "errors.error_getting_tree"|trans|raw }}')
+                    }
+                });
+            }
+        }
+
+        function putDataIntoTree(treeData, key)
+        {
+            var tree = $("#bundle-keys").jstree(true);
+
+            tree.destroy();
+            $("#bundle-keys").jstree({ 'core' : { 'data' : treeData } });
+            tree = $("#bundle-keys").jstree(true);
+            if(key != undefined){
+                tree.open_node(data.key);
+                tree.select_node(data.key);
+            }
+            tree.redraw('all');
+        }
+        {% endif %}
+
         $(function(){
 
             $(document).ajaxStart(function(){
@@ -543,23 +582,27 @@
 //                "plugins" : [ "themes", "html_data", "search" ]
 //            });
 //            bundleKeysTree = $("#bundle-keys").jstree(true);
+
             $("#bundle-keys").jstree({
                 core: {
-                    'data' : {
+                    'data' : [] {#
                         url: '{{ path('tree.json', {'projectId':project.id, 'criteria':current}) }}',
                         data : function (node) {
                             return { 'id' : node.id };
                         }
-                    }
+                    #}
                 }
             });
+            {% if current %}
+                loadTree();
+            {% endif %}
 
             $('#bundle-keys').on('click','.jstree-node',function(e){
                 console.log(this);
                 var tree = $("#bundle-keys").jstree(true);
                 if(tree.is_parent(this)){
                     tree.toggle_node(this);
-                    return true;
+                    return false;
                 }
                 e.preventDefault();
                 var key = $(this).attr('id');
@@ -664,7 +707,14 @@
             $('.only-locale').click(function(e){
                 e.preventDefault();
                 var locale = $(this).attr("locale");
-                $(this).toggleClass('active');
+                var active = $(this).hasClass('active');
+                $('.only-locale').removeClass('active');
+                if(!active){
+                    $(this).addClass('active');
+                    loadTree(locale);
+                }else{
+                    loadTree();
+                }
             });
 
             {% if canCreateKeys %}
@@ -694,15 +744,8 @@
                         },
                         success: function(data){
                             if(data.result){
-                                //window.location.reload(true);
-                                //$("#bundle-keys").jstree("destroy");
-                                var tree = $("#bundle-keys").jstree(true);
-                                tree.destroy();
-                                $("#bundle-keys").jstree({ 'core' : { 'data' : data.tree } });
-                                tree = $("#bundle-keys").jstree(true);
-                                tree.open_node(data.key);
-                                tree.select_node(data.key);
-                                tree.redraw('all');
+                                // tree
+                                putDataIntoTree(data.tree, data.key);
                                 // translations
                                 $('#translations-group').html(data.html);
                                 currentKey = data.key;
@@ -723,6 +766,7 @@
 
             {% endif %}
 
+            // height adjustement for bundle-keys tree area
             setTimeout(function(){
                 var H = parseInt( 0.75 * document.body.clientHeight);
                 $('#bundle-keys').css('height', (H - 50) + 'px');

@@ -446,7 +446,7 @@ class DefaultController extends Controller
         $catalogs  = $translationRepository->getCatalogs($project->getId());
 
         return array(
-            'action'            => 'catalogs',
+            'action'            => 'bundles',
             'projects'          => $projects,
             'project'           => $project,
             'bundles'           => $bundles,
@@ -475,7 +475,7 @@ class DefaultController extends Controller
      * @Route("/tree-{projectId}-{criteria}.json", name="tree.json")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function treeJsonAction(Project $project, $criteria)
+    public function treeJsonAction(Request $request, Project $project, $criteria)
     {
         /**
           * [
@@ -486,6 +486,8 @@ class DefaultController extends Controller
             ]
          */
         $this->init();
+        // only show keys with blank message (pending) in this language, if any
+        $onlyLanguage = trim($request->get('language'));
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
         if(!$permission instanceof Permission){
@@ -495,16 +497,22 @@ class DefaultController extends Controller
         /** @var TranslationRepository $translationRepository */
         $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
         if(strpos($criteria, "Bundle") !== false){
-            $keys = $translationRepository->getKeysByBundle($project->getId(), $criteria);
+            $keys = $translationRepository->getKeysByBundle($project->getId(), $criteria, $onlyLanguage);
         }else{
-            $keys = $translationRepository->getKeys($project->getId(), $criteria);
+            $keys = $translationRepository->getKeys($project->getId(), $criteria, $onlyLanguage);
         }
         $keysAssoc = $this->keysToPlainArray($keys);
 
         return $this->printResult($keysAssoc);
     }
 
-    protected function keysToPlainArray($keys)
+    /**
+     * @param array  $keys
+     * @param string $language
+     *
+     * @return array
+     */
+    protected function keysToPlainArray($keys, $language = '')
     {
         $keysAssoc = array();
         foreach($keys as $key){
