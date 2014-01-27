@@ -149,4 +149,17 @@ class TranslationRepository extends DocumentRepository
         return $result; // ? $result->getTranslations() : array();
     }
 
+    public function getTranslationByBundle($projectId, $bundle, $key)
+    {
+        $result = $this
+            ->findOneBy(array(
+                    'projectId' => intval($projectId),
+                    'bundle'    => trim($bundle),
+                    'key'       => trim($key),
+                )
+            );
+
+        return $result; // ? $result->getTranslations() : array();
+    }
+
 }

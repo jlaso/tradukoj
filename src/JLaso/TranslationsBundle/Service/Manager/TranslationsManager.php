@@ -155,17 +155,21 @@ class TranslationsManager
      * saves the message into $translation[$key][$locale][$message] and normalize rest of translations of this key
      *
      * @param Project $project
-     * @param         $catalog
+     * @param         $criteria
      * @param         $key
      * @param         $locale
      * @param         $message
      *
      * @return Translation
      */
-    public function putTranslation(Project $project, $catalog, $key, $locale, $message)
+    public function putTranslation(Project $project, $criteria, $key, $locale, $message)
     {
         // first get the record
-        $translation = $this->getTranslationRepository()->getTranslation($project->getId(), $catalog, $key);
+        if(strpos($criteria, "Bundle") != false){
+            $translation = $this->getTranslationRepository()->getTranslationByBundle($project->getId(), $criteria, $key);
+        }else{
+            $translation = $this->getTranslationRepository()->getTranslation($project->getId(), $criteria, $key);
+        }
         if(!$translation){
             return null;
         }
