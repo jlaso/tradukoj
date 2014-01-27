@@ -480,6 +480,7 @@
                         language: language
                     },
                     success: function(data){
+                        //console.log(data);
                         putDataIntoTree(data);
                     },
                     error: function(){
@@ -492,8 +493,17 @@
         function putDataIntoTree(treeData, key)
         {
             var tree = $("#bundle-keys").jstree(true);
-
-            tree.destroy();
+            if(typeof tree == "object"){
+                tree.destroy();
+            }
+            for(var i=0; i<treeData.length; i++){
+                var data = treeData[i];
+                //console.log(data);
+                if(typeof data.parent == "undefined"){
+                    console.log(data);
+                    return;
+                }
+            }
             $("#bundle-keys").jstree({ 'core' : { 'data' : treeData } });
             tree = $("#bundle-keys").jstree(true);
             if(key != undefined){
@@ -594,7 +604,7 @@
                 }
             });
             {% if current %}
-                loadTree();
+                loadTree('');
             {% endif %}
 
             $('#bundle-keys').on('click','.jstree-node',function(e){

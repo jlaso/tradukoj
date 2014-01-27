@@ -12,16 +12,18 @@
         <li>
             <div class="accordion" id="accordion_sidebar">
                 {% for bundle in bundles %}
-                <div class="accordion-group">
-                    <div class="accordion-heading">
-                        <a style="text-decoration: none;text-align: left"
-                           class="accordion-toggle btn {{ current==bundle ? 'btn-danger' : '' }}"
-                           href="{{ path('bundles', {'projectId':project.id, 'bundle':bundle}) }}">
-                            <i class="icon-tasks {{ current==bundle ? 'icon-white' : '' }}"></i>
-                            <span> {{ bundle }}</span>
-                        </a>
+                  {% if bundle != '' %}
+                    <div class="accordion-group">
+                        <div class="accordion-heading">
+                            <a style="text-decoration: none;text-align: left"
+                               class="accordion-toggle btn {{ current==bundle ? 'btn-danger' : '' }}"
+                               href="{{ path('bundles', {'projectId':project.id, 'bundle':bundle}) }}">
+                                <i class="icon-tasks {{ current==bundle ? 'icon-white' : '' }}"></i>
+                                <span> {{ bundle }}</span>
+                            </a>
+                        </div>
                     </div>
-                </div>
+                  {% endif %}
                 {% endfor %}
             </div>
         </li>

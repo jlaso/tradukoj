@@ -508,15 +508,16 @@ class DefaultController extends Controller
 
     /**
      * @param array  $keys
-     * @param string $language
      *
      * @return array
      */
-    protected function keysToPlainArray($keys, $language = '')
+    protected function keysToPlainArray($keys)
     {
+        $trans = array();
+
         $keysAssoc = array();
         foreach($keys as $key){
-            $this->keyed2Plain($key['key'], $keysAssoc);
+            $this->keyed2Plain($key['key'], $keysAssoc, $trans);
         }
 
         return array_values($keysAssoc);
@@ -525,18 +526,18 @@ class DefaultController extends Controller
     protected function keyed2Plain($keyedArray, &$arrayAssoc)
     {
         $keys = explode('.', $keyedArray);
-        $id = '';
+        $id = $idAnt = '';
         $i = count($keys) - 1;
         foreach($keys as $k){
-            $idAnt = $id;
-            $id    = $id . '_' . $k;
+            $id   .= $k;
             $arrayAssoc[$id] = array(
-                'id'     => $i ? $id : $keyedArray, //substr($id,1,strlen($id)),
+                'id'     => $id,
                 'parent' => $idAnt ?: '#',
                 'text'   => $k,
-                //'key'    => $i ? '' : $keyedArray,
 
             );
+            $idAnt = $id;
+            $id .= '.';
             $i--;
         }
     }
