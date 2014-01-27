@@ -507,8 +507,8 @@
             $("#bundle-keys").jstree({ 'core' : { 'data' : treeData } });
             tree = $("#bundle-keys").jstree(true);
             if(key != undefined){
-                tree.open_node(data.key);
-                tree.select_node(data.key);
+                tree.open_node(treeData.key);
+                tree.select_node(treeData.key);
             }
             tree.redraw('all');
         }
