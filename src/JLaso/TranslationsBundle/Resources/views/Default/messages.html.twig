@@ -30,7 +30,7 @@
                             </a>
                         </td>
                     {% else %}
-                        <td>{{ translation.comment }}</td>
+                        <td>{{ translation.comment|raw }}</td>
                         <td>&nbsp;</td>
                     {% endif %}
                 </tr>
@@ -67,10 +67,10 @@
                                 {# ---- info ---- #}
                                 <td>
                                     {% if canEdit %}
-                                        <textarea class="span12 wysiwyg" rows="2" dir="{{ languages[locale].dir }}">{{ info.message }}</textarea>
+                                        <textarea class="span12 wysiwyg" rows="2" dir="{{ languages[locale].dir }}">{{ info.message|raw }}</textarea>
                                     {% else %}
                                         <span dir="{{ languages[locale].dir }}">
-                                            {{- info.message -}}
+                                            {{- info.message|raw -}}
                                         </span>
                                     {% endif %}
                                 </td>
