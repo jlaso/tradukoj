@@ -313,9 +313,11 @@
                             <select name="bundle">
                                 <option value="">{{ "translations.new_key_dialog.select_one"|trans|raw }}</option>
                                 {% for b in bundles %}
-                                    <option value="{{ b }}" {% if bundles|length == 1 %}selected="selected"{% endif %}>
-                                        {{ b }}
-                                    </option>
+                                    {% if b != '' %}
+                                        <option value="{{ b }}" {% if bundles|length == 1 %}selected="selected"{% endif %}>
+                                            {{ b }}
+                                        </option>
+                                    {% endif %}
                                 {% endfor %}
                             </select>
                         </div>
@@ -507,8 +509,8 @@
             $("#bundle-keys").jstree({ 'core' : { 'data' : treeData } });
             tree = $("#bundle-keys").jstree(true);
             if(key != undefined){
-                tree.open_node(treeData.key);
-                tree.select_node(treeData.key);
+                tree.open_node(key);
+                tree.select_node(key);
             }
             tree.redraw('all');
         }

@@ -48,7 +48,7 @@ class TranslationRepository extends DocumentRepository
                     'projectId' => $projectId,
                     'catalog'   => $catalog,
                 )
-            );
+            , array('key'));
 
         $keys = array();
         foreach($result as $item){
@@ -74,7 +74,7 @@ class TranslationRepository extends DocumentRepository
                     'projectId' => $projectId,
                     'bundle'    => $bundle,
                 )
-            );
+            , array('key'));
 
         $keys = array();
         foreach($result as $item){
