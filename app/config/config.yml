@@ -17,7 +17,8 @@ framework:
         #assets_version: SomeVersionScheme
     default_locale:  "%locale%"
     trusted_proxies: ~
-    session:         ~
+    session:
+        handler_id: session.handler.pdo
     fragments:       ~
 
 # Twig Configuration
@@ -57,6 +58,22 @@ doctrine:
     orm:
         auto_generate_proxy_classes: %kernel.debug%
         auto_mapping: true
+
+services:
+    pdo:
+        class: PDO
+        arguments:
+            - "mysql:host=%database_host%;port=%database_port%;dbname=%database_name%"
+            - "%database_user%"
+            - "%database_password%"
+        calls:
+            - [setAttribute, [3, 2]] # \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION
+    #CREATE TABLE `session` (`session_id` varchar(255) NOT NULL,`session_value` text NOT NULL,`session_time` int(11) NOT NULL,PRIMARY KEY (`session_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+    session.handler.pdo:
+        class:     Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
+        arguments: ["@pdo", "%pdo.db_options%"]
+
 
 doctrine_mongodb:
     connections:
