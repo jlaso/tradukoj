@@ -506,7 +506,10 @@
                     return;
                 }
             }
-            $("#bundle-keys").jstree({ 'core' : { 'data' : treeData } });
+            $("#bundle-keys").jstree({
+                "plugins" : [ "themes", "html_data", "search" ],
+                "core" : { 'data' : treeData }
+            });
             tree = $("#bundle-keys").jstree(true);
             if(key != undefined){
                 tree.open_node(key);
@@ -597,6 +600,7 @@
 
             $("#bundle-keys").jstree({
                 core: {
+                    "plugins" : [ "themes", "html_data", "search" ],
                     'data' : [] {#
                         url: '{{ path('tree.json', {'projectId':project.id, 'criteria':current}) }}',
                         data : function (node) {
@@ -707,11 +711,17 @@
 //                }, 250);
 //            });
 
+            {# Indicates if the tree should be filtered to show only matching nodes (keep in mind this can be a heavy on large trees in old browsers). Default is false. #}
+            $.jstree.defaults.search.show_only_matches = true;
+
+            {# Indicates if the search should be fuzzy or not (should chnd3 match child node 3). Default is true. #}
+            $.jstree.defaults.search.fuzzy = true;
+
             $('#search').click(function(e){
                 e.preventDefault();
                 var search = $('input[name="search"]').val();
                 console.log('searching '+search+' ...');
-                $("#bundle-keys").jstree("search", search);
+                $("#bundle-keys").jstree(true).search(search);
             });
 
 
