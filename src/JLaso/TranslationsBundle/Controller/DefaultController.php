@@ -1013,6 +1013,7 @@ class DefaultController extends Controller
 
         $result = $this->translationsManager->getStatistics($project);
 
+        var_dump($result); die;
         return $this->printResult($result);
 
     }

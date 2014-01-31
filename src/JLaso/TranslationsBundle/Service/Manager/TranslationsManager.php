@@ -253,14 +253,15 @@ class TranslationsManager
             foreach($transArray as $locale=>$data){
 
                 $message = $data['message'];
+                $numWords = count(preg_split('~[^\p{L}\p{N}\']+~u', $message));
                 if(!isset($bundleData[$bundle][$locale])){
                     $bundleData[$bundle][$locale] = 0;
                 }
-                $bundleData[$bundle][$locale] += str_word_count($message);
+                $bundleData[$bundle][$locale] += $numWords;
                 if(!isset($catalogData[$catalog][$locale])){
                     $catalogData[$catalog][$locale] = 0;
                 }
-                $catalogData[$catalog][$locale] += str_word_count($message);
+                $catalogData[$catalog][$locale] += $numWords;
 
             }
 
