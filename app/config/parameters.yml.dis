@@ -22,6 +22,12 @@ parameters:
     languages:         ['en','es']
     secret:            asThisfTokenIsNoq1tSoSecretChangeIte
 
+    pdo.db_options:
+        db_table: session
+        db_id_col: session_id
+        db_data_col: session_value
+        db_time_col: session_time
+
     jlaso_translations_api_access:
         project_id: 2
         key:  translations.com.es
