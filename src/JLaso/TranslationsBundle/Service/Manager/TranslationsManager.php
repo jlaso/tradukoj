@@ -236,6 +236,44 @@ class TranslationsManager
         $this->em->flush();
     }
 
+    public function getStatistics(Project $project)
+    {
+
+        $bundleData = array();
+        $catalogData = array();
+
+        /** @var Translation[] $translations */
+        $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId()));
+        foreach($translations as $translation){
+            $key = $translation->getKey();
+            $transArray = $translation->getTranslations();
+            $bundle = $translation->getBundle();
+            $catalog = $translation->getCatalog();
+
+            foreach($transArray as $locale=>$data){
+
+                $message = $data['message'];
+                if(!isset($bundleData[$bundle][$locale])){
+                    $bundleData[$bundle][$locale] = 0;
+                }
+                $bundleData[$bundle][$locale] += str_word_count($message);
+                if(!isset($catalogData[$catalog][$locale])){
+                    $catalogData[$catalog][$locale] = 0;
+                }
+                $catalogData[$catalog][$locale] += str_word_count($message);
+
+            }
+
+        }
+
+        return array(
+            'result'      => true,
+            'bundleData'  => $bundleData,
+            'catalogData' => $catalogData,
+        );
+
+    }
+
     /**
      * @return PermissionRepository
      */

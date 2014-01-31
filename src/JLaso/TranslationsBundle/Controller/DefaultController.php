@@ -992,6 +992,32 @@ class DefaultController extends Controller
     }
 
     /**
+     * @Route("/stats/{projectId}", name="statistics")
+     * @ Method("POST")
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function getStatistics(Request $request, Project $project)
+    {
+        $this->init();
+        $search = $request->get('search');
+
+        $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+
+        if(!$permissions){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => 'not enough permissions to do this',
+                )
+            );
+        }
+
+        $result = $this->translationsManager->getStatistics($project);
+
+        return $this->printResult($result);
+
+    }
+
+    /**
      * @return ProjectRepository
      */
     protected function getProjectRepository()
