@@ -109,7 +109,7 @@ class SecurityController extends BaseController
     {
         $ch = curl_init('https://api.github.com/user?access_token=' . $access_token);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'translations.com.es');
+        curl_setopt($ch, CURLOPT_USERAGENT, 'tradukoj.com');
         $response = curl_exec($ch);
         //print_r($response);
 
@@ -184,7 +184,7 @@ class SecurityController extends BaseController
                     $login        = $data['login'];
                     $avatar_url   = $data['avatar_url'];
                     $user         = $this->getUserRepository()->findOneBy(array('username' => $login));
-                    $email        = isset($data['email']) ? $data['email'] : $login . '-github@translations.com.es';
+                    $email        = isset($data['email']) ? $data['email'] : $login . '-github@tradukoj.com';
                     if(!$user instanceof User){
                         $user     = $this->getUserRepository()->findOneBy(array('email' => $email));
                     }
