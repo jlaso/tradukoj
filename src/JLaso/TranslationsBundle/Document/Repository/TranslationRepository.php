@@ -23,7 +23,22 @@ class TranslationRepository extends DocumentRepository
         return array_keys($catalogs);
     }
 
-    public function getKeys($projectId, $catalog)
+    public function getBundles($projectId)
+    {
+        $dm = $this->getDocumentManager();
+
+        /** @var Translation[] $result */
+        $result = $dm->getRepository('TranslationsBundle:Translation')->findBy(array('projectId'=>$projectId));
+
+        $bundles = array();
+        foreach($result as $item){
+            $bundles[$item->getBundle()] = null;
+        }
+
+        return array_keys($bundles);
+    }
+
+    public function getKeys($projectId, $catalog, $onlyLanguage = '')
     {
         $dm = $this->getDocumentManager();
 
@@ -33,14 +48,43 @@ class TranslationRepository extends DocumentRepository
                     'projectId' => $projectId,
                     'catalog'   => $catalog,
                 )
-            );
+            , array('key'));
 
         $keys = array();
         foreach($result as $item){
-            $keys[] = array(
-                'key' => $item->getKey(),
-                'id'  => $item->getId(),
-            );
+            $translations = $item->getTranslations();
+            if(!$onlyLanguage || !isset($translations[$onlyLanguage]['message']) || !trim($translations[$onlyLanguage]['message'])){
+                $keys[] = array(
+                    'key' => $item->getKey(),
+                    'id'  => $item->getId(),
+                );
+            }
+        }
+
+        return $keys;
+    }
+
+    public function getKeysByBundle($projectId, $bundle, $onlyLanguage = '')
+    {
+        $dm = $this->getDocumentManager();
+
+        /** @var Translation[] $result */
+        $result = $dm->getRepository('TranslationsBundle:Translation')
+            ->findBy(array(
+                    'projectId' => $projectId,
+                    'bundle'    => $bundle,
+                )
+            , array('key'));
+
+        $keys = array();
+        foreach($result as $item){
+            $translations = $item->getTranslations();
+            if(!$onlyLanguage || !isset($translations[$onlyLanguage]['message']) || !trim($translations[$onlyLanguage]['message'])){
+                $keys[] = array(
+                    'key' => $item->getKey(),
+                    'id'  => $item->getId(),
+                );
+            }
         }
 
         return $keys;
@@ -69,7 +113,14 @@ class TranslationRepository extends DocumentRepository
         return $keys;
     }
 
-    public function getMessagesDocument($projectId, $catalog, $key)
+    /**
+     * @param $projectId
+     * @param $catalog
+     * @param $key
+     *
+     * @return Translation
+     */
+    public function getTranslation($projectId, $catalog, $key)
     {
 //        /** @var Translation $result */
 //        $query = $this
@@ -87,13 +138,26 @@ class TranslationRepository extends DocumentRepository
 
         $result = $this
             ->findOneBy(array(
-                    //'projectId' => intval($projectId),
-                    //'catalog'   => trim($catalog),
+                    'projectId' => intval($projectId),
+                    'catalog'   => trim($catalog),
                     'key'       => trim($key),
                 )
             );
 
         //print("||$key||".count($result)); die;
+
+        return $result; // ? $result->getTranslations() : array();
+    }
+
+    public function getTranslationByBundle($projectId, $bundle, $key)
+    {
+        $result = $this
+            ->findOneBy(array(
+                    'projectId' => intval($projectId),
+                    'bundle'    => trim($bundle),
+                    'key'       => trim($key),
+                )
+            );
 
         return $result; // ? $result->getTranslations() : array();
     }

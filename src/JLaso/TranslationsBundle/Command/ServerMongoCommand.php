@@ -77,6 +77,7 @@ class ServerMongoCommand extends ContainerAwareCommand
     protected $showExceptions = false;
     protected $sended = 0;
     protected $received = 0;
+    protected $timeStart;
 
     /**
      * configure the command that starts the server
@@ -115,6 +116,9 @@ class ServerMongoCommand extends ContainerAwareCommand
     {
         $buffer = '';
         do{
+            if((time() - $this->timeStart) > 100){
+                exit -1;
+            }
             $buf = socket_read($this->msgsock, 15 + 1024, PHP_BINARY_READ);
             if($buf === false){
                 echo "socket_read() falló: razón: " . socket_strerror(socket_last_error($this->msgsock)) . "\n";
@@ -176,6 +180,7 @@ class ServerMongoCommand extends ContainerAwareCommand
     {
         set_time_limit(0);
         ob_implicit_flush();
+        $this->timeStart = time();
 
         $container                 = $this->getContainer();
         $this->em                  = $container->get('doctrine.orm.default_entity_manager');
@@ -203,7 +208,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                 break;
             }
             /* Enviar instrucciones. */
-            $this->send("Welcome to TranslationsApiBundle v1.2 (mongo-sockets)");
+            $this->send("Welcome to TranslationsApiBundle v1.3 (mongo-sockets)");
 
             do {
                 $buf = $this->readSocket();

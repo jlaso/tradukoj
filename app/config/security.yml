@@ -43,7 +43,7 @@ security:
 
             logout:
                 path:   /logout
-                target: user_login
+                target: home
 
 
     access_control:

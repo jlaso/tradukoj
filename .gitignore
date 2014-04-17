@@ -10,6 +10,8 @@ app/config/parameters.yml
 app/cache/*
 app/logs/*
 vendor/*
+_vendor
+_vendor/*
 web/bundles/*
 web/css/*
 web/js/*

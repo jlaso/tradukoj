@@ -11,17 +11,17 @@ use Doctrine\ORM\EntityManager;
 
 class MailerService
 {
-    const CONTACT_MAIL = 'hello@translations.com.es';
-    const SUPPORT_MAIL = 'support@translations.com.es';
+    const CONTACT_MAIL = 'jlaso@joseluislaso'; //'hello@tradukoj.com';
+    const SUPPORT_MAIL = 'jlaso@joseluislaso'; //'support@tradukoj.com';
 
     const CONTENT_TYPE = 'text/html';
-    const SELF_NAME    = 'Translations By JLaso';
+    const SELF_NAME    = 'Translations for Symfony2 projects By JLaso';
 
     protected $mailer;
     protected $templating;
     protected $em;
     protected $router;
-    protected $from_default = 'no-reply@translations.com.es';
+    protected $from_default = 'no-reply@tradukoj.com';
     protected $locale;
 
     public function __construct(\Swift_Mailer $mailer, EngineInterface $templating, EntityManager $entityManager, RouterInterface $router, $locale)

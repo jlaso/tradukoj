@@ -298,6 +298,7 @@ class Translation
 
     public static function genTranslationItem($message, $approved = false, $updatedAt = null, $fileName = '')
     {
+        // @TODO: Que pasa con fileName ?
         return array(
             'message'   => $message,
             'approved'  => $approved,
