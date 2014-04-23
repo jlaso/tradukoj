@@ -239,8 +239,10 @@ class TranslationsManager
     public function getStatistics(Project $project)
     {
 
-        $bundleData = array();
+        $bundleData  = array();
         $catalogData = array();
+        $bundles     = array();
+        $catalogs    = array();
 
         /** @var Translation[] $translations */
         $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId()));
@@ -249,6 +251,8 @@ class TranslationsManager
             $transArray = $translation->getTranslations();
             $bundle = $translation->getBundle();
             $catalog = $translation->getCatalog();
+            $bundles[$bundle] = true;
+            $catalogs[$catalog] = true;
 
             foreach($transArray as $locale=>$data){
 
@@ -269,6 +273,8 @@ class TranslationsManager
 
         return array(
             'result'      => true,
+            'bundles'     => array_keys($bundles),
+            'catalogs'    => array_keys($catalogs),
             'bundleData'  => $bundleData,
             'catalogData' => $catalogData,
         );
@@ -298,9 +304,5 @@ class TranslationsManager
     {
         return $this->dm->getRepository('TranslationsBundle:Translation');
     }
-
-
-
-
 
 }

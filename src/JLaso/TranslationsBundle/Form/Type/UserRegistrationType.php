@@ -13,15 +13,15 @@ class UserRegistrationType extends AbstractType
     {
         $builder
             ->add('email', null, array(
-                    'attr' => array(
+                    'attr'        => array(
                         'placeholder' => 'register.placeholder.email',
-                    )
+                    ),
+                    'required'    => true,
+                    'constraints' => new NotBlank(),
                 ))
 
 
             ->add('password', 'repeated', array(
-                    'label' => '',
-                    'type' => 'password',
 //                    'invalid_message' => "account_settings.change_password.placeholder.password_mismatch",
                     'options' => array(
                         'required' => true
@@ -40,12 +40,16 @@ class UserRegistrationType extends AbstractType
                         ),
                         'label' => ''
                     ),
+
+                    'constraints' => new NotBlank(),
                 ))
 
             ->add('confirmation', 'checkbox', array(
-                    'label' => 'register.placeholder.terms',
-                    'mapped' => false,
-                    'constraints' => new NotBlank()
+                    'label'       => 'register.placeholder.terms',
+                    'mapped'      => false,
+                    'constraints' => new NotBlank(),
+                    'required'    => true,
+
                 ))
         ;
     }

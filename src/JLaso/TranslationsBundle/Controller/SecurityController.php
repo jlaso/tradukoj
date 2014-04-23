@@ -231,15 +231,14 @@ class SecurityController extends BaseController
         $form = $this->createForm(new UserRegistrationType(), $user);
 
         if($request->isMethod('POST')){
-            $form->bind($request);
+            $form->submit($request);
 
             if ($form->isValid()) {
 
-                /**
-                 * @var Session         $session
-                 * @var EntityManager   $em
-                 */
+                /** @var Session $session */
                 $session = $this->get('session');
+                /** @var EntityManager $em */
+
                 $em = $this->getDoctrine()->getManager();
 
                 /** @var EncoderFactory $encoderFactory */
@@ -259,7 +258,11 @@ class SecurityController extends BaseController
 
                 /** @var MailerService $mailer */
                 $mailer = $this->get('jlaso.mailer_service');
-                $send = $mailer->sendWelcomeMessage($user);
+                try{
+                    $send = $mailer->sendWelcomeMessage($user);
+                }catch(\Exception $e){
+
+                }
 
                 if(is_string($send)){
                     $this->addNoticeFlash($send);

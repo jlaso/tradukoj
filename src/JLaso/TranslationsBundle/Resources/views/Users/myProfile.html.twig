@@ -1,0 +1,262 @@
+{% extends '::base.html.twig' %}
+
+
+{% block sidebar %}
+{% endblock sidebar %}
+
+{% block content %}
+
+    <!-- Page heading -->
+    <div class="page-head">
+        <!-- Page heading -->
+        <h2 class="pull-left">My profile
+            <!-- page meta -->
+            <span class="page-meta">From here you can maintain your profile</span>
+        </h2>
+
+
+        <!-- Breadcrumb -->
+        <div class="bread-crumb pull-right">
+            <a href="{{ path('user_index') }}"><i class="icon-home"></i> Home</a>
+            <!-- Divider -->
+            <span class="divider">/</span>
+            <a href="#" class="bread-current">My profile</a>
+        </div>
+
+        <div class="clearfix"></div>
+
+    </div>
+    <!-- Page heading ends -->
+
+    <!-- Matter -->
+    <div class="matter">
+        <div class="container-fluid">
+
+
+            <div class="widget wblue">
+
+                <div class="widget-head">
+                    <div class="pull-left"><i class="icon-tasks"></i>&nbsp;{{ "profile.title"|trans|raw }}</div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="widget-content">
+                    <div class="padd">
+
+                        <div class="row-fluid">
+
+                            <div class="span8">
+
+                                <div class="row-fluid">
+
+                                    <!-- Login form -->
+                                    <form class="form-horizontal" action="{{ path('user_profile') }}" novalidate
+                                          method="post" {{ form_enctype(form) }}>
+
+                                        <div class="error">{{ error is not null ? error.message : '' }}</div>
+                                        <!-- Email -->
+                                        <div class="control-group">
+                                            <div class="error red">{{ form_errors(form.email) }}</div>
+                                            <label class="control-label" for="_username"><i class="icon-envelope"></i>
+                                                Email</label>
+
+                                            <div class="controls">
+                                                {{ form_widget(form.email) }}
+                                            </div>
+                                        </div>
+                                        <!-- Password -->
+                                        {% for passwordField in form.password %}
+                                            <div class="control-group">
+                                                <div class="error red">
+                                                    {{ form_errors(passwordField)}}
+                                                </div>
+                                                <label class="control-label" for="_username"><i
+                                                            class="icon-key"></i>&nbsp;{{ (loop.index0 > 0) ? 'Repeat ' : '' }}
+                                                    Password</label>
+
+                                                <div class="controls">
+                                                    {{ form_widget(passwordField) }}
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+
+                                        <div class="control-group">
+                                            <div class="controls" style="margin-left:0 !important;">
+                                                <div class="error red">{{ form_errors(form.username) }}</div>
+                                                <label class="control-label" for="_username">
+                                                    <i class="icon-minus"></i>&nbsp;{{ "profile.placeholder.username"|trans|raw }}
+                                                </label>
+
+                                                <div class="controls">
+                                                    {{ form_widget(form.username) }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="control-group">
+                                            <div class="controls" style="margin-left:0 !important;">
+                                                <div class="error red">{{ form_errors(form.name) }}</div>
+                                                <label class="control-label" for="_username">
+                                                    <i class="icon-minus"></i>&nbsp;{{ "profile.placeholder.name"|trans|raw }}
+                                                </label>
+
+                                                <div class="controls">
+                                                    {{ form_widget(form.name) }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="control-group">
+                                            <div class="controls" style="margin-left:0 !important;">
+                                                <div class="error red">{{ form_errors(form.surname) }}</div>
+                                                <label class="control-label" for="_username">
+                                                    <i class="icon-minus"></i>&nbsp;{{ "profile.placeholder.surname"|trans|raw }}
+                                                </label>
+
+                                                <div class="controls">
+                                                    {{ form_widget(form.surname) }}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <hr/>
+
+                                        <div class="control-group">
+                                            <div class="controls" style="margin-left:0 !important;">
+                                                {{ form_rest(form) }}
+                                                <button type="submit" class="btn btn-danger">{{ "profile.button.save"|trans|raw }}</button>
+                                                <button type="reset" class="btn">Reset</button>
+                                            </div>
+                                        </div>
+                                    </form>
+
+
+                                </div>
+                            </div>
+
+                            <div class="span4">
+
+                                <div class="row-fluid">
+
+                                    {% set defaultPhoto = asset('bundles/translations/img/defaultPhoto.png') %}
+
+                                    <div class="well">
+
+                                        <img id="avatar" src="{{ app.user.avatarUrl|default(defaultPhoto) }}?nocache={{ "now"|date("U") }}" alt="" class=""/>
+
+                                    </div>
+
+                                    <div>
+                                        <a href="#choose_avatar" role="button" data-toggle="modal" class="btn btn-warning">
+                                            {{ "profile.choose_avatar"|trans|raw }}
+                                        </a>
+
+                                        <form action="{{ path("user_upload_avatar") }}" method="post" enctype="multipart/form-data">
+                                            <label>{{ "profile.change_avatar.button.upload_my_own"|trans|raw }}</label>
+                                            <input id="avatar-file" name="avatar-file" type='file' />
+                                            <input type="submit"/>
+                                        </form>
+
+                                        {#<i class="sprite-comment-user-add-icon"></i> prueba#}
+
+                                    </div>
+
+
+                                </div>
+
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+    <div id="choose_avatar" class="modal hide fade" tabindex="-1"
+         role="dialog" aria-labelledby="choose_avatar" aria-hidden="true">
+
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="new_key_label">
+                <i class="icon-list-alt"></i> {{ "profile.choose_avatar.title"|trans|raw }}
+            </h3>
+        </div>
+
+
+        <div class="modal-body">
+
+            <div class="gallery">
+                <!-- Full size image link in anchor tag. Thumbnail link in image tag. -->
+                {% for avatarFile in avatarFiles %}
+                    <a href="#" class="avatar">
+                        <img src="{{ avatarFile }}" alt="" width="22%">
+                    </a>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <div class="modal-footer">
+
+            <button class="btn" data-dismiss="modal"
+                    aria-hidden="true">{{ "profile.change_avatar.button.close"|trans|raw }}</button>
+
+        </div>
+
+    </div>
+
+
+
+{% endblock content %}
+
+
+{% block javascripts %}
+    {{ parent() }}
+    <script type="text/javascript">
+
+        $(function(){
+
+            $('#avatar-file').change(function(e){
+
+                console.log('uploading avatar');
+                $('#avatar-form').submit();
+
+            });
+
+
+            $('.avatar').click(function(e){
+                e.preventDefault();
+
+                var avatar = $(this).find("img").attr("src");
+                $.ajax({
+                    url: "{{ path("user_change_avatar") }}",
+                    method: "post",
+                    data:{
+                        avatar: avatar
+                    },
+                    success: function(data){
+                        if(data.result){
+                            var date = new Date();
+                            var newSrc = data.avatar + "?nocache=" + date.getMilliseconds();
+                            $("#avatar").attr("src", newSrc);
+                            $("#mini-avatar").attr("src", newSrc);
+                            $("#choose_avatar").modal("hide");
+                        }else{
+                            alert(data.reason);
+                        }
+                    },
+                    error: function(text){
+                        alert(text.responseText);
+                    }
+                })
+
+            });
+
+        });
+
+    </script>
+{% endblock javascripts %}

@@ -13,6 +13,8 @@ class TranslationLog
     const TRANSLATE  = 'translate';
     const APPROVE    = 'approve';
     const DISAPPROVE = 'disapprove';
+    const NEW_KEY    = 'new_key';
+    const CHANGE_KEY = 'change_key';
 
     const TRANSLATIONS_GROUP = 'trans-keys';
     const DOCUMENTS_GROUP    = 'trans-docs';

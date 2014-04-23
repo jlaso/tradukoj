@@ -87,6 +87,7 @@ class Project
         $this->managedLocales = 'en';
         $this->users          = new ArrayCollection();
         $this->permissions    = new ArrayCollection();
+        $this->apiKey         = uniqid();
     }
 
     public function __toString()

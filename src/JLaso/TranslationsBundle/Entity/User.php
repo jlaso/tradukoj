@@ -98,6 +98,14 @@ class User implements UserInterface, EquatableInterface
     protected $salt;
 
     /**
+
+     * @var string $active
+     *
+     * @ORM\Column(name="active", type="boolean", nullable=false)
+     */
+    protected $active;
+
+    /**
      * @var array $roles
      *
      * @ORM\Column(name="roles", type="array")
@@ -130,7 +138,7 @@ class User implements UserInterface, EquatableInterface
         $this->roles       = array();
         $this->salt        = base_convert(sha1(uniqid(mt_rand(), true)), 16, 36);
         $this->createdAt   = new \DateTime();
-        $this->actived     = false;
+        $this->active      = false;
         $this->name        = "";
         $this->surname     = "";
         //$this->projects    = new ArrayCollection();
@@ -262,10 +270,9 @@ class User implements UserInterface, EquatableInterface
     {
         $this->id = unserialize($data);
     }
-
-    public function isActived()
+    public function isActive()
     {
-        return $this->actived;
+        return $this->active;
     }
 
     /**
@@ -339,12 +346,12 @@ class User implements UserInterface, EquatableInterface
     }
 
     /**
-     * @param  boolean $actived
+     * @param  boolean $active
      * @return User
      */
-    public function setActived($actived)
+    public function setActive($active)
     {
-        $this->actived = $actived;
+        $this->active = $active;
 
         return $this;
     }
@@ -352,9 +359,9 @@ class User implements UserInterface, EquatableInterface
     /**
      * @return boolean
      */
-    public function getActived()
+    public function getActive()
     {
-        return $this->actived;
+        return $this->active;
     }
 
     /**
@@ -429,7 +436,7 @@ class User implements UserInterface, EquatableInterface
      */
     public function getUsername()
     {
-        return $this->username ?: $this->email;
+        return $this->username;
     }
 
 //    /**

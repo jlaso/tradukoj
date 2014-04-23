@@ -2,127 +2,134 @@
 
 {% block stylesheets %}
     <style type="text/css">
-        body {
-            padding-top: 70px;
-            padding-bottom: 40px;
-            background-image: url("{{ asset('bundles/translations/resource/img/bg.png') }}");
-        }
+        {#        body {
+                    padding-top: 70px;
+                    padding-bottom: 40px;
+                    background-image: url("{{ asset('bundles/translations/resource/img/bg.png') }}");
+                }
 
-        .sidebar-nav {
-            padding: 9px 0;
+                .sidebar-nav {
+                    padding: 9px 0;
+                }
+
+        #}
+        .parameters{
+            font-family: Consolas, Monaco, Lucida Console, monospace;
+            border: 1px solid #ccc;
+            margin: 4px;
+            padding: 4px;
         }
     </style>
 {% endblock stylesheets %}
 
 
 {% block sidebar %}
-    <div class="span2">
-        <div class="well sidebar-nav">
-            <ul class="nav nav-list">
-                <li>
-                   {# <div class="nav-collapse">
-                        <ul class="nav pull-right">
-                            <li class="divider-vertical"></li>
-                            <ul class="nav">
-                                <li class="dropdown">
-                                    <a href="#"
-                                       class="dropdown-toggle"
-                                       data-toggle="dropdown">
-                                        <i class="icon-th-list"></i>
-                                        <b class="caret"></b>
-                                    </a>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a href="{{ path('new_project') }}">{{ "label.project_new"|trans|raw }}</a>
-                                        </li>
-                                        <li>
-                                            <a href="{{ path('_user_logout') }}"><i class="icon-off"></i> Log Out</a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </ul>
-                    </div>#}
-                    <h3>{{ "labelH3.projects"|trans|raw }}</h3>
-                </li>
-                <li>
-                    <div class="accordion" id="accordion_sidebar">
-                        {% for prj in projects %}
-                            <div class="accordion-group">
-                                <div class="accordion-heading">
-                                    <a style="text-decoration: none;text-align: left"
-                                       class="accordion-toggle btn {{ prj==project ? 'btn-danger' : '' }}"
-                                       href="{{ path('translations', {'projectId': prj.id}) }}">
-                                        <i class="icon-tasks {{ prj==project ? 'icon-white' : '' }}"></i>
-                                        <span> {{ prj.name }}</span>
-                                    </a>
-                                </div>
-                                {#{% if current == bundle %}
-                                <div id="collapse_bundle_{{ bundle }}" class="accordion-body collapse in">
-                                    <div class="container">
-                                        {{ _self.node(keys) }}
-                                    </div>
-                                </div>
-                                {% endif %}#}
-                            </div>
-                        {% endfor %}
-                        <div class="accordion-group">
-                            <div class="accordion-heading">
-                                <a style="text-decoration: none;text-align: left"
-                                   class="accordion-toggle btn btn-warning"
-                                   href="{{ path('new_project') }}">
-                                    <i class="icon icon-plus-sign"></i>
-                                    <span> {{ "label.project_new"|trans|raw }}</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </div><!--/.well -->
-    </div><!--/span-->
+    <ul class="navi">
+        <li>
+            <h3>{{ "labelH3.projects"|trans|raw }}</h3>
+        </li>
+        {% for prj in projects %}
+            <li class="{{ (current is defined and (current == prj.name)) ? "current" : "" }}">
+                <a href="{{ path('translations', {'projectId': prj.id}) }}">
+                    <i class="icon-tasks"></i> <span>{{ prj.name }}</span>
+                </a>
+            </li>
+        {% endfor %}
+        <li class="norange">
+            <a href="{{ path('new_project') }}">
+                <i class="icon icon-plus-sign"></i> <span>{{ "label.project_new"|trans|raw }}</span>
+            </a>
+        </li>
+    </ul>
+
 {% endblock sidebar %}
 
 {% block breadcrum %}
 {% endblock breadcrum %}
 
 {% block content %}
-    <div class="container">
+<!-- Page heading -->
+<div class="page-head">
+    <!-- Page heading -->
+    <h2 class="pull-left">User area
+        <!-- page meta -->
+        <span class="page-meta">From here you can control all your projects</span>
+    </h2>
+
+
+    <!-- Breadcrumb -->
+    <div class="bread-crumb pull-right">
+        <a href="{{ path('user_index') }}"><i class="icon-home"></i> Home</a>
+        <!-- Divider -->
+        <span class="divider">/</span>
+        {#<a href="#" class="bread-current">Charts</a>#}
+    </div>
+
+    <div class="clearfix"></div>
+
+</div>
+<!-- Page heading ends -->
+
+
+
+<!-- Matter -->
+
+<div class="matter">
+    <div class="container-fluid">
 
         {% if permissions %}
+            {#
         <div class="row-fluid">
-            <div class="span12 well">
-                <div class="accordion" id="usersAccordion">
-                    <div class="accordion-group">
-                        <div class="accordion-heading">
-                            <a style="text-align: left;text-decoration: none" class="accordion-toggle btn btn-danger"
-                               data-toggle="collapse" data-parent="#usersInfo" href="#usersAccordion">
-                                <i class="icon-eye-open"></i> {{ "Users"|trans|raw }} <i class="icon-minus pull-right"></i>
-                            </a>
+            <div class="span12">
+
+                <div class="widget wlightblue">
+
+                    <div class="widget-head">
+                        <div class="pull-left"><i class="icon-user"></i> {{ "Users"|trans|raw }}</div>
+                        <div class="widget-icons pull-right">
+                            <a href="#" class="wminimize"><i class="icon-chevron-up"></i></a>
+                            <a href="#" class="wclose"><i class="icon-remove"></i></a>
                         </div>
-                        <div id="usersInfo" class="accordion-body collapse in">
-                            <div class="accordion-inner" style="background-color: #ffffff;">
+                        <div class="clearfix"></div>
+                    </div>
 
-                                <div class="row-fluid">
-                                    <div class="span12">
 
-                                    </div>
+                    <div class="widget-content">
+                        <div class="padd">
+
+                            <div class="row-fluid">
+                                <div class="span12">
+
+
                                 </div>
                             </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </div>
+            #}
         {% endif %}
+{#
+        <div class="row-fluid">
+            <div class="span12">
 
-        {#<div class="row">
+                <div class="widget wgreen">
 
-            <div class="span4 offset4">
+                    <div class="widget-head">
+                        <div class="pull-left"><i class="icon-list"></i> {{ "Translations status"|trans|raw }}</div>
+                        <div class="widget-icons pull-right">
+                            <a href="#" class="wminimize"><i class="icon-chevron-up"></i></a>
+                            <a href="#" class="wclose"><i class="icon-remove"></i></a>
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
 
-                #2
 
-            </div>
+                    <div class="widget-content">
+                        <div class="padd">
+
 
         </div>
 #}
@@ -139,62 +146,73 @@
                         <div id="collapseQuickV" class="accordion-body collapse in">
                             <div class="accordion-inner" style="background-color: #ffffff;">
 
-                                <div class="row-fluid">
-                                    <div class="span12">
-                                        <table class="table ">
-                                            <thead>
-                                            <tr>
-                                                <th>#</th>
-                                                <th>Project</th>
-                                                <th>Statistics</th>
-                                            </tr>
-                                            </thead>
-                                            <tbody>
-                                            {% for prj in projects %}
-                                            <tr>
-                                                <td><span class="label">{{ prj.id }}</span></td>
-                                                <td>{{ prj.name }}</td>
-                                                <td>
-                                                    <table>
-                                                        <thead>
+
+                            <div class="row-fluid">
+                                <div class="span12">
+                                    <table class="table ">
+                                        <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Project</th>
+                                            <th>Statistics</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for prj in projects %}
+                                        <tr>
+                                            <td><span class="label">{{ prj.id }}</span></td>
+                                            <td>
+                                                {{ prj.name }}
+                                                <div class="parameters">
+                                                    # put this in your app/config/parameters.yml<br/>
+                                                    jlaso_translations_api_access: <br/>
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;project_id: {{ prj.id }}<br/>
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;key: {{ prj.apiKey }}<br/>
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;secret: {{ prj.apiSecret }}<br/>
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;url: 'https://www.tradukoj.com/api/'
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <table>
+                                                    <thead>
+                                                    <tr>
+                                                        <th>Locale</th>
+                                                        <th>
+                                                            Qty
+                                                        </th>
+                                                        <th>Status</th>
+                                                    </tr>
+                                                    </thead>
+                                                    {% for locale in languages[prj.id] %}
                                                         <tr>
-                                                            <th>Locale</th>
-                                                            <th>
-                                                                Qty
-                                                            </th>
-                                                            <th>Status</th>
+                                                            <td><code>{{ locale.info.locale }}</code> &nbsp;<i class="icon-flag"></i> {{ locale.info.name }}</td>
+                                                            <td><span class="label label-success">{{ locale.keys }}</span></td>
+                                                            <td>
+                                                                <table>
+                                                                    <tr>
+                                                                        <td>Approved</td>
+                                                                        <td></td>
+                                                                    </tr>
+                                                                    <tr>
+                                                                        <td>Pending</td>
+                                                                        <td></td>
+                                                                    </tr>
+                                                                </table>
+                                                            </td>
                                                         </tr>
-                                                        </thead>
-                                                        {% for locale in languages[prj.id] %}
-                                                            <tr>
-                                                                <td><code>{{ locale.info.locale }}</code> &nbsp;<i class="icon-flag"></i> {{ locale.info.name }}</td>
-                                                                <td><span class="label label-success">{{ locale.keys }}</span></td>
-                                                                <td>
-                                                                    <table>
-                                                                        <tr>
-                                                                            <td>Approved</td>
-                                                                            <td></td>
-                                                                        </tr>
-                                                                        <tr>
-                                                                            <td>Pending</td>
-                                                                            <td></td>
-                                                                        </tr>
-                                                                    </table>
-                                                                </td>
-                                                            </tr>
-                                                        {% endfor %}
-                                                    </table>
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
+                                                    {% endfor %}
+                                                </table>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
 
-                                            </tbody>
-                                        </table>
-                                    </div>
-
+                                        </tbody>
+                                    </table>
                                 </div>
 
                             </div>
+
+
                         </div>
                     </div>
 
@@ -203,5 +221,188 @@
 
         </div>
 
+        <!-- Curve chart starts -->
+
+        {% for prj in projects %}
+        <div class="widget wviolet">
+
+            <div class="widget-head">
+                <div class="pull-left"><i class="icon-bar-chart"></i> {{ prj.name }} translations evolution</div>
+                <div class="widget-icons pull-right">
+                    <a href="#" class="wminimize"><i class="icon-chevron-up"></i></a>
+                    <a href="#" class="wclose"><i class="icon-remove"></i></a>
+                </div>
+                <div class="clearfix"></div>
+            </div>
+
+
+            <div class="widget-content">
+                <div class="padd">
+
+                    <div class="curve-chart" id="curve-chart-{{ prj.id }}"></div>
+
+                    <hr />
+
+                    {#<div id="hoverdata">Mouse hovers at
+                        (<span id="x">0</span>, <span id="y">0</span>). <span id="clickdata"></span></div>#}
+
+                    <div>Units are words</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Curve chart ends -->
     </div>
 {% endblock content %}
+
+
+{% block javascripts %}
+    <script>
+
+        /* Curve chart starts */
+
+        $(function () {
+
+            {% for stat in stats %}
+
+            {% if stat.data.bundles|length %}
+
+                // info for project #{{ stat.project }}
+                var locales = [ "{{ stat.locales|join('","')|raw }}" ];
+                var bundles = [ "{{ stat.data.bundles|join('","')|raw }}" ];
+                var data = {
+                {% for bundle in stat.data.bundles %}
+                    "{{ bundle }}": {
+                        {% for locale in stat.locales %}
+                            "{{ locale }}" : {{ stat.data.bundleData[bundle][locale] is defined ? stat.data.bundleData[bundle][locale] : "0" }}{{ loop.revindex0 ? "," : "" }}
+                        {% endfor %}
+                    }{{ loop.revindex0 ? "," : "" }}
+                {% endfor %}
+                };
+
+//            var data = {
+//                 'AdminBundle' : { 'en': 1110, 'es': 1075, 'ru': 100, 'fr':250 },
+//                 'uno' : { 'en': 1110, 'es': 1075, 'ru': 180, 'fr':350 },
+//                 'UserBundle'  : { 'en':  878, 'es':  914, 'ru': 100, 'fr':250 },
+//                 'tre'  : { 'en':  878, 'es':  914, 'ru': 200, 'fr':150 },
+//                 'dos'  : { 'en':  878, 'es':  914, 'ru': 100, 'fr':250 }
+//            };
+
+
+            var dataProcessed = [];
+            var maxValue = 0;
+            for(var j=0; j<locales.length; j++){
+                var locale = locales[j];
+                var aux = [];
+                for(var i=0; i<bundles.length; i++){
+                    var bundle = bundles[i];
+                    var info = data[bundle][locale];
+                    aux.push([i, info]);
+                    if(info>maxValue) maxValue = info;
+                }
+                dataProcessed[j] = aux;
+            }
+            console.log("dataProcessed",dataProcessed);
+            console.log("maxValue", maxValue);
+
+            var xAxis = [];
+            for(var i=0; i<bundles.length; i++){
+                var bundle = bundles[i];
+                xAxis.push([i,bundle]);
+            }
+            console.log("xAxis",xAxis);
+
+            var dataOk = [];
+            for(var i=0; i<locales.length; i++){
+                var locale = locales[i];
+                dataOk.push({ data: dataProcessed[i], label: locale });
+            }
+            console.log("dataOk", dataOk);
+
+            var plot = $("#curve-chart-{{ stat.project }}").plot(dataOk,
+                    {
+                        series: {
+                            lines: {
+                                show: true,
+                                fill: true,
+                                fillColor: {
+                                    colors: [{
+                                        opacity: 0.05
+                                    }, {
+                                        opacity: 0.01
+                                    }]
+                                }
+                            },
+                            points: { show: true }
+                        },
+                        grid: { hoverable: true, clickable: true, borderWidth:0 },
+                        //colors: ["#fa3031", "#43c83c"],
+                        yaxis: {
+                            min: 0,
+                            max: maxValue
+                        },
+                        xaxis: {
+                            min: 0,
+                            max: bundles.length,
+                            //tickSize: 1,
+                            //tickFormatter: function(val, axis) {
+                            //    return bundles[val];
+                            //},
+                            ticks: xAxis
+                        }
+                    });
+
+
+            function showTooltip(x, y, contents) {
+                $('<div id="tooltip">' + contents + '</div>').css( {
+                    position: 'absolute',
+                    display: 'none',
+                    top: y + 5,
+                    width: 100,
+                    left: x + 5,
+                    border: '1px solid #000',
+                    padding: '2px 8px',
+                    color: '#ccc',
+                    'background-color': '#000',
+                    opacity: 0.9
+                }).appendTo("body").fadeIn(200);
+            }
+
+            var previousPoint = null;
+            $(".curve-chart").bind("plothover", function (event, pos, item) {
+                $("#x").text(pos.x.toFixed(2));
+                $("#y").text(pos.y.toFixed(2));
+
+                if (item) {
+                    if (previousPoint != item.dataIndex) {
+                        previousPoint = item.dataIndex;
+
+                        $("#tooltip").remove();
+                        var x = item.datapoint[0].toFixed(2),
+                                y = item.datapoint[1].toFixed(2);
+
+                        showTooltip(item.pageX, item.pageY, y + ' words in ' + bundles[x-1] + ' for <strong>' + item.series.label + '</strong> language');
+                    }
+                }
+                else {
+                    $("#tooltip").remove();
+                    previousPoint = null;
+                }
+            });
+
+//                $("#curve-chart").bind("plotclick", function (event, pos, item) {
+//                    if (item) {
+//                        $("#clickdata").text("You clicked point " + item.dataIndex + " in " + item.series.label + ".");
+//                        plot.highlight(item.series, item.datapoint);
+//                    }
+//                });
+            {% endif %}
+            {% endfor %}
+
+        });
+
+        /* Curve chart ends */
+
+    </script>
+{% endblock javascripts %}

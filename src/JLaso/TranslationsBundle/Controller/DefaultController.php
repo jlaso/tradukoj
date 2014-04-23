@@ -9,9 +9,10 @@ use JLaso\TranslationsBundle\Document\Repository\TranslatableDocumentRepository;
 use JLaso\TranslationsBundle\Document\TranslatableDocument;
 use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
-use JLaso\TranslationsBundle\Entity\Repository\LanguageRepository;
-use JLaso\TranslationsBundle\Entity\Repository\ProjectRepository;
 use JLaso\TranslationsBundle\Entity\TranslationLog;
+use JLaso\TranslationsBundle\Entity\Repository\LanguageRepository;
+use JLaso\TranslationsBundle\Entity\Repository\TranslationLogRepository;
+use JLaso\TranslationsBundle\Entity\Repository\ProjectRepository;
 use JLaso\TranslationsBundle\Entity\User;
 use JLaso\TranslationsBundle\Exception\AclException;
 use JLaso\TranslationsBundle\Form\Type\NewProjectType;
@@ -34,7 +35,7 @@ use JLaso\TranslationsBundle\Document\Translation;
  * @package JLaso\TranslationsBundle\Controller
  * @Route("/")
  */
-class DefaultController extends Controller
+class DefaultController extends BaseController
 {
 
     const APPROVE    = TranslationLog::APPROVE;
@@ -86,6 +87,7 @@ class DefaultController extends Controller
         $project   = null;
         $langInfo  = array();
         $keysInfo  = array();
+        $stats     = array();
 
         foreach($projects as $prj){
             $prjId = $prj->getId();
@@ -100,6 +102,11 @@ class DefaultController extends Controller
                     'info' => $languages[$locale],
                 );
             }
+            $stats[] = array(
+                'project' => $prj->getId(),
+                'locales' => $managedLocales,
+                'data'    => $this->translationsManager->getStatistics($prj),
+            );
         }
 
         /** @var User $user */
@@ -112,6 +119,7 @@ class DefaultController extends Controller
             'project'     => $project,
             'languages'   => $langInfo,
             'permissions' => $permissions,
+            'stats'       => $stats,
         );
     }
 
@@ -307,6 +315,8 @@ class DefaultController extends Controller
         $this->dm->persist($translation);
         $this->dm->flush($translation);
 
+        $this->translationsManager->saveLog($translation->getId(), '', $keyName, TranslationLog::NEW_KEY, $this->user, TranslationLog::TRANSLATIONS_GROUP);
+
         /** @var TranslationRepository $translationRepository */
         $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
         if(strpos($current, "Bundle") !== false){
@@ -335,6 +345,101 @@ class DefaultController extends Controller
         );
     }
 
+    protected function isABundle($string)
+    {
+        return ((false != strpos($string, "Bundle")) || $string == "*app");
+    }
+
+    /**
+     * @Route("/tools/change-key/project-{projectId}", name="translations_change_key")
+     * @Template()
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function changeKeyAction(Request $request, Project $project)
+    {
+        $this->init();
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+        if(!$permission instanceof Permission){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => $this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'),
+                )
+            );
+        }
+        $catalog = trim($request->get('catalog'));
+        $keyNew  = trim($request->get('keyNew'));
+        $keyOld  = trim($request->get('keyOld'));
+        $current = trim($request->get('current'));
+        if(!$catalog || !$current || !$keyNew || !$keyOld){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => $this->translator->trans('translations.change_key_dialog.error.not_enough_parameters'),
+                )
+            );
+        }
+        $translationRepository = $this->getTranslationRepository();
+        $key = $translationRepository->findOneBy(array(
+                'projectId' => $project->getId(),
+                'catalog'   => $catalog,
+                'key'       => $keyNew,
+            )
+        );
+        if($key){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => $this->translator->trans('translations.change_key_dialog.error.key_already_exists', array('%key%' => $keyNew)),
+                )
+            );
+        }
+        $managedLocales = explode(',',$project->getManagedLocales());
+
+        $translation = $translationRepository->findOneBy(array(
+                'projectId' => $project->getId(),
+                'catalog'   => $catalog,
+                'key'       => $keyOld,
+            )
+        );
+        if(!$translation){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => $this->translator->trans('translations.change_key_dialog.error.key_dont_exists', array('%key%' => $keyOld)),
+                )
+            );
+        }
+        $translation->setKey($keyNew);
+        $translation = $this->translationsManager->normalizeTranslation($translation, $managedLocales);
+        $this->dm->persist($translation);
+        $this->dm->flush($translation);
+
+        $this->translationsManager->saveLog($translation->getId(), '', $keyOld . " => " . $keyNew, TranslationLog::CHANGE_KEY, $this->user, TranslationLog::TRANSLATIONS_GROUP);
+
+        /** @var TranslationRepository $translationRepository */
+        $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
+        if($this->isABundle($current)){
+            $keys = $translationRepository->getKeysByBundle($project->getId(), $current);
+        }else{
+            $keys = $translationRepository->getKeys($project->getId(), $current);
+        }
+        $tree = $this->keysToPlainArray($keys);
+
+        $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+
+        $html = $this->renderView("TranslationsBundle:Default:messages.html.twig",array(
+                'translation'     => $translation,
+                'managed_locales' => $managedLocales,
+                'permissions'     => $permission->getPermissions(),
+                'languages'       => $languages,
+            )
+        );
+
+        return $this->printResult(array(
+                'result' => true,
+                'tree'   => $tree,
+                'key'    => $keyNew,
+                'html'   => $html,
+            )
+        );
+    }
 
     /**
      * @Route("/documents/{projectId}/{bundle}/{key}", name="documents")
@@ -460,15 +565,95 @@ class DefaultController extends Controller
     }
 
     /**
-     * @param $data
-     *
-     * @return mixed
+     * @Route("/tree-documents-{projectId}-{bundle}.json", name="tree-docs.json")
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    protected function printResult($data)
+    public function treeDocJsonAction(Request $request, Project $project, $bundle)
     {
-        header('Content-type: application/json');
-        print json_encode($data);
-        exit;
+        /**
+         * [
+        { "id" : "ajson1", "parent" : "#", "text" : "Simple root node" },
+        { "id" : "ajson2", "parent" : "#", "text" : "Root node 2" },
+        { "id" : "ajson3", "parent" : "ajson2", "text" : "Child 1" },
+        { "id" : "ajson4", "parent" : "ajson2", "text" : "Child 2" },
+        ]
+         */
+        $this->init();
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+
+        if(!$permission instanceof Permission){
+            throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
+        }
+
+        /** @var TranslatableDocumentRepository $repository */
+        $repository = $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
+        $documents = $repository->findBy(array(
+                'projectId' => $project->getId(),
+                'bundle'    => $bundle,
+            )
+        );
+        $keys = array();
+        foreach($documents as $item){
+            $keys[] = array(
+                'key' => $item->getKey(),
+                'id'  => $item->getId(),
+            );
+        }
+        $keysAssoc = $this->keysToPlainArray($keys);
+
+        return $this->printResult($keysAssoc);
+    }
+
+
+    /**
+     * @Route("/logs-{projectId}-{catalog}.json", name="translation_logs.json")
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function logsJsonAction(Request $request, Project $project, $catalog)
+    {
+        $this->init();
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+
+        if(!$permission instanceof Permission){
+            throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
+        }
+
+        $key = $request->get('key');
+        $result = array();
+        $users = array();
+
+        if($key){
+            /** @var TranslationRepository $repository */
+            $repository = $this->dm->getRepository('TranslationsBundle:Translation');
+            $translation = $repository->findOneBy(array(
+                    'projectId' => $project->getId(),
+                    'catalog'   => $catalog,
+                    'key'       => $key,
+                )
+            );
+            if($translation){
+                /** @var TranslationLogRepository $logRepository */
+                $logRepository = $this->em->getRepository('TranslationsBundle:TranslationLog');
+                /** @var TranslationLog[] $logs */
+                $logs = $logRepository->findBy(array('translationId'=>$translation->getId()), array('createdAt'=>'DESC'));
+                foreach($logs as $log){
+                    $user = $log->getUser();
+                    if($user && !isset($users[$user->getId()])){
+                        $users[$user->getId()] = $user->getName() ?: $user->getEmail();
+                    }
+                    $result[] = array(
+                        'id' => $log->getId(),
+                        'date' => $log->getCreatedAt()->format('d/M/Y H:i:s'),
+                        'user_id' => $user->getId(),
+                        'locale' => $log->getLocale(),
+                        'action' => $log->getActionType(),
+                        'message' => $log->getMessage(),
+                    );
+                }
+            }
+        }
+
+        return $this->printResult(array('logs' => $result, 'users' => $users));
     }
 
     /**
@@ -1016,6 +1201,51 @@ class DefaultController extends Controller
         var_dump($result); die;
         return $this->printResult($result);
 
+    }
+
+    public function searchMessagesAction(Request $request)
+    {
+        $project  = $request->getArgument('project');
+        $search  = $request->getArgument('search');
+
+        /** @var DocumentManager $dm */
+        $dm = $this->getContainer()->get('doctrine.odm.mongodb.document_manager');
+        /** @var EntityManager $em */
+        $em = $this->getContainer()->get('doctrine.orm.default_entity_manager');
+
+        /** @var ProjectRepository $projectRepository */
+        $projectRepository = $em->getRepository('TranslationsBundle:Project');
+        /** @var TranslationRepository $translationsRepository */
+        $translationsRepository = $dm->getRepository('TranslationsBundle:Translation');
+
+        if(intval($project)){
+            $project = $projectRepository->find($project);
+        }else{
+            $project = $projectRepository->findOneBy(array('name' => trim(strtolower($project))));
+        }
+        /** @var Project $project */
+        if(!$project){
+            throw new \Exception('Project not found');
+        }
+        /** @var Translation[] $translations */
+        $translations = $translationsRepository->findBy(array('projectId'=>$project->getId()));
+
+        $output = array();
+        foreach($translations as $translation){
+
+            foreach($translation->getTranslations() as $locale=>$key){
+
+                if(preg_match('/'.$search.'/i', $key['message'], $match)){
+
+                    $output[] = sprintf("\tFound (%s) in <info>%s</info> in locale <comment>%s</comment>", $match[0], $translation->getKey(), $locale);
+
+                }
+
+            }
+
+        }
+
+        return $this->resultOk($output);
     }
 
     /**

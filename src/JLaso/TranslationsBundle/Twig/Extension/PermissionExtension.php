@@ -22,6 +22,7 @@ class PermissionExtension extends \Twig_Extension
     {
         return array(
             'permission' => new \Twig_Function_Method($this, 'permission'),
+            'canAdmin' => new \Twig_Function_Method($this, 'canAdmin'),
         );
     }
 
@@ -46,6 +47,19 @@ class PermissionExtension extends \Twig_Extension
     }
 
     /**
+     * @param $permissionArray
+     *
+     * @return bool
+     */
+    public function canAdmin($permissionArray)
+    {
+        return (isset($permissionArray[Permission::GENERAL_KEY])  &&
+               (($permissionArray[Permission::GENERAL_KEY] == Permission::ADMIN) ||
+                ($permissionArray[Permission::GENERAL_KEY] == Permission::OWNER)));
+    }
+
+    /**
+
      * Returns the name of the extension.
      *
      * @return string The extension name
