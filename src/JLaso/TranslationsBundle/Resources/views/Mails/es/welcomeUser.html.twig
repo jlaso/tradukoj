@@ -1,0 +1,26 @@
+{% extends 'TranslationsBundle:Mails:layoutEmail.html.twig' %}
+
+{% block content %}
+
+    <h3 style="margin: 0;padding: 0;font-family: HelveticaNeue-Light, Helvetica Neue Light, Helvetica Neue, Helvetica, Arial, Lucida Grande, sans-serif;line-height: 1.1;margin-bottom: 15px;color: #000;font-weight: 500;font-size: 27px">
+        Hola, {{ user.email }}</h3>
+    <p class="lead"
+       style="margin: 0;padding: 0;font-family: Helvetica Neue, Helvetica, Helvetica, Arial, sans-serif;margin-bottom: 10px;font-weight: normal;font-size: 17px;line-height: 1.6">
+        Bienvenido a Translations by JLaso for Symfony2 projects
+    </p>
+    <p style="margin: 0;padding: 0;font-family: Helvetica Neue, Helvetica, Helvetica, Arial, sans-serif;margin-bottom: 10px;font-weight: normal;font-size: 14px;line-height: 1.6">
+        Deseamos que esta aplicación cumpla con tus expectitivas.
+        En todo caso eres libre de enviarme todo lo que consideres oportuno para mejorar esta tu aplicación.
+    </p>
+    <!-- Callout Panel -->
+    <p class="callout"
+       style="margin: 0;padding: 15px;font-family: Helvetica Neue, Helvetica, Helvetica, Arial, sans-serif;background-color: #ECF8FF;margin-bottom: 15px;font-weight: normal;font-size: 14px;line-height: 1.6">
+
+        Ahora, ya puedes crearte un proyecto dentro de tradukoj.com e instalar
+        <a href="https://bitbucket.org/jlaso/translations-apibundle"
+                style="margin: 0;padding: 0;font-family: Helvetica Neue, Helvetica, Helvetica, Arial, sans-serif;color: #2BA6CB;font-weight: bold">TranslationsApiBundle </a> para sincronizar las traducciones de tu proyecto.
+
+    </p>
+    <!-- /Callout Panel -->
+
+{% endblock content %}

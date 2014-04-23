@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+
+        <service id="twig.extension.jlaso_translations_permission" class="JLaso\TranslationsBundle\Twig\Extension\PermissionExtension">
+            <argument type="service" id="jlaso.translations_manager" />
+            <tag name="twig.extension" />
+        </service>
+
+        <service id="twig.extension.jlaso_translations_translations" class="JLaso\TranslationsBundle\Twig\Extension\TranslationsExtension">
+            <argument type="service" id="jlaso.translations_manager" />
+            <tag name="twig.extension" />
+        </service>
+
+    </services>
+</container>

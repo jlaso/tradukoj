@@ -1,0 +1,64 @@
+{
+    "name": "Translations for symfony2 projects",
+    "type": "project",
+    "description": "Translation framework for symfony2 projects",
+    "autoload": {
+        "psr-0": { "": "src/" }
+    },
+    "require": {
+        "php": ">=5.3.3",
+        "symfony/symfony": "*",
+        "symfony/yaml": "*",
+
+        "doctrine/orm": "*",
+        "doctrine/mongodb-odm-bundle": "*",
+        "doctrine/doctrine-bundle": "*",
+
+        "twig/extensions": "*",
+
+        "symfony/assetic-bundle": "*",
+        "symfony/swiftmailer-bundle": "*",
+        "symfony/monolog-bundle": "*",
+
+        "sensio/distribution-bundle": "*",
+        "sensio/framework-extra-bundle": "*",
+        "sensio/generator-bundle": "*",
+
+        "jms/security-extra-bundle": "*",
+        "jms/di-extra-bundle": "*",
+        "jms/i18n-routing-bundle": "dev-master",
+
+        "raulfraile/ladybug-bundle": "v0.7",
+
+        "behat/behat": "*",
+        "behat/symfony2-extension": "*",
+        "behat/mink-extension": "*",
+        "behat/mink-browserkit-driver": "*",
+        "behat/mink-selenium2-driver": "*",
+        "behat/mink-goutte-driver": "*",
+
+        "jlaso/translations-apibundle": "dev-master"
+    },
+    "config": {
+        "bin-dir": "bin/"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installAssets",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installRequirementsFile"
+        ],
+        "post-update-cmd": [
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installAssets",
+            "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installRequirementsFile"
+        ]
+    },
+    "minimum-stability": "dev",
+    "extra": {
+        "symfony-app-dir": "app",
+        "symfony-web-dir": "web"
+    }
+}

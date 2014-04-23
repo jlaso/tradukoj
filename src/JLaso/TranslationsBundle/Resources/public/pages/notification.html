@@ -1,0 +1,408 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="../bootstrap/css/bootstrap.css" rel="stylesheet">
+    <link href="../bootstrap/css/font-awesome.css" rel="stylesheet">
+    <link href="../resource/css/style.css" rel="stylesheet">
+    <style type="text/css">
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+            background-image: url("../resource/img/bg.png");
+        }
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+    </style>
+    <link href="../bootstrap/css/bootstrap-responsive.min.css" rel="stylesheet">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+    <script src="../bootstrap/js/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="../bootstrap/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="../bootstrap/ico/bootstrap-apple-114x114.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="../bootstrap/ico/bootstrap-apple-114x114.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="../bootstrap/ico/bootstrap-apple-72x72.png">
+    <link rel="apple-touch-icon-precomposed" href="../bootstrap/ico/bootstrap-apple-57x57.png">
+
+    <script type="text/javascript" src="../bootstrap/js/jquery.js"></script>
+    <script type="text/javascript" src="../bootstrap/js/bootstrap.js"></script>
+
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top">
+    <div class="navbar-inner">
+        <div class="container-fluid">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </a>
+            <a class="brand" href="#">Complete Admin</a>
+
+            <div class="nav-collapse">
+                <ul class="nav">
+                    <li class="divider-vertical"></li>
+                    <li><a href="#"><i class="icon-comments-alt"></i> <span class="label label-important">3</span></a>
+                    </li>
+
+                    <li><a href="#"><i class="icon-envelope"></i> <span class="label label-important">3 new</span></a>
+                    </li>
+
+                    <li><a href="#"><i class="icon-refresh"></i> <span class="label label-info">3 updates</span></a>
+                    </li>
+
+                </ul>
+                <ul class="nav pull-right">
+                    <li>
+                        <form class="navbar-search pull-left" action="">
+                            <input type="text" class="search-query span2" placeholder="Search">
+                        </form>
+                    </li>
+                    <li class="divider-vertical"></li>
+                    <li>
+                        <ul class="nav">
+                            <li class="dropdown">
+                                <a href="#"
+                                   class="dropdown-toggle"
+                                   data-toggle="dropdown">
+                                    <i class="icon-user"></i> Username
+                                    <b class="caret"></b>
+                                </a>
+                                <ul class="dropdown-menu">
+
+                                    <li>
+                                        <div style="width: 314px">
+                                            <div class="modal-header">
+
+                                                <h3>Username - Administrator</h3>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="row-fluid">
+                                                    <div class="span3">
+                                                        <img src="../resource/img/defaultPhoto.png" alt="" class="thumbnail span12">
+                                                    </div>
+                                                    <div class="span9">
+                                                        <a href="#"><i class="icon-cogs"></i> Settings Account</a>
+                                                        <a href="#"><i class="icon-cogs"></i> Settings Privacy</a>
+                                                    </div>
+                                                </div>
+
+                                            </div>
+                                            <div class="modal-footer">
+
+                                                <button href="#" class="btn btn-primary"><i class="icon-off"></i> Log Out</button>
+                                            </div>
+                                        </div>
+
+                                    </li>
+
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+
+            </div>
+            <!--/.nav-collapse -->
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="row-fluid">
+        <div class="span2">
+            <div class="row-fluid">
+                <div class="span6">
+                    <img src="../resource/img/160x120.gif" alt="" class="span12 thumbnail">
+                </div>
+                <div class="span6">
+                    <h6>username</h6>
+                    <a href="#">Profile</a>|<a href="../index.html">Logout</a>
+                </div>
+            </div>
+            <br>
+            <div class="well sidebar-nav">
+                <ul class="nav nav-list">
+                    <li>
+                        <div class="accordion" id="accordian2">
+                            <div class="accordion-group">
+                                <div class="accordion-heading">
+                                    <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="dashboard.html">
+                                        <i class="icon-home icon-white"></i><span> Dashboard</span>
+                                    </a>
+                                </div>
+
+                            </div>
+
+                            <div class="accordion-group">
+                                <div class="accordion-heading">
+                                    <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="tables.html">
+                                        <i class="icon-list-alt"></i><span> Tables</span>
+                                    </a>
+                                </div>
+
+                            </div>
+                            <div class="accordion-group">
+                                <div class="accordion-heading">
+                                    <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="element.html">
+                                        <i class="icon-tasks"></i><span> Elements</span>
+                                    </a>
+                                </div>
+
+                            </div>
+                            <div class="accordion-group">
+                                <div class="accordion-heading">
+                                    <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="media.html">
+                                        <i class="icon-picture"></i><span> Media</span>
+                                    </a>
+                                </div>
+
+                            </div>
+                            <div class="accordion-group">
+                                <div class="accordion-heading">
+                                    <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="forms.html">
+                                        <i class="icon-align-center"></i><span> Forms</span>
+                                    </a>
+                                </div>
+
+                            </div>
+                            <div class="accordion-group">
+                                <div class="accordion-heading">
+                                    <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="grid.html">
+                                        <i class="icon-indent-left"></i><span> Grid</span>
+                                    </a>
+                                </div>
+
+                            </div>
+
+                            <div class="accordion-group">
+                                <div class="accordion-heading">
+                                    <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="button.html">
+                                        <i class="icon-gift"></i><span> Buttons </span>
+                                    </a>
+                                </div>
+
+                            </div>
+                            <div class="accordion-group">
+                                <div class="accordion-heading">
+                                    <a style="text-decoration: none;text-align: left" class="accordion-toggle btn btn-danger" href="notification.html">
+                                        <i class="icon-info-sign"></i><span> Notification</span>
+                                    </a>
+                                </div>
+
+                            </div>
+                            <div class="accordion-group">
+                                <div class="accordion-heading">
+                                    <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="calendar.html">
+                                        <i class="icon-calendar"></i><span> Callendar</span>
+                                    </a>
+                                </div>
+
+                            </div>
+                            <div class="accordion-group">
+                                <div class="accordion-heading">
+                                    <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="chat.html">
+                                        <i class="icon-comment"></i><span> Chat</span>
+                                    </a>
+                                </div>
+
+                            </div>
+
+                            <div class="accordion-group">
+                                <div class="accordion-heading">
+                                    <a style="text-decoration: none;text-align: left" class="accordion-toggle btn" href="chart.html">
+                                        <i class="icon-bar-chart"></i><span> Charts</span>
+                                    </a>
+                                </div>
+
+                            </div>
+
+
+
+                        </div>
+
+                    </li>
+
+                </ul>
+            </div><!--/.well -->
+        </div><!--/span-->
+        <div class="span10">
+            <div class="row-fluid">
+                <ul class="breadcrumb pull-right">
+                    <li><a href="#">Notification</a> <span class="divider">/</span></li>
+                    <li><a href="#">Home</a> <span class="divider">/</span></li>
+
+
+                </ul>
+            </div>
+            <div class="row-fluid">
+                <div class="span6">
+                    <div class="accordion" id="accordionNotif">
+                        <div class="accordion-group">
+                            <div class="accordion-heading">
+                                <a style="text-align: left;text-decoration: none" class="accordion-toggle btn btn-danger"
+                                   data-toggle="collapse" data-parent="#accordion2" href="#collapseNotif">
+                                    <i class="icon-list-alt"></i> Progress Bar <i class="icon-minus pull-right"></i>
+                                </a>
+                            </div>
+                            <div id="collapseNotif" class="accordion-body collapse in">
+                                <div class="accordion-inner" style="background-color: #ffffff;">
+                                    <table class="table table-bordered table-striped">
+                                        <tbody>
+                                        <tr>
+                                            <td style="width: 30%">Basic</td>
+                                            <td>
+                                                <div class="progress">
+                                                    <div class="bar"
+                                                         style="width: 60%;"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 30%">Striped</td>
+                                            <td>
+                                                <div class="progress progress-striped">
+                                                    <div class="bar"
+                                                         style="width: 20%;"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 30%">Animated</td>
+                                            <td>
+                                                <div class="progress progress-striped
+     active">
+                                                    <div class="bar"
+                                                         style="width: 40%;"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 30%">Additional colors</td>
+                                            <td>
+                                                <div class="progress progress-info" style="margin-bottom: 9px;">
+                                                    <div class="bar" style="width: 20%"></div>
+                                                </div>
+                                                <div class="progress progress-success" style="margin-bottom: 9px;">
+                                                    <div class="bar" style="width: 40%"></div>
+                                                </div>
+                                                <div class="progress progress-warning" style="margin-bottom: 9px;">
+                                                    <div class="bar" style="width: 60%"></div>
+                                                </div>
+                                                <div class="progress progress-danger" style="margin-bottom: 9px;">
+                                                    <div class="bar" style="width: 80%"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 30%">Striped bars</td>
+                                            <td>
+                                                <div class="progress progress-info progress-striped" style="margin-bottom: 9px;">
+                                                    <div class="bar" style="width: 20%"></div>
+                                                </div>
+                                                <div class="progress progress-success progress-striped" style="margin-bottom: 9px;">
+                                                    <div class="bar" style="width: 40%"></div>
+                                                </div>
+                                                <div class="progress progress-warning progress-striped" style="margin-bottom: 9px;">
+                                                    <div class="bar" style="width: 60%"></div>
+                                                </div>
+                                                <div class="progress progress-danger progress-striped" style="margin-bottom: 9px;">
+                                                    <div class="bar" style="width: 80%"></div>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="span6">
+                    <div class="accordion" id="accordionNotif2">
+                        <div class="accordion-group">
+                            <div class="accordion-heading">
+                                <a style="text-align: left;text-decoration: none" class="accordion-toggle btn btn-danger"
+                                   data-toggle="collapse" data-parent="#accordion2" href="#collapseNotif2">
+                                    <i class="icon-list-alt"></i> Alerts <i class="icon-minus pull-right"></i>
+                                </a>
+                            </div>
+                            <div id="collapseNotif2" class="accordion-body collapse in">
+                                <div class="accordion-inner" style="background-color: #ffffff;">
+                                    <table class="table table-bordered table-striped">
+                                        <tbody>
+                                        <tr>
+                                            <td>Warning</td>
+                                            <td>
+                                                <div class="alert alert-block">
+                                                    <button type="button" class="close" data-dismiss="alert">×</button>
+                                                    <h4 class="alert-heading">Warning!</h4>
+                                                    <p>Best check yo self, you're not looking too good. Nulla vitae elit libero, a pharetra augue. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Error</td>
+                                            <td>
+                                                <div class="alert alert-error">
+                                                    <button type="button" class="close" data-dismiss="alert">×</button>
+                                                    <strong>Oh snap!</strong> Change a few things up and try submitting again.
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Success</td>
+                                            <td>
+                                                <div class="alert alert-success">
+                                                    <button type="button" class="close" data-dismiss="alert">×</button>
+                                                    <strong>Well done!</strong> You successfully read this important alert message.
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Informations</td>
+                                            <td>
+                                                <div class="alert alert-info">
+                                                    <button type="button" class="close" data-dismiss="alert">×</button>
+                                                    <strong>Heads up!</strong> This alert needs your attention, but it's not super important.
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div><!--/row-->
+
+    <hr>
+
+
+</div><!--/.fluid-container-->
+
+
+
+</body>
+</html>

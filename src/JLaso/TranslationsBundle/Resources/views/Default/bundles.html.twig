@@ -1,0 +1,46 @@
+{% extends 'TranslationsBundle:Default:translationsBase.html.twig' %}
+
+
+{# cron periodico para releer si hay cambios por parte de otro usuario o de la api #}
+
+{% block sidebar %}
+    <ul class="navi">
+        <li class="nred current"><a href="">{{ project.name ~ ' (#' ~ project.id ~ ')' }}</a></li>
+        <li><h3>{{ "labelH3.bundles"|trans|raw }}</h3></li>
+        {% for bundle in bundles %}
+          {% if bundle != '' %}
+            <li class="ngreen {{ current==bundle ? 'current' : '' }}">
+                <a href="{{ path('bundles', {'projectId':project.id, 'bundle':bundle}) }}">
+                    <i class="icon-angle-right"></i>&nbsp;<span>{{ bundle }}</span>
+                </a>
+            </li>
+          {% endif %}
+        {% endfor %}
+    </ul>
+{% endblock sidebar %}
+
+{% block page_header %}
+<!-- Page heading -->
+<div class="page-head">
+    <!-- Page heading -->
+    <h2 class="pull-left">Translations by bundle
+        <!-- page meta -->
+        <span class="page-meta">These are the translations for <em>{{ project.name }}</em> project</span>
+    </h2>
+
+
+    <!-- Breadcrumb -->
+    <div class="bread-crumb pull-right">
+        <a href="{{ path('user_index') }}"><i class="icon-home"></i> Home</a>
+        <!-- Divider -->
+        <span class="divider">/</span>
+        <a href="{{ path('translations', {"projectId":project.id}) }}"><i class="icon-tasks"></i> Translations</a>
+        <span class="divider">/</span>
+        <a href="#" class="bread-current">Bundles</a>
+    </div>
+
+    <div class="clearfix"></div>
+
+</div>
+<!-- Page heading ends -->
+{% endblock page_header %}

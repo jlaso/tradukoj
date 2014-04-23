@@ -1,0 +1,42 @@
+{% extends 'TranslationsBundle:Default:translationsBase.html.twig' %}
+
+{% block sidebar %}
+    <ul class="navi">
+        <li class="nred current"><a href="">{{ project.name ~ ' (#' ~ project.id ~ ')' }}</a></li>
+        <li><h3>{{ "catalogs"|trans|raw }}</h3></li>
+        {% for catalog in catalogs %}
+        <li class="ngreen {{ current==catalog ? 'current' : '' }}">
+            <a href="{{ path('translations', {'projectId':project.id, 'catalog':catalog}) }}">
+                <i class="icon-angle-right"></i>&nbsp;<span>{{ catalog }}</span>
+            </a>
+        </li>
+        {% endfor %}
+    </ul>
+{% endblock sidebar %}
+
+
+{% block page_header %}
+    <!-- Page heading -->
+    <div class="page-head">
+        <!-- Page heading -->
+        <h2 class="pull-left">Translations by catalog
+            <!-- page meta -->
+            <span class="page-meta">These are the translations for <em>{{ project.name }}</em> project</span>
+        </h2>
+
+
+        <!-- Breadcrumb -->
+        <div class="bread-crumb pull-right">
+            <a href="{{ path('user_index') }}"><i class="icon-home"></i> Home</a>
+            <!-- Divider -->
+            <span class="divider">/</span>
+            <a href="{{ path('translations', {"projectId":project.id}) }}"><i class="icon-tasks"></i> Translations</a>
+            <span class="divider">/</span>
+            <a href="#" class="bread-current">Catalogs</a>
+        </div>
+
+        <div class="clearfix"></div>
+
+    </div>
+    <!-- Page heading ends -->
+{% endblock page_header %}

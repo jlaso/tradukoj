@@ -1,0 +1,36 @@
+parameters:
+    database_driver:   pdo_mysql
+    database_host:     localhost
+    database_port:     ~
+    database_name:     translations
+    database_user:     root
+    database_password: root
+
+    database_mongo_server:  mongodb://localhost/translations
+    username:               translations
+    password:               password
+    default_database:       translations
+
+    mailer_encryption: ssl
+    mailer_transport:  smtp
+    mailer_host:       mail.translations.com.es
+    mailer_user:       no-reply@translations.com.es
+    mailer_password:   *********
+    mailer_auth_mode:  plain
+
+    locale:            es
+    languages:         ['en','es']
+    secret:            asThisfTokenIsNoq1tSoSecretChangeIte
+
+    pdo.db_options:
+        db_table: session
+        db_id_col: session_id
+        db_data_col: session_value
+        db_time_col: session_time
+
+    jlaso_translations_api_access:
+        project_id: 2
+        key:  translations.com.es
+        secret: 3ejduAS2i
+        url: https://translations.com.es/api/
+        managed_locales: ['es', 'en']

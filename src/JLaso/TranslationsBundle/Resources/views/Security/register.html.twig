@@ -1,0 +1,104 @@
+{% extends '::base.html.twig' %}
+
+{% block stylesheets %}
+    <style type="text/css">
+        body {
+            padding-top: 160px;
+            padding-bottom: 40px;
+            background-image: url("{{ asset('bundles/translations/resource/img/bg.png') }}");
+        }
+
+        .sidebar-nav {
+            padding: 9px 0;
+        }
+
+        .error ul{
+            list-style: none;
+        }
+        .error li{
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+{% endblock stylesheets %}
+
+{% block body %}
+    <!-- Form area -->
+    <div class="admin-form">
+        <div class="container-fluid">
+
+            <div class="row-fluid">
+                <div class="span12">
+                    <!-- Widget starts -->
+                    <div class="widget worange">
+                        <!-- Widget head -->
+                        <div class="widget-head">
+
+                            <a class="brand" href="{{ path('home') }}" style="color: #ffffff;">
+                                <img src="{{ asset('logo-translations-white.png') }}" width="24" alt=""/>&nbsp;
+                                {{ "login.title"|trans|raw }}
+                            </a>
+
+                            <span class="pull-right">
+                                {{ "register.title"|trans|raw }} <i class="icon-user"></i>
+                            </span>
+
+                        </div>
+
+                        <div class="widget-content">
+                            <div class="padd">
+                                <!-- Login form -->
+                                <form class="form-horizontal"  action="{{ path('user_register') }}" novalidate  method="post" {{ form_enctype(form) }}>
+                                    <!-- Language -->
+                                    <div class="control-group">
+                                        <label class="control-label" for="inputEmail"><i class="icon-flag"></i> Language</label>
+                                        <div class="controls">
+                                            {% include ':Languages:languages-select.html.twig' %}
+                                        </div>
+                                    </div>
+                                    <div class="error">{{ error is not null ? error.message : '' }}</div>
+                                    <!-- Email -->
+                                    <div class="control-group">
+                                        <div class="error">{{ form_errors(form.email) }}</div>
+                                        <label class="control-label" for="_username"><i class="icon-envelope"></i> Email</label>
+                                        <div class="controls">
+                                            {{ form_widget(form.email) }}
+                                        </div>
+                                    </div>
+                                    <!-- Password -->
+                                    {% for passwordField in form.password %}
+                                        <div class="control-group">
+                                            <div class="error">{{ form_errors(passwordField, {'attr': {'class':'btn btn-danger'}}) }}</div>
+                                            <label class="control-label" for="_username"><i class="icon-key"></i>&nbsp;{{ (loop.index0 > 0) ? 'Repeat ' : '' }}Password</label>
+                                            <div class="controls">
+                                                {{ form_widget(passwordField) }}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    <!-- Remember me checkbox and sign in button -->
+                                    <div class="control-group">
+                                        <div class="controls" style="margin-left:0 !important;">
+                                            <div class="error">{{ form_errors(form.confirmation) }}</div>
+                                            {{ form_widget(form.confirmation) }}&nbsp;{{ "register.placeholder.terms"|trans|raw }}
+                                            <br /><br />
+                                            {{ form_rest(form) }}
+                                            <button type="submit" class="btn btn-danger">{{ "register.register_button"|trans|raw }}</button>
+                                            <button type="reset" class="btn">Reset</button>
+                                            <a href="{{ path('user_login') }}" class="btn">
+                                                {{ "register.cancel"|trans|raw }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                        <div class="widget-foot">
+                            <span><a href="#">{{ "register.privacy_policy"|trans({'url':"{# {{ path('privacy_policy') }} #}"})|raw }}</a>   </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock body %}

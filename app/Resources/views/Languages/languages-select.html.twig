@@ -1,0 +1,13 @@
+{% set route = app.request.attributes.get('_route') %}
+{% set route_params = app.request.get('_route_params') %}
+
+<select id="lang_selector" onchange="location = this.options[this.selectedIndex].value;">
+{% for language in global.languages|sort %}
+
+    <option value="{{  path( route, route_params|merge({ '_locale':language }) ) }}"
+            {{ app.request.locale==language ? 'selected="selected"' : '' }}>
+        {{ language|upper }}
+    </option>
+
+{% endfor %}
+</select>

@@ -1,0 +1,1005 @@
+
+html, html .halflings {
+}
+@font-face {
+    font-family: "Glyphicons Halflings";
+    font-style: normal;
+    font-weight: normal;
+    src: url("../font/glyphiconshalflings-regular-0.eot#iefix") format("embedded-opentype"), url("../font/glyphiconshalflings-regular.woff") format("woff"), url("../font/glyphiconshalflings-regular.ttf") format("truetype"), url("../font/glyphiconshalflings-regular.svg#glyphicons_halflingsregular") format("svg");
+}
+.halflings {
+    color: #1D1D1B;
+    display: inline-block;
+    padding: 0 0 0 25px;
+    position: relative;
+    text-decoration: none;
+}
+.halflings i:before {
+    color: #1D1D1B;
+    font: 12px/1em 'Glyphicons Halflings';
+    left: 0;
+    position: absolute;
+    top: 0;
+}
+.halflings.white i:before {
+    color: #FFFFFF;
+}
+.halflings.glass i:before {
+    content: "";
+}
+.halflings.music i:before {
+    content: "";
+}
+.halflings.search i:before {
+    content: "";
+}
+.halflings.envelope i:before {
+    content: "✉";
+}
+.halflings.heart i:before {
+    content: "";
+}
+.halflings.star i:before {
+    content: "";
+}
+.halflings.star-empty i:before {
+    content: "";
+}
+.halflings.user i:before {
+    content: "";
+}
+.halflings.film i:before {
+    content: "";
+}
+.halflings.th-large i:before {
+    content: "";
+}
+.halflings.th i:before {
+    content: "";
+}
+.halflings.th-list i:before {
+    content: "";
+}
+.halflings.ok i:before {
+    content: "";
+}
+.halflings.remove i:before {
+    content: "";
+}
+.halflings.zoom-in i:before {
+    content: "";
+}
+.halflings.zoom-out i:before {
+    content: "";
+}
+.halflings.off i:before {
+    content: "";
+}
+.halflings.signal i:before {
+    content: "";
+}
+.halflings.cog i:before {
+    content: "";
+}
+.halflings.trash i:before {
+    content: "";
+}
+.halflings.home i:before {
+    content: "";
+}
+.halflings.file i:before {
+    content: "";
+}
+.halflings.time i:before {
+    content: "";
+}
+.halflings.road i:before {
+    content: "";
+}
+.halflings.download-alt i:before {
+    content: "";
+}
+.halflings.download i:before {
+    content: "";
+}
+.halflings.upload i:before {
+    content: "";
+}
+.halflings.inbox i:before {
+    content: "";
+}
+.halflings.play-circle i:before {
+    content: "";
+}
+.halflings.repeat i:before {
+    content: "";
+}
+.halflings.refresh i:before {
+    content: "";
+}
+.halflings.list-alt i:before {
+    content: "";
+}
+.halflings.lock i:before {
+    content: "";
+}
+.halflings.flag i:before {
+    content: "";
+}
+.halflings.headphones i:before {
+    content: "";
+}
+.halflings.volume-off i:before {
+    content: "";
+}
+.halflings.volume-down i:before {
+    content: "";
+}
+.halflings.volume-up i:before {
+    content: "";
+}
+.halflings.qrcode i:before {
+    content: "";
+}
+.halflings.barcode i:before {
+    content: "";
+}
+.halflings.tag i:before {
+    content: "";
+}
+.halflings.tags i:before {
+    content: "";
+}
+.halflings.book i:before {
+    content: "";
+}
+.halflings.bookmark i:before {
+    content: "";
+}
+.halflings.print i:before {
+    content: "";
+}
+.halflings.camera i:before {
+    content: "";
+}
+.halflings.font i:before {
+    content: "";
+}
+.halflings.bold i:before {
+    content: "";
+}
+.halflings.italic i:before {
+    content: "";
+}
+.halflings.text-height i:before {
+    content: "";
+}
+.halflings.text-width i:before {
+    content: "";
+}
+.halflings.align-left i:before {
+    content: "";
+}
+.halflings.align-center i:before {
+    content: "";
+}
+.halflings.align-right i:before {
+    content: "";
+}
+.halflings.align-justify i:before {
+    content: "";
+}
+.halflings.list i:before {
+    content: "";
+}
+.halflings.indent-left i:before {
+    content: "";
+}
+.halflings.indent-right i:before {
+    content: "";
+}
+.halflings.facetime-video i:before {
+    content: "";
+}
+.halflings.picture i:before {
+    content: "";
+}
+.halflings.pencil i:before {
+    content: "✏";
+}
+.halflings.map-marker i:before {
+    content: "";
+}
+.halflings.adjust i:before {
+    content: "";
+}
+.halflings.tint i:before {
+    content: "";
+}
+.halflings.edit i:before {
+    content: "";
+}
+.halflings.share i:before {
+    content: "";
+}
+.halflings.check i:before {
+    content: "";
+}
+.halflings.move i:before {
+    content: "";
+}
+.halflings.step-backward i:before {
+    content: "";
+}
+.halflings.fast-backward i:before {
+    content: "";
+}
+.halflings.backward i:before {
+    content: "";
+}
+.halflings.play i:before {
+    content: "";
+}
+.halflings.pause i:before {
+    content: "";
+}
+.halflings.stop i:before {
+    content: "";
+}
+.halflings.forward i:before {
+    content: "";
+}
+.halflings.fast-forward i:before {
+    content: "";
+}
+.halflings.step-forward i:before {
+    content: "";
+}
+.halflings.eject i:before {
+    content: "";
+}
+.halflings.chevron-left i:before {
+    content: "";
+}
+.halflings.chevron-right i:before {
+    content: "";
+}
+.halflings.plus-sign i:before {
+    content: "";
+}
+.halflings.minus-sign i:before {
+    content: "";
+}
+.halflings.remove-sign i:before {
+    content: "";
+}
+.halflings.ok-sign i:before {
+    content: "";
+}
+.halflings.question-sign i:before {
+    content: "";
+}
+.halflings.info-sign i:before {
+    content: "";
+}
+.halflings.screenshot i:before {
+    content: "";
+}
+.halflings.remove-circle i:before {
+    content: "";
+}
+.halflings.ok-circle i:before {
+    content: "";
+}
+.halflings.ban-circle i:before {
+    content: "";
+}
+.halflings.arrow-left i:before {
+    content: "";
+}
+.halflings.arrow-right i:before {
+    content: "";
+}
+.halflings.arrow-up i:before {
+    content: "";
+}
+.halflings.arrow-down i:before {
+    content: "";
+}
+.halflings.share-alt i:before {
+    content: "";
+}
+.halflings.resize-full i:before {
+    content: "";
+}
+.halflings.resize-small i:before {
+    content: "";
+}
+.halflings.plus i:before {
+    content: "+";
+}
+.halflings.minus i:before {
+    content: "−";
+}
+.halflings.asterisk i:before {
+    content: "*";
+}
+.halflings.exclamation-sign i:before {
+    content: "";
+}
+.halflings.gift i:before {
+    content: "";
+}
+.halflings.leaf i:before {
+    content: "";
+}
+.halflings.fire i:before {
+    content: "";
+}
+.halflings.eye-open i:before {
+    content: "";
+}
+.halflings.eye-close i:before {
+    content: "";
+}
+.halflings.warning-sign i:before {
+    content: "";
+}
+.halflings.plane i:before {
+    content: "";
+}
+.halflings.calendar i:before {
+    content: "";
+}
+.halflings.random i:before {
+    content: "";
+}
+.halflings.comments i:before {
+    content: "";
+}
+.halflings.magnet i:before {
+    content: "";
+}
+.halflings.chevron-up i:before {
+    content: "";
+}
+.halflings.chevron-down i:before {
+    content: "";
+}
+.halflings.retweet i:before {
+    content: "";
+}
+.halflings.shopping-cart i:before {
+    content: "";
+}
+.halflings.folder-close i:before {
+    content: "";
+}
+.halflings.folder-open i:before {
+    content: "";
+}
+.halflings.resize-vertical i:before {
+    content: "";
+}
+.halflings.resize-horizontal i:before {
+    content: "";
+}
+.halflings.hdd i:before {
+    content: "";
+}
+.halflings.bullhorn i:before {
+    content: "";
+}
+.halflings.bell i:before {
+    content: "";
+}
+.halflings.certificate i:before {
+    content: "";
+}
+.halflings.thumbs-up i:before {
+    content: "";
+}
+.halflings.thumbs-down i:before {
+    content: "";
+}
+.halflings.hand-right i:before {
+    content: "";
+}
+.halflings.hand-left i:before {
+    content: "";
+}
+.halflings.hand-top i:before {
+    content: "";
+}
+.halflings.hand-down i:before {
+    content: "";
+}
+.halflings.circle-arrow-right i:before {
+    content: "";
+}
+.halflings.circle-arrow-left i:before {
+    content: "";
+}
+.halflings.circle-arrow-top i:before {
+    content: "";
+}
+.halflings.circle-arrow-down i:before {
+    content: "";
+}
+.halflings.globe i:before {
+    content: "";
+}
+.halflings.wrench i:before {
+    content: "";
+}
+.halflings.tasks i:before {
+    content: "";
+}
+.halflings.filter i:before {
+    content: "";
+}
+.halflings.briefcase i:before {
+    content: "";
+}
+.halflings.fullscreen i:before {
+    content: "";
+}
+.halflings.dashboard i:before {
+    content: "";
+}
+.halflings.paperclip i:before {
+    content: "";
+}
+.halflings.heart-empty i:before {
+    content: "";
+}
+.halflings.link i:before {
+    content: "";
+}
+.halflings.phone i:before {
+    content: "";
+}
+.halflings.pushpin i:before {
+    content: "";
+}
+.halflings.euro i:before {
+    content: "€";
+}
+.halflings.usd i:before {
+    content: "";
+}
+.halflings.gbp i:before {
+    content: "";
+}
+.halflings.sort i:before {
+    content: "";
+}
+.halflings.sort-by-alphabet i:before {
+    content: "";
+}
+.halflings.sort-by-alphabet-alt i:before {
+    content: "";
+}
+.halflings.sort-by-order i:before {
+    content: "";
+}
+.halflings.sort-by-order-alt i:before {
+    content: "";
+}
+.halflings.sort-by-attributes i:before {
+    content: "";
+}
+.halflings.sort-by-attributes-alt i:before {
+    content: "";
+}
+.halflings.unchecked i:before {
+    content: "";
+}
+.halflings.expand i:before {
+    content: "";
+}
+.halflings.collapse i:before {
+    content: "";
+}
+.halflings.collapse-top i:before {
+    content: "";
+}
+.halflings-icon {
+    background-image: url("../img/glyphicons_halflings.svg");
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    display: inline-block;
+    height: 14px;
+    line-height: 14px;
+    vertical-align: top;
+    width: 14px;
+}
+.no-inlinesvg .halflings-icon {
+    background-image: url("../img/glyphicons_halflings.png");
+}
+.halflings-icon.white {
+    background-image: url("../img/glyphicons_halflings-white.svg");
+}
+.no-inlinesvg .halflings-icon.white {
+    background-image: url("../img/glyphicons_halflings-white.png");
+}
+.halflings-icon.glass {
+    background-position: 0 0;
+}
+.halflings-icon.music {
+    background-position: -24px 0;
+}
+.halflings-icon.search {
+    background-position: -48px 0;
+}
+.halflings-icon.envelope {
+    background-position: -72px 0;
+}
+.halflings-icon.heart {
+    background-position: -96px 0;
+}
+.halflings-icon.star {
+    background-position: -120px 0;
+}
+.halflings-icon.star-empty {
+    background-position: -144px 0;
+}
+.halflings-icon.user {
+    background-position: -168px 0;
+}
+.halflings-icon.film {
+    background-position: -192px 0;
+}
+.halflings-icon.th-large {
+    background-position: -216px 0;
+}
+.halflings-icon.th {
+    background-position: -240px 0;
+}
+.halflings-icon.th-list {
+    background-position: -264px 0;
+}
+.halflings-icon.ok {
+    background-position: -288px 0;
+}
+.halflings-icon.remove {
+    background-position: -312px 0;
+}
+.halflings-icon.zoom-in {
+    background-position: -336px 0;
+}
+.halflings-icon.zoom-out {
+    background-position: -360px 0;
+}
+.halflings-icon.off {
+    background-position: -384px 0;
+}
+.halflings-icon.signal {
+    background-position: -408px 0;
+}
+.halflings-icon.cog {
+    background-position: -432px 0;
+}
+.halflings-icon.trash {
+    background-position: -456px 0;
+}
+.halflings-icon.home {
+    background-position: 0 -24px;
+}
+.halflings-icon.file {
+    background-position: -24px -24px;
+}
+.halflings-icon.time {
+    background-position: -48px -24px;
+}
+.halflings-icon.road {
+    background-position: -72px -24px;
+}
+.halflings-icon.download-alt {
+    background-position: -96px -24px;
+}
+.halflings-icon.download {
+    background-position: -120px -24px;
+}
+.halflings-icon.upload {
+    background-position: -144px -24px;
+}
+.halflings-icon.inbox {
+    background-position: -168px -24px;
+}
+.halflings-icon.play-circle {
+    background-position: -192px -24px;
+}
+.halflings-icon.repeat {
+    background-position: -216px -24px;
+}
+.halflings-icon.refresh {
+    background-position: -240px -24px;
+}
+.halflings-icon.list-alt {
+    background-position: -264px -24px;
+}
+.halflings-icon.lock {
+    background-position: -287px -24px;
+}
+.halflings-icon.flag {
+    background-position: -312px -24px;
+}
+.halflings-icon.headphones {
+    background-position: -336px -24px;
+}
+.halflings-icon.volume-off {
+    background-position: -360px -24px;
+}
+.halflings-icon.volume-down {
+    background-position: -384px -24px;
+}
+.halflings-icon.volume-up {
+    background-position: -408px -24px;
+}
+.halflings-icon.qrcode {
+    background-position: -432px -24px;
+}
+.halflings-icon.barcode {
+    background-position: -456px -24px;
+}
+.halflings-icon.tag {
+    background-position: 0 -48px;
+}
+.halflings-icon.tags {
+    background-position: -25px -48px;
+}
+.halflings-icon.book {
+    background-position: -48px -48px;
+}
+.halflings-icon.bookmark {
+    background-position: -72px -48px;
+}
+.halflings-icon.print {
+    background-position: -96px -48px;
+}
+.halflings-icon.camera {
+    background-position: -120px -48px;
+}
+.halflings-icon.font {
+    background-position: -144px -48px;
+}
+.halflings-icon.bold {
+    background-position: -167px -48px;
+}
+.halflings-icon.italic {
+    background-position: -192px -48px;
+}
+.halflings-icon.text-height {
+    background-position: -216px -48px;
+}
+.halflings-icon.text-width {
+    background-position: -240px -48px;
+}
+.halflings-icon.align-left {
+    background-position: -264px -48px;
+}
+.halflings-icon.align-center {
+    background-position: -288px -48px;
+}
+.halflings-icon.align-right {
+    background-position: -312px -48px;
+}
+.halflings-icon.align-justify {
+    background-position: -336px -48px;
+}
+.halflings-icon.list {
+    background-position: -360px -48px;
+}
+.halflings-icon.indent-left {
+    background-position: -384px -48px;
+}
+.halflings-icon.indent-right {
+    background-position: -408px -48px;
+}
+.halflings-icon.facetime-video {
+    background-position: -432px -48px;
+}
+.halflings-icon.picture {
+    background-position: -456px -48px;
+}
+.halflings-icon.pencil {
+    background-position: 0 -72px;
+}
+.halflings-icon.map-marker {
+    background-position: -24px -72px;
+}
+.halflings-icon.adjust {
+    background-position: -48px -72px;
+}
+.halflings-icon.tint {
+    background-position: -72px -72px;
+}
+.halflings-icon.edit {
+    background-position: -96px -72px;
+}
+.halflings-icon.share {
+    background-position: -120px -72px;
+}
+.halflings-icon.check {
+    background-position: -144px -72px;
+}
+.halflings-icon.move {
+    background-position: -168px -72px;
+}
+.halflings-icon.step-backward {
+    background-position: -192px -72px;
+}
+.halflings-icon.fast-backward {
+    background-position: -216px -72px;
+}
+.halflings-icon.backward {
+    background-position: -240px -72px;
+}
+.halflings-icon.play {
+    background-position: -264px -72px;
+}
+.halflings-icon.pause {
+    background-position: -288px -72px;
+}
+.halflings-icon.stop {
+    background-position: -312px -72px;
+}
+.halflings-icon.forward {
+    background-position: -336px -72px;
+}
+.halflings-icon.fast-forward {
+    background-position: -360px -72px;
+}
+.halflings-icon.step-forward {
+    background-position: -384px -72px;
+}
+.halflings-icon.eject {
+    background-position: -408px -72px;
+}
+.halflings-icon.chevron-left {
+    background-position: -432px -72px;
+}
+.halflings-icon.chevron-right {
+    background-position: -456px -72px;
+}
+.halflings-icon.plus-sign {
+    background-position: 0 -96px;
+}
+.halflings-icon.minus-sign {
+    background-position: -24px -96px;
+}
+.halflings-icon.remove-sign {
+    background-position: -48px -96px;
+}
+.halflings-icon.ok-sign {
+    background-position: -72px -96px;
+}
+.halflings-icon.question-sign {
+    background-position: -96px -96px;
+}
+.halflings-icon.info-sign {
+    background-position: -120px -96px;
+}
+.halflings-icon.screenshot {
+    background-position: -144px -96px;
+}
+.halflings-icon.remove-circle {
+    background-position: -168px -96px;
+}
+.halflings-icon.ok-circle {
+    background-position: -192px -96px;
+}
+.halflings-icon.ban-circle {
+    background-position: -216px -96px;
+}
+.halflings-icon.arrow-left {
+    background-position: -240px -96px;
+}
+.halflings-icon.arrow-right {
+    background-position: -264px -96px;
+}
+.halflings-icon.arrow-up {
+    background-position: -289px -96px;
+}
+.halflings-icon.arrow-down {
+    background-position: -312px -96px;
+}
+.halflings-icon.share-alt {
+    background-position: -336px -96px;
+}
+.halflings-icon.resize-full {
+    background-position: -360px -96px;
+}
+.halflings-icon.resize-small {
+    background-position: -384px -96px;
+}
+.halflings-icon.plus {
+    background-position: -408px -96px;
+}
+.halflings-icon.minus {
+    background-position: -433px -96px;
+}
+.halflings-icon.asterisk {
+    background-position: -456px -96px;
+}
+.halflings-icon.exclamation-sign {
+    background-position: 0 -120px;
+}
+.halflings-icon.gift {
+    background-position: -24px -120px;
+}
+.halflings-icon.leaf {
+    background-position: -48px -120px;
+}
+.halflings-icon.fire {
+    background-position: -72px -120px;
+}
+.halflings-icon.eye-open {
+    background-position: -96px -120px;
+}
+.halflings-icon.eye-close {
+    background-position: -120px -120px;
+}
+.halflings-icon.warning-sign {
+    background-position: -144px -120px;
+}
+.halflings-icon.plane {
+    background-position: -168px -120px;
+}
+.halflings-icon.calendar {
+    background-position: -192px -120px;
+}
+.halflings-icon.random {
+    background-position: -216px -120px;
+}
+.halflings-icon.comments {
+    background-position: -240px -120px;
+}
+.halflings-icon.magnet {
+    background-position: -264px -120px;
+}
+.halflings-icon.chevron-up {
+    background-position: -288px -120px;
+}
+.halflings-icon.chevron-down {
+    background-position: -313px -119px;
+}
+.halflings-icon.retweet {
+    background-position: -336px -120px;
+}
+.halflings-icon.shopping-cart {
+    background-position: -360px -120px;
+}
+.halflings-icon.folder-close {
+    background-position: -384px -120px;
+}
+.halflings-icon.folder-open {
+    background-position: -408px -120px;
+}
+.halflings-icon.resize-vertical {
+    background-position: -432px -119px;
+}
+.halflings-icon.resize-horizontal {
+    background-position: -456px -118px;
+}
+.halflings-icon.hdd {
+    background-position: 0 -144px;
+}
+.halflings-icon.bullhorn {
+    background-position: -24px -144px;
+}
+.halflings-icon.bell {
+    background-position: -48px -144px;
+}
+.halflings-icon.certificate {
+    background-position: -72px -144px;
+}
+.halflings-icon.thumbs-up {
+    background-position: -96px -144px;
+}
+.halflings-icon.thumbs-down {
+    background-position: -120px -144px;
+}
+.halflings-icon.hand-right {
+    background-position: -144px -144px;
+}
+.halflings-icon.hand-left {
+    background-position: -168px -144px;
+}
+.halflings-icon.hand-top {
+    background-position: -192px -144px;
+}
+.halflings-icon.hand-down {
+    background-position: -216px -144px;
+}
+.halflings-icon.circle-arrow-right {
+    background-position: -240px -144px;
+}
+.halflings-icon.circle-arrow-left {
+    background-position: -264px -144px;
+}
+.halflings-icon.circle-arrow-top {
+    background-position: -288px -144px;
+}
+.halflings-icon.circle-arrow-down {
+    background-position: -313px -144px;
+}
+.halflings-icon.globe {
+    background-position: -336px -144px;
+}
+.halflings-icon.wrench {
+    background-position: -360px -144px;
+}
+.halflings-icon.tasks {
+    background-position: -384px -144px;
+}
+.halflings-icon.filter {
+    background-position: -408px -144px;
+}
+.halflings-icon.briefcase {
+    background-position: -432px -144px;
+}
+.halflings-icon.fullscreen {
+    background-position: -456px -144px;
+}
+.halflings-icon.dashboard {
+    background-position: 0 -168px;
+}
+.halflings-icon.paperclip {
+    background-position: -24px -168px;
+}
+.halflings-icon.heart-empty {
+    background-position: -48px -168px;
+}
+.halflings-icon.link {
+    background-position: -72px -168px;
+}
+.halflings-icon.phone {
+    background-position: -96px -168px;
+}
+.halflings-icon.pushpin {
+    background-position: -120px -168px;
+}
+.halflings-icon.euro {
+    background-position: -144px -168px;
+}
+.halflings-icon.usd {
+    background-position: -168px -168px;
+}
+.halflings-icon.gbp {
+    background-position: -192px -168px;
+}
+.halflings-icon.sort {
+    background-position: -216px -168px;
+}
+.halflings-icon.sort-by-alphabet {
+    background-position: -240px -168px;
+}
+.halflings-icon.sort-by-alphabet-alt {
+    background-position: -264px -168px;
+}
+.halflings-icon.sort-by-order {
+    background-position: -288px -168px;
+}
+.halflings-icon.sort-by-order-alt {
+    background-position: -313px -168px;
+}
+.halflings-icon.sort-by-attributes {
+    background-position: -336px -168px;
+}
+.halflings-icon.sort-by-attributes-alt {
+    background-position: -360px -168px;
+}
+.halflings-icon.unchecked {
+    background-position: -384px -168px;
+}
+.halflings-icon.expand {
+    background-position: -408px -168px;
+}
+.halflings-icon.collapse {
+    background-position: -432px -168px;
+}
+.halflings-icon.collapse-top {
+    background-position: -456px -168px;
+}

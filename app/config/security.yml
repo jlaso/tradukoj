@@ -1,0 +1,56 @@
+jms_security_extra:
+    secure_all_services: false
+    expressions: true
+
+
+security:
+    encoders:
+         JLaso\TranslationsBundle\Entity\User: sha512
+
+    role_hierarchy:
+        ROLE_TRANSLATOR:  ROLE_TRANSLATOR
+        ROLE_DEVELOPER:   [ROLE_TRANSLATOR, ROLE_DEVELOPER]
+        ROLE_ADMIN:       [ROLE_ADMIN, ROLE_TRANSLATOR, ROLE_DEVELOPER]
+
+    providers:
+        main:
+            entity:
+                class: JLaso\TranslationsBundle\Entity\User
+                property: email
+
+    firewalls:
+        dev:
+            pattern:  ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+
+        user_login:
+            pattern:  ^/login$
+            security: false
+
+        user_register:
+            pattern:  ^/register
+            security: false
+
+        # User Security
+        user_area:
+            pattern: ^/
+            security: true
+            anonymous: ~
+            form_login:
+                login_path:  user_login
+                check_path:  user_login_check
+                default_target_path:  user_index
+
+            logout:
+                path:   /logout
+                target: home
+
+
+    access_control:
+        - { path: ^/register, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/user/do-github-login, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/logout, roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/translations, roles: ROLE_TRANSLATOR }
+        - { path: ^/documents, roles: ROLE_TRANSLATOR }
+        - { path: ^/, roles: IS_AUTHENTICATED_ANONYMOUSLY }

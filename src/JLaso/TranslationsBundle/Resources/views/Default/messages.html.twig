@@ -1,0 +1,155 @@
+<div class="widget wblue">
+
+    <div class="widget-head">
+        <div class="pull-left">
+            <i class="icon-key"></i>&nbsp;<span id="current-key">{{ translation.key }}</span>
+            {% if canAdmin(permissions) %}
+                &nbsp;<a href="#" id="change-key-icon"><i class="icon-edit"></i></a>
+
+                <div id="change-key" class="modal hide fade" tabindex="-1"
+                     role="dialog" aria-labelledby="change_key_label" aria-hidden="true">
+
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h3 id="change_key_label">
+                            <i class="icon-list-alt"></i> {{ "translations.dialog.change_key.title"|trans|raw }}
+                        </h3>
+                    </div>
+
+                    <div class="modal-body" id="logs-content">
+
+
+                        <label for="key-name">Proceed with caution</label>
+                        <input type="text" class="span5" value="{{ translation.key }}" name="key-name"/>
+
+
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" id="change-key-save" data-role="{{ translation.catalog }}">{{ "translations.dialog.button.save"|trans|raw }}</button>
+                        <button class="btn" data-dismiss="modal" aria-hidden="true">{{ "translations.dialog.button.close"|trans|raw }}</button>
+                    </div>
+
+                </div>
+
+            {% endif %}
+        </div>
+        <div class="pull-right">
+            <a href="#" class="get-logs" data-role="{{ translation.key }}"><i class="icon-bar-chart"></i></a></div>
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="widget-content">
+
+        <div class="translations-group row-fluid" id="key-{{ translation.id }}">
+
+            <div class="span12">
+
+                <div class="row-fluid" style="background-color: #ffffff;">
+                    <table cellpadding="0" cellspacing="0" border="0"
+                           class="table table-striped table-bordered" id="example">
+                        <thead>
+                        <tr>
+                            <th>{{ "label.language"|trans|raw }}</th>
+                            <th style="min-width: 50%;">{{ "label.message"|trans|raw }}</th>
+                            <th style="width:40px;">{{ "label.actions"|trans|raw }}</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr id="comment-{{ translation.id }}" class="comment-row">
+                            <td><i class="icon-comment"></i>&nbsp;{{ "label.comment"|trans|raw }}</td>
+                            {% set canComment = permission(permissions, 'comment', 'WRITE') %}
+                            {% if canComment %}
+                                <td><input type="text" class="span12" value="{{ translation.comment }}"/></td>
+                                <td>
+                                    <a href="#" class="btn btn-primary save-comment"
+                                       data-role="#comment-{{ translation.id }}"
+                                       tid="{{ translation.id }}" key="{{ translation.key }}">
+                                        <i class="icon-save"></i> {{ "button.save"|trans|raw }}
+                                    </a>
+                                </td>
+                            {% else %}
+                                <td>{{ translation.comment|raw }}</td>
+                                <td>&nbsp;</td>
+                            {% endif %}
+                        </tr>
+
+                        {% for locale,info in translation.translations %}
+
+                            {% set info_id = translation.id ~  ':' ~ locale %}
+                            {% set info_id_html = keyToHtmlId(info_id) %}
+
+                            {% set canAdmin = permission(permissions, locale, 'ADMIN') %}
+                            {% set canEdit  = permission(permissions, locale, 'WRITE') %}
+                            {% set canView  = permission(permissions, locale, 'READ') %}
+                            {% set approved = info.approved %}
+
+                            {% if languages[locale] is defined %}
+                                {% if canAdmin or canEdit or canView %}
+                                    <tr class="key-row {{ cycle('odd', 'even') }} gradeX"
+                                        id="key-{{ translation.id }}-{{ translation.key }}-{{ locale }}">
+
+                                        {# ---- label ---- #}
+                                        <td class="center">
+                                            <i class="icon-flag"></i>&nbsp;<code>{{ locale }}</code>
+                                            <img src="{{ asset('bundles/translations/img/flags/' ~ locale ~ '.png') }}" alt="{{ locale }} flag"/>
+                                            &nbsp;{{ languages[locale].name }}
+                                            <span class="approved_indicator" key="{{ info_id_html }}">
+                                            {% if info.approved %}
+                                                <i class="icon-thumbs-up"></i>
+                                            {% else %}
+                                                <i class="icon-thumbs-down"></i>
+                                            {% endif %}
+                                            </span>
+                                        </td>
+
+                                        {# ---- info ---- #}
+                                        <td>
+                                            {% if canEdit %}
+                                                <textarea class="{#wysiwyg#}" style="min-height:90px; width:95%;" dir="{{ languages[locale].dir }}">{{ info.message|raw }}</textarea>
+                                            {% else %}
+                                                <span dir="{{ languages[locale].dir }}">
+                                                    {{- info.message -}}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+
+                                        {# ---- actions ---- #}
+                                        <td locale="{{ locale }}">
+
+                                            {# save button #}
+                                            {% if canEdit %}
+                                                <a href="#" class="btn btn-primary save-message">
+                                                    <i class="icon-save"></i> {{ "button.save"|trans|raw }}
+                                                </a>
+                                            {% endif %}
+
+                                            {# approve actions #}
+                                            {% if canAdmin %}
+                                                {% if info.approved %}
+                                                    <a href="#" class="btn btn-danger disapprove">
+                                                        <i class="icon-thumbs-down"></i> {{ "button.disapprove"|trans|raw }}
+                                                    </a>
+                                                {% else %}
+                                                    <a href="#" class="btn btn-success approve">
+                                                        <i class="icon-thumbs-up"></i> {{ "button.approve"|trans|raw }}
+                                                    </a>
+                                                {% endif %}
+                                            {% endif %}
+
+                                        </td>
+
+                                    </tr>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div><!-- class=translations-group -->
+
+    </div>
+
+</div>
