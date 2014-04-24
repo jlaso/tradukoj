@@ -159,6 +159,7 @@
                                             <td><span class="label">{{ prj.id }}</span></td>
                                             <td>
                                                 {{ prj.name }}
+                                                {% if (permissions.general == 'OWNER' or permissions.general == 'ADMIN')  %}
                                                 <div class="parameters">
                                                     # put this in your app/config/parameters.yml<br/>
                                                     jlaso_translations_api_access: <br/>
@@ -167,6 +168,7 @@
                                                     &nbsp;&nbsp;&nbsp;&nbsp;secret: {{ prj.apiSecret }}<br/>
                                                     &nbsp;&nbsp;&nbsp;&nbsp;url: 'https://www.tradukoj.com/api/'
                                                 </div>
+                                                {% endif %}
                                             </td>
                                             <td>
                                                 <table>
