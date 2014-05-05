@@ -192,7 +192,7 @@ class SecurityController extends BaseController
                         $user = new User();
                         $user->setEmail($email);
                         $user->setName(isset($data['name']) ? $data['name'] : 'unknown');
-                        $user->setActived(true);
+                        $user->setActive(true);
                         $user->setPassword(uniqid());
                         $user->setUsername($login);
                         $user->addRole('ROLE_TRANSLATOR');
@@ -246,7 +246,7 @@ class SecurityController extends BaseController
                 $encoder = $encoderFactory->getEncoder($user);
                 $user->setPassword($encoder->encodePassword($user->getPassword(), $user->getSalt()));
 
-                $user->setActived(true);
+                $user->setActive(true);
                 $user->addRole(User::ROLE_TRANSLATOR);
                 $em->persist($user);
                 $em->flush();
