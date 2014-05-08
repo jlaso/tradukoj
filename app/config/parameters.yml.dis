@@ -32,5 +32,7 @@ parameters:
         project_id: 2
         key:  translations.com.es
         secret: 3ejduAS2i
-        url: https://translations.com.es/api/
-        managed_locales: ['es', 'en']
+        url: https://www.tradukoj.com/api/
+        managed_locales: ['es', 'en', 'bg']
+        # fill all local messages with the name of key in the event the message is blank
+        fill_blank_messages_with_keyname: yes
