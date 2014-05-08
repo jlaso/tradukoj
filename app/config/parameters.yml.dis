@@ -34,3 +34,5 @@ parameters:
         secret: Tradukoj$1234
         url: http://localhost/api/
         managed_locales: ['es', 'en']
+        # fill all local messages with the name of key in the event the message is blank
+        fill_blank_messages_with_keyname: yes

@@ -914,7 +914,9 @@ class ServerMongoCommand extends ContainerAwareCommand
 
                         $translations[$locale]['fileName']  = $current['fileName'];
 
-                        $bundle = (isset($current['bundle']) && $current['bundle']) ? $current['bundle'] : $bundle;
+                        if(!$bundle){
+                            $bundle = $current['bundle'];
+                        }
                         unset($data[$key][$locale]);
 
                     }
