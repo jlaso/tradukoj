@@ -891,37 +891,43 @@ class ServerMongoCommand extends ContainerAwareCommand
 
             $key = $message->getKey();
             $bundle = '';
-
             $translations = $message->getTranslations();
-            foreach($translations as $locale=>$translation){
+            $dirty = false;
 
-                if(isset($data[$key][$locale])){
+            if(count($translations)){
 
-                    $current = $data[$key][$locale];
+                foreach($translations as $locale=>$translation){
 
-                    $updatedAt = new \DateTime($current['updatedAt']);
+                    if(isset($data[$key][$locale])){
 
-                    if($message->getUpdatedAt() < $updatedAt){
+                        $current = $data[$key][$locale];
+                        $updatedAt = new \DateTime($current['updatedAt']);
 
-                        $result[$key][$locale]    = $current['updatedAt'];
-                        $translations[$locale]['message']   = $current['message'];
-                        $translations[$locale]['updatedAt'] = $updatedAt;
+                        if($message->getUpdatedAt() < $updatedAt){
+
+                            $result[$key][$locale]    = $current['updatedAt'];
+                            $translations[$locale]['message']   = $current['message'];
+                            $translations[$locale]['updatedAt'] = $updatedAt;
+                            $dirty = true;
+
+                        }
+
+                        $translations[$locale]['fileName']  = $current['fileName'];
+
+                        $bundle = (isset($current['bundle']) && $current['bundle']) ? $current['bundle'] : $bundle;
+                        unset($data[$key][$locale]);
 
                     }
+                }
+                if($dirty){
+                    if($bundle){
+                        $message->setBundle($bundle);
+                    }
+                    $message->setTranslations($translations);
 
-                    $translations[$locale]['fileName']  = $current['fileName'];
-
-                    $bundle = isset($current['bundle']) ? $current['bundle'] : $bundle;
-                    unset($data[$key][$locale]);
-
+                    $this->dm->persist($message);
                 }
             }
-            if($bundle){
-                $message->setBundle($bundle);
-            }
-            $message->setTranslations($translations);
-
-            $this->dm->persist($message);
         }
 
         if($this->debug){
