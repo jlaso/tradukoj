@@ -1016,7 +1016,8 @@ class ServerMongoCommand extends ContainerAwareCommand
                 'projectId' => $project->getId(),
                 'catalog'   => $catalog,
                 'deleted'   => false,
-            )
+            ),
+            array('key' => 'ASC')
         );
 
         if($this->debug){

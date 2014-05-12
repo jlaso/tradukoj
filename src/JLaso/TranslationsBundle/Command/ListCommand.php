@@ -80,7 +80,8 @@ class ListCommand extends ContainerAwareCommand
                 'projectId' => $project->getId(),
                 'catalog'   => $catalog,
                 'deleted'   => false,
-            )
+            ),
+            array('key'=>'ASC')
         );
 
         foreach($translations as $translation){
