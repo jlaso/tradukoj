@@ -969,8 +969,8 @@ class ServerMongoCommand extends ContainerAwareCommand
                     );
 
                     if(!$bundle){
-                        if($current['bundle']){
-                            $bundle = $current['bundle'];
+                        if($message['bundle']){
+                            $bundle = $message['bundle'];
                         }else{
                             preg_match('/\/(?<bundle>\w+Bundle)\//i', $current['fileName'], $matches);
                             if(isset($matches['bundle'])){
@@ -1021,8 +1021,8 @@ class ServerMongoCommand extends ContainerAwareCommand
         );
 
         if($this->debug){
+            echo sprintf("found %d in translations\n", count($messages));
         }
-        echo sprintf("found %d in translations\n", count($messages));
 
         $data    = array();
         $bundles = array();
