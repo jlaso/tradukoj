@@ -27,7 +27,7 @@ use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\Container;
 
-class SearchCommand extends ContainerAwareCommand
+class ListCommand extends ContainerAwareCommand
 {
 
     /** @var  string */
@@ -37,13 +37,13 @@ class SearchCommand extends ContainerAwareCommand
 
     protected function configure()
     {
-        $this->name        = 'jlaso:translations:search';
-        $this->description = 'search a key with specific data';
+        $this->name        = 'jlaso:translations:list';
+        $this->description = 'list keys with specific criteria';
         $this
             ->setName($this->name)
             ->setDescription($this->description)
             ->addArgument('project', InputArgument::REQUIRED, 'project')
-            ->addArgument('search', InputArgument::REQUIRED, 'search')
+            ->addArgument('search', InputArgument::REQUIRED, 'serach in keys')
         ;
     }
 
@@ -77,14 +77,12 @@ class SearchCommand extends ContainerAwareCommand
 
         foreach($translations as $translation){
 
-            foreach($translation->getTranslations() as $locale=>$key){
+            if(preg_match("/$search/i", $translation->getKey(), $match)){
+                foreach($translation->getTranslations() as $locale=>$key){
 
-                if(preg_match('/'.$search.'/i', $key['message'], $match)){
-
-                    $output->writeln(sprintf("\tFound (%s) in <info>%s</info> in locale <comment>%s</comment> and catalog %s", $match[0], $translation->getKey(), $locale, $translation->getCatalog()));
+                    $output->writeln(sprintf("\tFound (%s) in <info>%s</info> in catalog <comment>%s</comment>", $match[0], $translation->getKey(), $translation->getCatalog()));
 
                 }
-
             }
 
         }
