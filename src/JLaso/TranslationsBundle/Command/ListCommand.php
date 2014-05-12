@@ -78,11 +78,7 @@ class ListCommand extends ContainerAwareCommand
         foreach($translations as $translation){
 
             if(preg_match("/$search/i", $translation->getKey(), $match)){
-                foreach($translation->getTranslations() as $locale=>$key){
-
-                    $output->writeln(sprintf("\tFound (%s) in <info>%s</info> in catalog <comment>%s</comment>", $match[0], $translation->getKey(), $translation->getCatalog()));
-
-                }
+                    $output->writeln(sprintf("\tFound (%s) in [%s]<info>%s</info> in catalog <comment>%s</comment>", $match[0], $translation->getBundle(), $translation->getKey(), $translation->getCatalog()));
             }
 
         }
