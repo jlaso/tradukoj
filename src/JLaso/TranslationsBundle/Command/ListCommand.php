@@ -43,7 +43,8 @@ class ListCommand extends ContainerAwareCommand
             ->setName($this->name)
             ->setDescription($this->description)
             ->addArgument('project', InputArgument::REQUIRED, 'project')
-            ->addArgument('search', InputArgument::REQUIRED, 'serach in keys')
+            ->addArgument('search', InputArgument::REQUIRED, 'search in keys')
+            ->addOption('catalog', null, InputOption::VALUE_REQUIRED, 'catalog')
         ;
     }
 
@@ -52,6 +53,7 @@ class ListCommand extends ContainerAwareCommand
         $container = $this->getContainer();
         $project  = $input->getArgument('project');
         $search  = $input->getArgument('search');
+        $catalog  = $input->getOption('catalog');
 
         /** @var DocumentManager $dm */
         $dm = $container->get('doctrine.odm.mongodb.document_manager');
@@ -73,7 +75,13 @@ class ListCommand extends ContainerAwareCommand
             throw new \Exception('Project not found');
         }
         /** @var Translation[] $translations */
-        $translations = $translationsRepository->findBy(array('projectId'=>$project->getId()));
+        $translations = $translationsRepository->findBy(
+            array(
+                'projectId' => $project->getId(),
+                'catalog'   => $catalog,
+                'deleted'   => false,
+            )
+        );
 
         foreach($translations as $translation){
 
