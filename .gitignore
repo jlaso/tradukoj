@@ -19,6 +19,7 @@ web/bundles/*
 web/css/*
 web/js/*
 web/uploads/*
+web/last-error.html
 
 # -- Composer -----------------------------------------
 composer.phar

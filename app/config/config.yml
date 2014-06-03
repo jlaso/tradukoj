@@ -108,3 +108,7 @@ translations_api:
     default_locale: %locale%
     managed_locales: %languages%
 
+p2_ratchet:
+    provider: ""            # The client provider to use, null for default
+    address: 0.0.0.0        # The address to receive sockets on (0.0.0.0 means receive from any)
+    port: 10888             # The port the socket server will listen on

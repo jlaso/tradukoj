@@ -27,6 +27,8 @@ class AppKernel extends Kernel
             // translations api bundle
             new JLaso\TranslationsApiBundle\TranslationsApiBundle(),
             new Liuggio\ExcelBundle\LiuggioExcelBundle(),
+            // ratchet sockets
+            new P2\Bundle\RatchetBundle\P2RatchetBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {

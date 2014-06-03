@@ -10,4 +10,13 @@ use Doctrine\ORM\Query;
  */
 class TranslationLogRepository extends EntityRepository
 {
+
+    public function getLast()
+    {
+
+        return 1;
+
+    }
+
+
 }

@@ -41,8 +41,9 @@
 
         "jlaso/translations-apibundle": "dev-master",
 
-        "liuggio/excelbundle": "~2.0"
+        "liuggio/excelbundle": "~2.0",
 
+        "p2/ratchet-bundle": "*"
     },
     "config": {
         "bin-dir": "bin/"
