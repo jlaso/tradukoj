@@ -96,7 +96,7 @@
                                             <i class="icon-flag"></i>&nbsp;<code>{{ locale }}</code>
                                             <img src="{{ asset('bundles/translations/img/flags/' ~ locale ~ '.png') }}" alt="{{ locale }} flag"/>
                                             &nbsp;{{ languages[locale].name }}
-                                            <span class="approved_indicator" key="{{ info_id_html }}">
+                                            <span class="approved_indicator" key="{{ info_id_html }}" locale="{{ locale }}">
                                             {% if info.approved %}
                                                 <i class="icon-thumbs-up"></i>
                                             {% else %}
@@ -129,11 +129,11 @@
                                             {# approve actions #}
                                             {% if canAdmin %}
                                                 {% if info.approved %}
-                                                    <a href="#" class="btn btn-danger disapprove">
+                                                    <a href="#" class="btn btn-danger disapprove" key="{{ translation.id }}" locale="{{ locale }}">
                                                         <i class="icon-thumbs-down"></i> {{ "button.disapprove"|trans|raw }}
                                                     </a>
                                                 {% else %}
-                                                    <a href="#" class="btn btn-success approve">
+                                                    <a href="#" class="btn btn-success approve" key="{{ translation.id }}" locale="{{ locale }}">
                                                         <i class="icon-thumbs-up"></i> {{ "button.approve"|trans|raw }}
                                                     </a>
                                                 {% endif %}
