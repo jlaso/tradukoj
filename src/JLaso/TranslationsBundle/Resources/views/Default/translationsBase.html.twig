@@ -401,6 +401,7 @@
 
         function saveComment(id)
         {
+            console.log($(id)); return;
             var comment = $(id).find('input').val();
             var button  = $(id).find('a.btn');
             current = button;
@@ -508,6 +509,12 @@
                 e.preventDefault();
                 console.log('saving-message');
                 saveMessage($(this).parent());
+            });
+
+            $("#translations-group").on("click", ".save-comment", function(e){
+                e.preventDefault();
+                console.log('saving-comment');
+                saveComment($(this).parent().parent());
             });
 
             $('#editor .save-button').click(function(e){
@@ -853,6 +860,16 @@
                         }
                     })
                 }
+            });
+
+            {# to remove the key #}
+            $(document).on("click", "#remove-key-icon", function(e){
+                e.preventDefault();
+                if(confirm('{{ "confirmation.sure_to_delete_this_key" }}')){
+                    var url = $(this).attr("href");
+                    window.location = url;
+                }
+                return false;
             });
 
             // height adjustement for bundle-keys tree area

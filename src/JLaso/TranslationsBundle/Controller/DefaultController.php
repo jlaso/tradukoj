@@ -345,6 +345,46 @@ class DefaultController extends BaseController
         );
     }
 
+
+
+    /**
+     * @Route("/translations/{projectId}/{catalog}/remove-key/{key}", name="translations_remove_key")
+     * @Template()
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function removeKeyAction(Request $request, Project $project, $catalog, $key)
+    {
+        $this->init();
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+        if(!$permission instanceof Permission){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => $this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'),
+                )
+            );
+        }
+        $catalog = trim($catalog);
+        //$current = trim($request->get('current'));
+        $translationRepository = $this->getTranslationRepository();
+
+        $translation = $translationRepository->findOneBy(array(
+                'projectId' => $project->getId(),
+                'catalog'   => $catalog,
+                'key'       => $key,
+            )
+        );
+        if($translation){
+            $this->translationsManager->saveLog($translation->getId(), '', $key, TranslationLog::REMOVE_KEY, $this->user, TranslationLog::TRANSLATIONS_GROUP);
+            $this->dm->remove($translation);
+            $this->dm->flush($translation);
+        }else{
+            $this->addNoticeFlash('translations.remove_key.error.key_dont_exists', array('%key%' => $keyName));
+        }
+
+        return $this->redirect($this->generateUrl('translations', array('projectId' => $project->getId(), 'catalog' => $catalog)));
+    }
+
+
     protected function isABundle($string)
     {
         return ((false != strpos($string, "Bundle")) || $string == "*app");

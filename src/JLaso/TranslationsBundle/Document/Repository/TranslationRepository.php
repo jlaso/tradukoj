@@ -54,12 +54,14 @@ class TranslationRepository extends DocumentRepository
         foreach($result as $item){
             $translations = $item->getTranslations();
             if(!$onlyLanguage || !isset($translations[$onlyLanguage]['message']) || !trim($translations[$onlyLanguage]['message'])){
-                $keys[] = array(
-                    'key' => $item->getKey(),
+                $key = $item->getKey();
+                $keys[$key] = array(
+                    'key' => $key,
                     'id'  => $item->getId(),
                 );
             }
         }
+        ksort($keys, SORT_NATURAL ^ SORT_FLAG_CASE);
 
         return $keys;
     }
