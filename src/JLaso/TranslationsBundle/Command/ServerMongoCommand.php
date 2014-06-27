@@ -903,11 +903,14 @@ class ServerMongoCommand extends ContainerAwareCommand
                         $current = $data[$key][$locale];
                         $updatedAt = new \DateTime($current['updatedAt']);
 
-                        if($message->getUpdatedAt() < $updatedAt){
+                        if($message->getUpdatedAt()->sec < intval($updatedAt->format("U"))){
 
                             $result[$key][$locale]              = $current['updatedAt'];
                             $translations[$locale]['message']   = $current['message'];
                             $translations[$locale]['updatedAt'] = $updatedAt;
+                            if(isset($current['approved'])){
+                                $translations[$locale]['approved'] = $current['approved'];
+                            }
                             $dirty = true;
 
                         }
