@@ -139,6 +139,9 @@ class Translation
         $this->updatedAt = $updatedAt;
     }
 
+    /**
+     * @return \MongoTimestamp
+     */
     public function getUpdatedAt()
     {
         return $this->updatedAt;
