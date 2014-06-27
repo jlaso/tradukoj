@@ -3,32 +3,37 @@
 namespace JLaso\TranslationsBundle\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityManager;
-use JLaso\TranslationsBundle\Document\File;
-use JLaso\TranslationsBundle\Document\Repository\TranslatableDocumentRepository;
-use JLaso\TranslationsBundle\Document\TranslatableDocument;
+
 use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
-use JLaso\TranslationsBundle\Entity\TranslationLog;
-use JLaso\TranslationsBundle\Entity\Repository\LanguageRepository;
-use JLaso\TranslationsBundle\Entity\Repository\TranslationLogRepository;
 use JLaso\TranslationsBundle\Entity\Repository\ProjectRepository;
+use JLaso\TranslationsBundle\Entity\TranslationLog;
+use JLaso\TranslationsBundle\Entity\Repository\TranslationLogRepository;
+use JLaso\TranslationsBundle\Entity\Repository\LanguageRepository;
 use JLaso\TranslationsBundle\Entity\User;
+
 use JLaso\TranslationsBundle\Exception\AclException;
 use JLaso\TranslationsBundle\Form\Type\NewProjectType;
 use JLaso\TranslationsBundle\Service\MailerService;
 use JLaso\TranslationsBundle\Service\Manager\TranslationsManager;
 use JLaso\TranslationsBundle\Service\RestService;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+
+use Doctrine\ORM\EntityManager;
 use Doctrine\ODM\MongoDB\DocumentManager;
-use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
+
+use JLaso\TranslationsBundle\Document\File;
+use JLaso\TranslationsBundle\Document\TranslatableDocument;
+use JLaso\TranslationsBundle\Document\Repository\TranslatableDocumentRepository;
 use JLaso\TranslationsBundle\Document\Translation;
+use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
 
 /**
  * Class DefaultController
@@ -713,18 +718,17 @@ class DefaultController extends BaseController
         $this->init();
         // only show keys with blank message (pending) in this language, if any
         $onlyLanguage = trim($request->get('language'));
+        $approvedFilter = trim($request->get('status'));
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
         if(!$permission instanceof Permission){
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
-        /** @var TranslationRepository $translationRepository */
-        $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
         if(strpos($criteria, "Bundle") !== false){
-            $keys = $translationRepository->getKeysByBundle($project->getId(), $criteria, $onlyLanguage);
+            $keys = $this->getTranslationRepository()->getKeysByBundle($project->getId(), $criteria, $onlyLanguage, $approvedFilter);
         }else{
-            $keys = $translationRepository->getKeys($project->getId(), $criteria, $onlyLanguage);
+            $keys = $this->getTranslationRepository()->getKeys($project->getId(), $criteria, $onlyLanguage, $approvedFilter);
         }
         $keysAssoc = $this->keysToPlainArray($keys);
 
@@ -946,23 +950,42 @@ class DefaultController extends BaseController
     }
 
     /**
-     * @Route("/approve-translation/message/{messageId}", name="approve_translation")
-     * @ Method("POST")
-     * @ParamConverter("message", class="TranslationsBundle:Message", options={"id" = "messageId"})
+     * @Route("/approve-translation/{translationId}/{locale}", name="approve_translation")
+     * @Method("POST")
+     * @ ParamConverter("translation", class="TranslationsBundle:Translation", options={"id" = "translationId"})
      */
-    public function approveMessageAction(Message $message)
+    public function approveMessageAction($translationId, $locale)
     {
         $this->init();
-        $lang = $message->getLanguage();
-        if($this->checkPermission($lang, Permission::ADMIN_PERM)){
-            $this->genericActionOnMessage($message, self::APPROVE);
-            $this->restService->resultOk(
-                array(
-                    'message'  => $message->getId(),
-                    'approved' => $message->getApproved(),
-                    'id'       => $message->getId(),
-                )
+
+        $translation = $this->getTranslationRepository()->find($translationId);
+
+        if(!$translation){
+            return $this->restService->exception(
+                $this->translator->trans('message.translation_not_found')
             );
+        }
+
+        if($this->checkPermission($locale, Permission::ADMIN_PERM)){
+            $translations = $translation->getTranslations();
+            if(isset($translations[$locale])){
+                $translations[$locale]['approved'] = true;
+                $translation->setTranslations($translations);
+                $this->dm->persist($translation);
+                $this->dm->flush($translation);
+                $this->restService->resultOk(
+                    array(
+                        'message'  => $translations[$locale]['message'],
+                        'approved' => true,
+                        'id'       => $translationId,
+                        'locale'   => $locale,
+                    )
+                );
+            }else{
+                $this->restService->exception(
+                    $this->translator->trans('message.inexistent_locale_to_approve')
+                );
+            }
         }else{
             $this->restService->exception(
                 $this->translator->trans('message.without_permissions_to_approve')
@@ -971,31 +994,52 @@ class DefaultController extends BaseController
 
     }
 
-    /**
-     * @Route("/disapprove-translation/message/{messageId}", name="disapprove_translation")
+     /**
+     * @Route("/disapprove-translation/{translationId}/{locale}", name="disapprove_translation")
      * @Method("POST")
-     * @ParamConverter("message", class="TranslationsBundle:Message", options={"id" = "messageId"})
+     * @ ParamConverter("translation", class="TranslationsBundle:Translation", options={"id" = "translationId"})
      */
-    public function disapproveMessageAction(Message $message)
+    public function disapproveMessageAction($translationId, $locale)
     {
         $this->init();
-        $lang = $message->getLanguage();
-        if($this->checkPermission($lang, Permission::ADMIN_PERM)){
-            $this->genericActionOnMessage($message, self::DISAPPROVE);
-            $this->restService->resultOk(
-                array(
-                    'message'  => $message->getId(),
-                    'approved' => $message->getApproved(),
-                    'id'       => $message->getId(),
-                )
+
+        $translation = $this->getTranslationRepository()->find($translationId);
+
+        if(!$translation){
+            return $this->restService->exception(
+                $this->translator->trans('message.translation_not_found')
             );
+        }
+
+        if($this->checkPermission($locale, Permission::ADMIN_PERM)){
+            $translations = $translation->getTranslations();
+            if(isset($translations[$locale])){
+                $translations[$locale]['approved'] = false;
+                $translation->setTranslations($translations);
+                $this->dm->persist($translation);
+                $this->dm->flush($translation);
+                $this->restService->resultOk(
+                    array(
+                        'message'  => $translations[$locale]['message'],
+                        'approved' => false,
+                        'id'       => $translationId,
+                        'locale'   => $locale,
+                    )
+                );
+            }else{
+                $this->restService->exception(
+                    $this->translator->trans('message.inexistent_locale_to_approve')
+                );
+            }
         }else{
             $this->restService->exception(
-                $this->translator->trans('message.without_permissions_to_disapprove')
+                $this->translator->trans('message.without_permissions_to_approve')
             );
         }
 
     }
+
+
 
 
 

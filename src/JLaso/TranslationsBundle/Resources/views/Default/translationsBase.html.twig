@@ -164,6 +164,12 @@
                                 </a>
                             {% endfor %}
 
+                            &nbsp;
+
+                            <span class="badge">{{ "status"|trans|raw }}:</span>&nbsp;
+                            <a href="#" class="only only-approved" status="all">
+                                <code>All</code>
+                            </a>
 
                             <div class="row-fluid">
                                 {% if canCreateKeys %}
@@ -435,21 +441,25 @@
         }
 
         {% if current %}
-        function loadTree(language)
+        function loadTree(language, status)
         {
             var language = language || "";
+            var status = status || "all";
             if('{{ current }}'){
 
                 {% if action=="documents" %}
-                    var url = "{{ path('tree-docs.json', {'projectId':project.id, 'bundle':current|default('')}) }}";
+                    var url = "{{ path('tree-docs.json', {'projectId':project.id, 'bundle':current|default(''), 'no-cache':'000000'}) }}";
                 {% else %}
-                    var url = "{{ path('tree.json', {'projectId':project.id, 'criteria':current|default('')}) }}";
+                    var url = "{{ path('tree.json', {'projectId':project.id, 'criteria':current|default(''), 'no-cache':'000000'}) }}";
                 {% endif %}
 
+                var d = new Date();
+
                 $.ajax({
-                    url: url,
+                    url: url.replace('000000', d.getTime()),
                     data: {
-                        language: language
+                        language: language,
+                        status: status
                     },
                     success: function(data){
                         //console.log(data);
@@ -651,31 +661,62 @@
                 return false;
             });
 
-            $('.approve').click(function(e){
+            $('#translations-group').on('click','.approve',function(e){
                 e.preventDefault();
                 var id = $(this).attr('key');
-                var url = '{{ path('approve_translation', {"messageId": "000"}) }}'.replace('000', id);
+                var locale = $(this).attr('locale');
+                var url = '{{ path('approve_translation', {"translationId": "000", "locale":"999"}) }}'.replace("000", id).replace("999", locale);
+                //console.log(url, id, locale); return;
                 $.ajax({
                     url: url,
                     type: 'post',
                     success: function(data){
-                        if(data.result){
-                            $('.approve[key="'+data.id+'"]')
-                                .removeClass('btn-success').addClass('btn-danger')
+                        if(data.result && data.approved){
+                            $('.approve[locale="'+data.locale+'"]')
+                                .removeClass('btn-success approve').addClass('btn-danger disapprove')
                                 .html('<i class="icon-thumbs-down"></i> {{ "button.disapprove"|trans|raw }}');
-                            $('.approved_indicator[key="'+data.id+'"]')
+                            $('.approved_indicator[locale="'+data.locale+'"]')
                                     .find('i')
                                     .removeClass('icon-thumbs-down')
                                     .addClass('icon-thumbs-up');
                         }else{
                             alert(data.reason);
                         }
-                        console.log(data);
+                        //console.log(data);
                     },
                     error: function(data){
                         alert(data);
                     }
-                })
+                });
+            });
+
+            $('#translations-group').on('click','.disapprove',function(e){
+                e.preventDefault();
+                var id = $(this).attr('key');
+                var locale = $(this).attr('locale');
+                var url = '{{ path('disapprove_translation', {"translationId": "000", "locale":"999"}) }}'.replace("000", id).replace("999", locale);
+                //console.log(url, id, locale); return;
+                $.ajax({
+                    url: url,
+                    type: 'post',
+                    success: function(data){
+                        if(data.result && !data.approved){
+                            $('.disapprove[locale="'+data.locale+'"]')
+                                    .removeClass('btn-danger disapprove').addClass('btn-success approve')
+                                    .html('<i class="icon-thumbs-up"></i> {{ "button.approve"|trans|raw }}');
+                            $('.approved_indicator[locale="'+data.locale+'"]')
+                                    .find('i')
+                                    .removeClass('icon-thumbs-up')
+                                    .addClass('icon-thumbs-down');
+                        }else{
+                            alert(data.reason);
+                        }
+                        //console.log(data);
+                    },
+                    error: function(data){
+                        alert(data);
+                    }
+                });
             });
 
 //            var to = false;
@@ -717,8 +758,9 @@
                 }
             });
 
+            var currentLocale = "";
 
-            {# filtros only #}
+            {# only filters #}
             $('.only-locale').click(function(e){
                 e.preventDefault();
                 var locale = $(this).attr("locale");
@@ -726,10 +768,40 @@
                 $('.only-locale').removeClass('active');
                 if(!active){
                     $(this).addClass('active');
-                    loadTree(locale);
+                    currentLocale = locale;
+                    loadTree(currentLocale, approvedFilter);
                 }else{
-                    loadTree();
+                    currentLocale = "";
+                    loadTree(currentLocale, approvedFilter);
                 }
+            });
+
+            var approvedFilter = "all";
+
+            $('.only-approved').click(function(e){
+                e.preventDefault();
+                if(!currentLocale){
+                    return;
+                }
+                var status = $(this).attr("status");
+                switch(status){
+                    case "all":
+                        approvedFilter = "approved";
+                        html = "<code>Approved</code>";
+                        break;
+
+                    case "approved":
+                        approvedFilter = "disapproved";
+                        html = "<code>Disapproved</code>";
+                        break;
+
+                    case "disapproved":
+                        approvedFilter = "all";
+                        html = "<code>All</code>";
+                        break;
+                }
+                $('.only-approved').attr("status", approvedFilter).html(html);
+                loadTree(currentLocale, approvedFilter);
             });
 
             {% if canCreateKeys %}
