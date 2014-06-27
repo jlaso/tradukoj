@@ -401,13 +401,13 @@
 
         function saveComment(id)
         {
-            console.log($(id)); return;
+            console.log($(id)); //return;
             var comment = $(id).find('input').val();
             var button  = $(id).find('a.btn');
             current = button;
             interval = setInterval(function() { $(current).toggleClass('btn-primary'); }, 80);
             var data = {
-                bundle: '{{ current }}',
+                catalog: '{{ current }}',
                 key: $(button).attr('key'),
                 comment: comment
             };
