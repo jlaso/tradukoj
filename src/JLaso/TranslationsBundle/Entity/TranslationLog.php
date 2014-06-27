@@ -16,6 +16,7 @@ class TranslationLog
     const NEW_KEY    = 'new_key';
     const CHANGE_KEY = 'change_key';
     const REMOVE_KEY = 'remove_key';
+    const COMMENT    = 'comment';
 
     const TRANSLATIONS_GROUP = 'trans-keys';
     const DOCUMENTS_GROUP    = 'trans-docs';

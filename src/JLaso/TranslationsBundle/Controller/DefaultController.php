@@ -869,30 +869,31 @@ class DefaultController extends BaseController
     {
         $this->init();
 
-        $bundle   = $request->get('bundle');
+        $catalog  = $request->get('catalog');
+        //$bundle   = $request->get('bundle');
+        $key      = $request->get('key');
+        $comment  = str_replace("\'","'",$request->get('comment'));
         //@TODO: comprobar que el usuario que esta logado tiene permiso para hacer esto
-        if(!$bundle || !$request->get('key') || !$request->get('comment')){
+        if(!$catalog || !$key || !$comment){
             die('validation exception, request content = ' . $request->getContent());
         }
 
-        $key = $this->getKeyRepository()->findOneBy(array(
-                'project'  => $project,
-                'bundle'   => $bundle,
-                'key'      => $request->get('key'),
-            )
-        );
-        if(!$key instanceof Key){
-            die('key invalid');
+        $translation = $this->translationsManager->putComment($project, $catalog, $key, $comment);
+        if(!$translation){
+            $this->printResult(array(
+                    'result' => false,
+                    'reason' => 'translation not found',
+                )
+            );
         }
-        $comment = $request->get('comment');
-        $key->setComment($comment);
-        $key->setUpdatedAt();
-        $this->em->persist($key);
-        $this->em->flush();
-        $this->restService->resultOk(
-            array(
-                'comment' => $comment,
-                'id_html' => $this->translationsManager->keyToHtmlId($key->getKey()),
+        $this->dm->persist($translation);
+        $this->dm->flush();
+
+        $this->translationsManager->saveLog($translation->getId(), '*', $comment, TranslationLog::COMMENT, $this->user);
+
+        $this->printResult(array(
+                'result'  => true,
+                'message' => $comment,
             )
         );
     }
