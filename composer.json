@@ -39,7 +39,10 @@
 
         "incenteev/composer-parameter-handler": "~2.0",
 
-        "jlaso/translations-apibundle": "dev-master"
+        "jlaso/translations-apibundle": "dev-master",
+
+        "liuggio/excelbundle": "~2.0"
+
     },
     "config": {
         "bin-dir": "bin/"
