@@ -1456,7 +1456,7 @@ class DefaultController extends BaseController
         $projectId = $translation->getProjectId();
         $files = array();
         $finder = new Finder();
-        $finder->files()->in($this->root . "/web/uploads")->name('*.jpg');
+        $finder->files()->in($this->root . "/web/uploads/{$projectId}")->name('*.jpg');
 
         foreach($finder as $file){
             //$fileFull = $file->getRealpath();
