@@ -3,32 +3,40 @@
 namespace JLaso\TranslationsBundle\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\ORM\EntityManager;
-use JLaso\TranslationsBundle\Document\File;
-use JLaso\TranslationsBundle\Document\Repository\TranslatableDocumentRepository;
-use JLaso\TranslationsBundle\Document\TranslatableDocument;
+
 use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
-use JLaso\TranslationsBundle\Entity\TranslationLog;
-use JLaso\TranslationsBundle\Entity\Repository\LanguageRepository;
-use JLaso\TranslationsBundle\Entity\Repository\TranslationLogRepository;
 use JLaso\TranslationsBundle\Entity\Repository\ProjectRepository;
+use JLaso\TranslationsBundle\Entity\TranslationLog;
+use JLaso\TranslationsBundle\Entity\Repository\TranslationLogRepository;
+use JLaso\TranslationsBundle\Entity\Repository\LanguageRepository;
 use JLaso\TranslationsBundle\Entity\User;
+
 use JLaso\TranslationsBundle\Exception\AclException;
 use JLaso\TranslationsBundle\Form\Type\NewProjectType;
 use JLaso\TranslationsBundle\Service\MailerService;
 use JLaso\TranslationsBundle\Service\Manager\TranslationsManager;
 use JLaso\TranslationsBundle\Service\RestService;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Translation\Translator;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+
+use Doctrine\ORM\EntityManager;
 use Doctrine\ODM\MongoDB\DocumentManager;
-use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
+
+use JLaso\TranslationsBundle\Document\File;
+use JLaso\TranslationsBundle\Document\TranslatableDocument;
+use JLaso\TranslationsBundle\Document\Repository\TranslatableDocumentRepository;
 use JLaso\TranslationsBundle\Document\Translation;
+use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
+use WebDriver\Exception;
 
 /**
  * Class DefaultController
@@ -54,6 +62,8 @@ class DefaultController extends BaseController
     protected $translator;
     /** @var  RestService */
     protected $restService;
+    /** @var string root */
+    protected $root;
 
     protected function init()
     {
@@ -65,6 +75,7 @@ class DefaultController extends BaseController
         $this->restService         = $this->container->get('jlaso.rest_service');
         /** @var DocumentManager $dm */
         $this->dm                  = $this->container->get('doctrine.odm.mongodb.document_manager');
+        $this->root                = realpath($this->get('kernel')->getRootDir() . "/..");
     }
 
     /**
@@ -344,6 +355,46 @@ class DefaultController extends BaseController
             )
         );
     }
+
+
+
+    /**
+     * @Route("/translations/{projectId}/{catalog}/remove-key/{key}", name="translations_remove_key")
+     * @Template()
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function removeKeyAction(Request $request, Project $project, $catalog, $key)
+    {
+        $this->init();
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+        if(!$permission instanceof Permission){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => $this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'),
+                )
+            );
+        }
+        $catalog = trim($catalog);
+        //$current = trim($request->get('current'));
+        $translationRepository = $this->getTranslationRepository();
+
+        $translation = $translationRepository->findOneBy(array(
+                'projectId' => $project->getId(),
+                'catalog'   => $catalog,
+                'key'       => $key,
+            )
+        );
+        if($translation){
+            $this->translationsManager->saveLog($translation->getId(), '', $key, TranslationLog::REMOVE_KEY, $this->user, TranslationLog::TRANSLATIONS_GROUP);
+            $this->dm->remove($translation);
+            $this->dm->flush($translation);
+        }else{
+            $this->addNoticeFlash('translations.remove_key.error.key_dont_exists', array('%key%' => $keyName));
+        }
+
+        return $this->redirect($this->generateUrl('translations', array('projectId' => $project->getId(), 'catalog' => $catalog)));
+    }
+
 
     protected function isABundle($string)
     {
@@ -674,18 +725,17 @@ class DefaultController extends BaseController
         $this->init();
         // only show keys with blank message (pending) in this language, if any
         $onlyLanguage = trim($request->get('language'));
+        $approvedFilter = trim($request->get('status'));
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
         if(!$permission instanceof Permission){
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
-        /** @var TranslationRepository $translationRepository */
-        $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
         if(strpos($criteria, "Bundle") !== false){
-            $keys = $translationRepository->getKeysByBundle($project->getId(), $criteria, $onlyLanguage);
+            $keys = $this->getTranslationRepository()->getKeysByBundle($project->getId(), $criteria, $onlyLanguage, $approvedFilter);
         }else{
-            $keys = $translationRepository->getKeys($project->getId(), $criteria, $onlyLanguage);
+            $keys = $this->getTranslationRepository()->getKeys($project->getId(), $criteria, $onlyLanguage, $approvedFilter);
         }
         $keysAssoc = $this->keysToPlainArray($keys);
 
@@ -830,30 +880,31 @@ class DefaultController extends BaseController
     {
         $this->init();
 
-        $bundle   = $request->get('bundle');
+        $catalog  = $request->get('catalog');
+        //$bundle   = $request->get('bundle');
+        $key      = $request->get('key');
+        $comment  = str_replace("\'","'",$request->get('comment'));
         //@TODO: comprobar que el usuario que esta logado tiene permiso para hacer esto
-        if(!$bundle || !$request->get('key') || !$request->get('comment')){
+        if(!$catalog || !$key || !$comment){
             die('validation exception, request content = ' . $request->getContent());
         }
 
-        $key = $this->getKeyRepository()->findOneBy(array(
-                'project'  => $project,
-                'bundle'   => $bundle,
-                'key'      => $request->get('key'),
-            )
-        );
-        if(!$key instanceof Key){
-            die('key invalid');
+        $translation = $this->translationsManager->putComment($project, $catalog, $key, $comment);
+        if(!$translation){
+            $this->printResult(array(
+                    'result' => false,
+                    'reason' => 'translation not found',
+                )
+            );
         }
-        $comment = $request->get('comment');
-        $key->setComment($comment);
-        $key->setUpdatedAt();
-        $this->em->persist($key);
-        $this->em->flush();
-        $this->restService->resultOk(
-            array(
-                'comment' => $comment,
-                'id_html' => $this->translationsManager->keyToHtmlId($key->getKey()),
+        $this->dm->persist($translation);
+        $this->dm->flush();
+
+        $this->translationsManager->saveLog($translation->getId(), '*', $comment, TranslationLog::COMMENT, $this->user);
+
+        $this->printResult(array(
+                'result'  => true,
+                'message' => $comment,
             )
         );
     }
@@ -906,23 +957,42 @@ class DefaultController extends BaseController
     }
 
     /**
-     * @Route("/approve-translation/message/{messageId}", name="approve_translation")
-     * @ Method("POST")
-     * @ParamConverter("message", class="TranslationsBundle:Message", options={"id" = "messageId"})
+     * @Route("/approve-translation/{translationId}/{locale}", name="approve_translation")
+     * @Method("POST")
+     * @ ParamConverter("translation", class="TranslationsBundle:Translation", options={"id" = "translationId"})
      */
-    public function approveMessageAction(Message $message)
+    public function approveMessageAction($translationId, $locale)
     {
         $this->init();
-        $lang = $message->getLanguage();
-        if($this->checkPermission($lang, Permission::ADMIN_PERM)){
-            $this->genericActionOnMessage($message, self::APPROVE);
-            $this->restService->resultOk(
-                array(
-                    'message'  => $message->getId(),
-                    'approved' => $message->getApproved(),
-                    'id'       => $message->getId(),
-                )
+
+        $translation = $this->getTranslationRepository()->find($translationId);
+
+        if(!$translation){
+            return $this->restService->exception(
+                $this->translator->trans('message.translation_not_found')
             );
+        }
+
+        if($this->checkPermission($locale, Permission::ADMIN_PERM)){
+            $translations = $translation->getTranslations();
+            if(isset($translations[$locale])){
+                $translations[$locale]['approved'] = true;
+                $translation->setTranslations($translations);
+                $this->dm->persist($translation);
+                $this->dm->flush($translation);
+                $this->restService->resultOk(
+                    array(
+                        'message'  => $translations[$locale]['message'],
+                        'approved' => true,
+                        'id'       => $translationId,
+                        'locale'   => $locale,
+                    )
+                );
+            }else{
+                $this->restService->exception(
+                    $this->translator->trans('message.inexistent_locale_to_approve')
+                );
+            }
         }else{
             $this->restService->exception(
                 $this->translator->trans('message.without_permissions_to_approve')
@@ -931,31 +1001,52 @@ class DefaultController extends BaseController
 
     }
 
-    /**
-     * @Route("/disapprove-translation/message/{messageId}", name="disapprove_translation")
+     /**
+     * @Route("/disapprove-translation/{translationId}/{locale}", name="disapprove_translation")
      * @Method("POST")
-     * @ParamConverter("message", class="TranslationsBundle:Message", options={"id" = "messageId"})
+     * @ ParamConverter("translation", class="TranslationsBundle:Translation", options={"id" = "translationId"})
      */
-    public function disapproveMessageAction(Message $message)
+    public function disapproveMessageAction($translationId, $locale)
     {
         $this->init();
-        $lang = $message->getLanguage();
-        if($this->checkPermission($lang, Permission::ADMIN_PERM)){
-            $this->genericActionOnMessage($message, self::DISAPPROVE);
-            $this->restService->resultOk(
-                array(
-                    'message'  => $message->getId(),
-                    'approved' => $message->getApproved(),
-                    'id'       => $message->getId(),
-                )
+
+        $translation = $this->getTranslationRepository()->find($translationId);
+
+        if(!$translation){
+            return $this->restService->exception(
+                $this->translator->trans('message.translation_not_found')
             );
+        }
+
+        if($this->checkPermission($locale, Permission::ADMIN_PERM)){
+            $translations = $translation->getTranslations();
+            if(isset($translations[$locale])){
+                $translations[$locale]['approved'] = false;
+                $translation->setTranslations($translations);
+                $this->dm->persist($translation);
+                $this->dm->flush($translation);
+                $this->restService->resultOk(
+                    array(
+                        'message'  => $translations[$locale]['message'],
+                        'approved' => false,
+                        'id'       => $translationId,
+                        'locale'   => $locale,
+                    )
+                );
+            }else{
+                $this->restService->exception(
+                    $this->translator->trans('message.inexistent_locale_to_approve')
+                );
+            }
         }else{
             $this->restService->exception(
-                $this->translator->trans('message.without_permissions_to_disapprove')
+                $this->translator->trans('message.without_permissions_to_approve')
             );
         }
 
     }
+
+
 
 
 
@@ -1203,6 +1294,247 @@ class DefaultController extends BaseController
         return $this->printResult($result);
 
     }
+
+    /**
+     * @Route("/upload-screenshot/{translationId}", name="upload_screenshot")
+     * @Method("POST")
+     * @ ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function uploadScrenshotAction(Request $request, $translationId)
+    {
+        $this->init();
+
+        /** @var Translation $translation */
+        $translation = $this->getTranslationRepository()->find($translationId);
+
+        if(!$translation){
+            throw $this->createNotFoundException();
+        }
+
+        $project = $this->getProjectRepository()->find($translation->getProjectId());
+
+        $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+
+        // if bla bla bla
+
+        $directory = $this->root . "/web/uploads/";
+        $files = $request->files;
+        foreach($files as $uploadedFile){
+            break;
+        };
+        /** @var UploadedFile $uploadedFile */
+        $ext = $uploadedFile->getClientOriginalExtension();
+        $baseName = uniqid();
+        $name = $baseName . '.' . $ext;
+        /** @var \Symfony\Component\HttpFoundation\File\File $file */
+        $file = $uploadedFile->move($directory, $name);
+        $destFile = $baseName . '.jpg';
+        $name = $this->normalize($ext, $directory . $baseName, $directory . $destFile);
+
+        $translation->setScreenshot($destFile);
+        $this->dm->persist($translation);
+        $this->dm->flush($translation);
+
+        die('OK');
+    }
+
+
+    protected function normalize($ext, $file, $destImageFile, $width = null, $height = null, $quality = 90)
+    {
+        $imageFile = $file . '.' . $ext;
+        switch($ext){
+            case 'png':
+            case 'PNG':
+                $image    = imagecreatefrompng($imageFile);
+                break;
+
+            case 'jpg':
+            case 'JPG':
+            case 'jpeg':
+            case 'JPEG':
+                $image    = imagecreatefromjpeg($imageFile);
+                break;
+
+            case 'gif':
+                $image    = imagecreatefromgif($imageFile);
+                break;
+
+            default:
+                die("extension $ext don't recognized");
+        }
+        $w        = imagesx($image);
+        $h        = imagesy($image);
+        $width    = $width ? : $w;
+        $height   = $height ? : $h;
+        $newImage = imagecreatetruecolor($width, $height);
+        unlink($imageFile);
+        imagecopyresampled($newImage, $image, 0, 0, 0, 0, $width, $height, $w, $h);
+        imagejpeg($newImage, $destImageFile, $quality);
+        chmod($destImageFile, 0777);
+
+        return $destImageFile;
+    }
+
+    /**
+     * @Route("/edit-screenshot/{translationId}", name="translation_screenshot")
+     * @Template()
+     */
+    public function editScrenshotAction(Request $request, $translationId)
+    {
+        $this->init();
+
+        /** @var Translation $translation */
+        $translation = $this->getTranslationRepository()->find($translationId);
+
+        //ldd($translation);
+
+        if(!$translation){
+            throw $this->createNotFoundException();
+        }
+
+        if($request->isMethod('POST')){
+
+            $selection = $request->get('selection');
+            $translation->setImageMaps($selection);
+            $this->dm->persist($translation);
+            $this->dm->flush($translation);
+            return $this->printResult(
+                array(
+                    'result' => true,
+                )
+            );
+
+        }
+
+        //if($this->checkPermission(Permission::GENERAL_KEY, Permission::ADMIN_PERM)){
+
+        $project = $this->getProjectRepository()->find($translation->getProjectId());
+
+            return array(
+                'translation' => $translation,
+                'project'     => $project,
+                'action'      => '',
+                'permissions' => $this->user->getPermission(),
+            );
+
+        //}else{
+            //return $this->createNotFoundException('message.not_eough_permissions');
+        //}
+
+    }
+
+
+    /**
+     * @Route("/select-screenshot/{translationId}", name="translation_select_screenshot")
+     * @Template()
+     */
+    public function selectScrenshotAction(Request $request, $translationId)
+    {
+        $this->init();
+
+        /** @var Translation $translation */
+        $translation = $this->getTranslationRepository()->find($translationId);
+
+        if(!$translation){
+            throw $this->createNotFoundException();
+        }
+
+        if($request->isMethod('POST')){
+
+            $file = $request->get('file');
+            $translation->setScreenshot($file);
+            $translation->setImageMaps(array());
+            $this->dm->persist($translation);
+            $this->dm->flush($translation);
+            return $this->printResult(
+                array(
+                    'result' => true,
+                )
+            );
+
+        }
+
+
+        $files = array();
+        $finder = new Finder();
+        $finder->files()->in($this->root . "/web/uploads")->name('*.jpg');
+
+        foreach($finder as $file){
+            //$fileFull = $file->getRealpath();
+            //$relativePath = $file->getRelativePath();
+            //$fileName = $file->getRelativePathname();
+            $files[] = $file->getRelativePathname();
+        }
+
+        //if($this->checkPermission(Permission::GENERAL_KEY, Permission::ADMIN_PERM)){
+
+        $project = $this->getProjectRepository()->find($translation->getProjectId());
+
+            return array(
+                'translation' => $translation,
+                'project'     => $project,
+                'action'      => '',
+                'permissions' => $this->user->getPermission(),
+                'files'       => $files,
+            );
+
+        //}else{
+            //return $this->createNotFoundException('message.not_eough_permissions');
+        //}
+
+    }
+
+    /**
+     * @Route("/show-screenshot/{translationId}.jpg", name="translation_screenshot_show")
+     */
+    public function showScrenshotAction(Request $request, $translationId)
+    {
+        $this->init();
+
+        /** @var Translation $translation */
+        $translation = $this->getTranslationRepository()->find($translationId);
+
+        $fileName = "/uploads/" . $translation->getScreenshot();
+
+        $image = imagecreatefromjpeg($this->root . "/web" . $fileName);
+
+        $pink = imagecolorallocate($image, 255, 105, 180);
+        $white = imagecolorallocate($image, 255, 255, 255);
+        //$green = imagecolorallocate($image, 132, 135, 28);
+
+        $selection = $translation->getImageMaps();
+        //var_dump($selection); die;
+
+        list($w,$h) = getimagesize($this->root . "/web" . $fileName);
+
+        $fx = $w/$selection['w'];
+        $fy = $h/$selection['h'];
+        $x1 = $selection['x1'] * $fx;
+        $x2 = $selection['x2'] * $fx;
+        $y1 = $selection['y1'] * $fy;
+        $y2 = $selection['y2'] * $fy;
+
+        for($i=1;$i<4;$i++){
+            imagerectangle($image, $x1-$i, $y1-$i, $x2+$i, $y2+$i, $white);
+        }
+        for($i=0;$i<3;$i++){
+            imagerectangle($image, $x1+$i, $y1+$i, $x2-$i, $y2-$i, $pink);
+        }
+
+//        $headers = array(
+//            'Content-Type'     => 'image/jpeg',
+//            'Content-Disposition' => 'inline; filename="'.$fileName.'"');
+//        return new Response($image, 200, $headers);
+
+        header('Content-Type: image/jpeg');
+
+        imagejpeg($image);
+        imagedestroy($image);
+        die;
+
+    }
+
+
 
     public function searchMessagesAction(Request $request)
     {

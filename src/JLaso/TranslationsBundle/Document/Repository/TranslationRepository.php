@@ -38,7 +38,7 @@ class TranslationRepository extends DocumentRepository
         return array_keys($bundles);
     }
 
-    public function getKeys($projectId, $catalog, $onlyLanguage = '')
+    public function getKeys($projectId, $catalog, $onlyLanguage = '', $approvedFilter = 'all')
     {
         $dm = $this->getDocumentManager();
 
@@ -51,20 +51,46 @@ class TranslationRepository extends DocumentRepository
             , array('key'));
 
         $keys = array();
+
         foreach($result as $item){
             $translations = $item->getTranslations();
-            if(!$onlyLanguage || !isset($translations[$onlyLanguage]['message']) || !trim($translations[$onlyLanguage]['message'])){
-                $keys[] = array(
-                    'key' => $item->getKey(),
+
+            switch(true){
+
+                case(!$onlyLanguage):
+                    $show = true;
+                    break;
+
+                case(isset($translations[$onlyLanguage]) && ($approvedFilter == 'all')):
+                    $show = !isset($translations[$onlyLanguage]['message']) || !trim($translations[$onlyLanguage]['message']);
+                    break;
+
+                case(isset($translations[$onlyLanguage])):
+                    $show = (($approvedFilter == 'approved')  &&  $translations[$onlyLanguage]['approved'])
+                        || (($approvedFilter == 'disapproved')  &&  !$translations[$onlyLanguage]['approved']);
+                    break;
+
+                default:
+                    $show = false;
+                    break;
+
+            }
+
+            if($show){
+                $key = $item->getKey();
+                $keys[$key] = array(
+                    'key' => $key,
                     'id'  => $item->getId(),
                 );
             }
+
         }
+        ksort($keys, SORT_NATURAL ^ SORT_FLAG_CASE);
 
         return $keys;
     }
 
-    public function getKeysByBundle($projectId, $bundle, $onlyLanguage = '')
+    public function getKeysByBundle($projectId, $bundle, $onlyLanguage = '', $approvedFilter = 'all')
     {
         $dm = $this->getDocumentManager();
 
@@ -79,11 +105,34 @@ class TranslationRepository extends DocumentRepository
         $keys = array();
         foreach($result as $item){
             $translations = $item->getTranslations();
-            if(!$onlyLanguage || !isset($translations[$onlyLanguage]['message']) || !trim($translations[$onlyLanguage]['message'])){
+
+            switch(true){
+
+                case(!$onlyLanguage):
+                    $show = true;
+                    break;
+
+                case(isset($translations[$onlyLanguage]) && ($approvedFilter == 'all')):
+                    $show = !isset($translations[$onlyLanguage]['message']) || !trim($translations[$onlyLanguage]['message']);
+                    break;
+
+                case(isset($translations[$onlyLanguage])):
+                    $show = (($approvedFilter == 'approved')  &&  $translations[$onlyLanguage]['approved'])
+                        || (($approvedFilter == 'disapproved')  &&  !$translations[$onlyLanguage]['approved']);
+                    break;
+
+                default:
+                    $show = false;
+                    break;
+
+            }
+
+            if($show){
                 $keys[] = array(
                     'key' => $item->getKey(),
                     'id'  => $item->getId(),
                 );
+
             }
         }
 

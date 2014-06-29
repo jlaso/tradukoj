@@ -5,6 +5,8 @@
             <i class="icon-key"></i>&nbsp;<span id="current-key">{{ translation.key }}</span>
             {% if canAdmin(permissions) %}
                 &nbsp;<a href="#" id="change-key-icon"><i class="icon-edit"></i></a>
+                &nbsp;<a href="{{ path('translations_remove_key', {'projectId':translation.projectId, 'catalog':translation.catalog, 'key':translation.key}) }}" id="remove-key-icon"><i class="icon-trash"></i></a>
+                &nbsp;<a href="#" id="screenshot-icon" title="{{ "translation.hint.screenshot_to_help"|trans }}"><i class="icon-screenshot"></i></a>
 
                 <div id="change-key" class="modal hide fade" tabindex="-1"
                      role="dialog" aria-labelledby="change_key_label" aria-hidden="true">
@@ -94,7 +96,7 @@
                                             <i class="icon-flag"></i>&nbsp;<code>{{ locale }}</code>
                                             <img src="{{ asset('bundles/translations/img/flags/' ~ locale ~ '.png') }}" alt="{{ locale }} flag"/>
                                             &nbsp;{{ languages[locale].name }}
-                                            <span class="approved_indicator" key="{{ info_id_html }}">
+                                            <span class="approved_indicator" key="{{ info_id_html }}" locale="{{ locale }}">
                                             {% if info.approved %}
                                                 <i class="icon-thumbs-up"></i>
                                             {% else %}
@@ -127,11 +129,11 @@
                                             {# approve actions #}
                                             {% if canAdmin %}
                                                 {% if info.approved %}
-                                                    <a href="#" class="btn btn-danger disapprove">
+                                                    <a href="#" class="btn btn-danger disapprove" key="{{ translation.id }}" locale="{{ locale }}">
                                                         <i class="icon-thumbs-down"></i> {{ "button.disapprove"|trans|raw }}
                                                     </a>
                                                 {% else %}
-                                                    <a href="#" class="btn btn-success approve">
+                                                    <a href="#" class="btn btn-success approve" key="{{ translation.id }}" locale="{{ locale }}">
                                                         <i class="icon-thumbs-up"></i> {{ "button.approve"|trans|raw }}
                                                     </a>
                                                 {% endif %}
@@ -149,6 +151,40 @@
                 </div>
             </div>
         </div><!-- class=translations-group -->
+
+
+        <div class="screenshot-zone">
+
+            {% if translation.screenshot is not null %}
+
+                {% set image = path("translation_screenshot_show", {'translationId': translation.id, 'no-cache': "now"|date("U")}) %}
+
+                <div style="border:3px solid #aaa;">
+                    <a class="image-link" href="{{ image }}">
+                        <img id="screenshot" src="{{ image }}" width="100%"/>
+                    </a>
+                </div>
+
+            {% endif %}
+
+            <form action="{{ path("upload_screenshot", {"translationId": translation.id}) }}"
+                  method="post" enctype="multipart/form-data"
+                  class="dropzone">
+                <a class="btn btn-success" target="_blank" href="{{ path('translation_screenshot', {'translationId': translation.id, 'no-cache': "now"|date("U")}) }}">
+                    {{ "general.button.edit"|trans|raw }}
+                </a> &nbsp;
+                <a class="btn btn-success" target="_blank" href="{{ path('translation_select_screenshot', {'translationId': translation.id, 'no-cache': "now"|date("U")}) }}">
+                    {{ "general.button.select_from_gallery"|trans|raw }}
+                </a> &nbsp;
+                <div class="fallback">
+                    {{ "upload_screenshot"|trans|raw }} &nbsp;
+                    <input id="screenshot-file" name="screenshot-file" type='file' />
+                    <input type="submit"/>
+                </div>
+            </form>
+
+        </div>
+
 
     </div>
 

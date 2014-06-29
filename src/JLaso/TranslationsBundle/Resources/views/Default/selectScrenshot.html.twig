@@ -1,0 +1,101 @@
+{% extends '::base.html.twig' %}
+
+
+{# cron periodico para releer si hay cambios por parte de otro usuario o de la api #}
+
+{% block sidebar %}
+    {# here the sidebar #}
+
+    <a href="#" id="save" class="btn btn-danger">
+        {{ "general.button.select"|trans|raw }}
+    </a>
+
+{% endblock sidebar %}
+
+{% block stylesheets %}
+    <style>
+        #screenshot-list{
+            list-style: none;
+        }
+        #screenshot-list li{
+            display: inline-block;
+            width: 300;
+        }
+        #screenshot-list li img.active{
+            border: 3px solid rgba(200,10,10,0.5);
+        }
+    </style>
+{% endblock stylesheets %}
+
+{% block content %}
+
+    <h1>{{ translation.key }}</h1>
+
+    <div style="overflow: auto; width: 100%; min-height: 100%;">
+
+        <ul id="screenshot-list">
+        {% for file in files %}
+            <li>
+                <img class="screenshot" src="/uploads/{{ file }}" alt="" file="{{ file }}" width="300"/>
+            </li>
+        {% endfor %}
+        </ul>
+
+    </div>
+
+{% endblock content %}
+
+
+{% block javascripts %}
+
+    <script>
+
+        $(function(){
+
+            $("#screenshot-list li img").click(function(e){
+                console.log('as');
+                e.preventDefault();
+                var active = $(this).hasClass("active")
+                $('#screenshot-list li img').removeClass('active');
+                if(!active){
+                    $(this).addClass('active');
+                }
+            });
+
+            $("#save").click(function(e){
+
+                e.preventDefault();
+                var selected = $("#screenshot-list li img.active");
+                var file = $(selected).attr("file");
+                //console.log(selected.length);
+                if(!selected.length){
+                    alert('you must select one!');
+                    return;
+                }
+                $.ajax({
+
+                    url: "#",
+                    data: {
+                        file: file
+                    },
+                    type: "post",
+                    success: function(data){
+                        if(data.result){
+                            // go to mark zone
+                            window.location = "{{ path('translation_screenshot', {'translationId': translation.id, 'no-cache': "now"|date("U")}) }}";
+                            //window.close();
+                        }
+                    },
+                    error: function(data){
+                        alert(data);
+                    }
+
+                });
+
+            });
+
+        });
+
+    </script>
+
+{% endblock javascripts %}
