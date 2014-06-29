@@ -85,7 +85,7 @@ class TranslationRepository extends DocumentRepository
             }
 
         }
-        ksort($keys, SORT_NATURAL ^ SORT_FLAG_CASE);
+        ksort($keys, SORT_STRING);  // ideally SORT_NATURAL ^ SORT_FLAG_CASE  but current server don't support this flags
 
         return $keys;
     }
@@ -136,7 +136,7 @@ class TranslationRepository extends DocumentRepository
 
             }
         }
-        ksort($keys, SORT_NATURAL ^ SORT_FLAG_CASE);
+        ksort($keys, SORT_STRING);  // ideally SORT_NATURAL ^ SORT_FLAG_CASE  but current server don't support this flags
 
         return $keys;
     }
