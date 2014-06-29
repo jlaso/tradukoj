@@ -23,6 +23,8 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Translation\Translator;
+use Symfony\Component\Finder\Finder;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -34,6 +36,7 @@ use JLaso\TranslationsBundle\Document\TranslatableDocument;
 use JLaso\TranslationsBundle\Document\Repository\TranslatableDocumentRepository;
 use JLaso\TranslationsBundle\Document\Translation;
 use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
+use WebDriver\Exception;
 
 /**
  * Class DefaultController
@@ -59,6 +62,8 @@ class DefaultController extends BaseController
     protected $translator;
     /** @var  RestService */
     protected $restService;
+    /** @var string root */
+    protected $root;
 
     protected function init()
     {
@@ -70,6 +75,7 @@ class DefaultController extends BaseController
         $this->restService         = $this->container->get('jlaso.rest_service');
         /** @var DocumentManager $dm */
         $this->dm                  = $this->container->get('doctrine.odm.mongodb.document_manager');
+        $this->root                = realpath($this->get('kernel')->getRootDir() . "/..");
     }
 
     /**
@@ -1287,6 +1293,247 @@ class DefaultController extends BaseController
         return $this->printResult($result);
 
     }
+
+    /**
+     * @Route("/upload-screenshot/{translationId}", name="upload_screenshot")
+     * @Method("POST")
+     * @ ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function uploadScrenshotAction(Request $request, $translationId)
+    {
+        $this->init();
+
+        /** @var Translation $translation */
+        $translation = $this->getTranslationRepository()->find($translationId);
+
+        if(!$translation){
+            throw $this->createNotFoundException();
+        }
+
+        $project = $this->getProjectRepository()->find($translation->getProjectId());
+
+        $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+
+        // if bla bla bla
+
+        $directory = $this->root . "/web/uploads/";
+        $files = $request->files;
+        foreach($files as $uploadedFile){
+            break;
+        };
+        /** @var UploadedFile $uploadedFile */
+        $ext = $uploadedFile->getClientOriginalExtension();
+        $baseName = uniqid();
+        $name = $baseName . '.' . $ext;
+        /** @var \Symfony\Component\HttpFoundation\File\File $file */
+        $file = $uploadedFile->move($directory, $name);
+        $destFile = $baseName . '.jpg';
+        $name = $this->normalize($ext, $directory . $baseName, $directory . $destFile);
+
+        $translation->setScreenshot($destFile);
+        $this->dm->persist($translation);
+        $this->dm->flush($translation);
+
+        die('OK');
+    }
+
+
+    protected function normalize($ext, $file, $destImageFile, $width = null, $height = null, $quality = 90)
+    {
+        $imageFile = $file . '.' . $ext;
+        switch($ext){
+            case 'png':
+            case 'PNG':
+                $image    = imagecreatefrompng($imageFile);
+                break;
+
+            case 'jpg':
+            case 'JPG':
+            case 'jpeg':
+            case 'JPEG':
+                $image    = imagecreatefromjpeg($imageFile);
+                break;
+
+            case 'gif':
+                $image    = imagecreatefromgif($imageFile);
+                break;
+
+            default:
+                die("extension $ext don't recognized");
+        }
+        $w        = imagesx($image);
+        $h        = imagesy($image);
+        $width    = $width ? : $w;
+        $height   = $height ? : $h;
+        $newImage = imagecreatetruecolor($width, $height);
+        unlink($imageFile);
+        imagecopyresampled($newImage, $image, 0, 0, 0, 0, $width, $height, $w, $h);
+        imagejpeg($newImage, $destImageFile, $quality);
+        chmod($destImageFile, 0777);
+
+        return $destImageFile;
+    }
+
+    /**
+     * @Route("/edit-screenshot/{translationId}", name="translation_screenshot")
+     * @Template()
+     */
+    public function editScrenshotAction(Request $request, $translationId)
+    {
+        $this->init();
+
+        /** @var Translation $translation */
+        $translation = $this->getTranslationRepository()->find($translationId);
+
+        //ldd($translation);
+
+        if(!$translation){
+            throw $this->createNotFoundException();
+        }
+
+        if($request->isMethod('POST')){
+
+            $selection = $request->get('selection');
+            $translation->setImageMaps($selection);
+            $this->dm->persist($translation);
+            $this->dm->flush($translation);
+            return $this->printResult(
+                array(
+                    'result' => true,
+                )
+            );
+
+        }
+
+        //if($this->checkPermission(Permission::GENERAL_KEY, Permission::ADMIN_PERM)){
+
+        $project = $this->getProjectRepository()->find($translation->getProjectId());
+
+            return array(
+                'translation' => $translation,
+                'project'     => $project,
+                'action'      => '',
+                'permissions' => $this->user->getPermission(),
+            );
+
+        //}else{
+            //return $this->createNotFoundException('message.not_eough_permissions');
+        //}
+
+    }
+
+
+    /**
+     * @Route("/select-screenshot/{translationId}", name="translation_select_screenshot")
+     * @Template()
+     */
+    public function selectScrenshotAction(Request $request, $translationId)
+    {
+        $this->init();
+
+        /** @var Translation $translation */
+        $translation = $this->getTranslationRepository()->find($translationId);
+
+        if(!$translation){
+            throw $this->createNotFoundException();
+        }
+
+        if($request->isMethod('POST')){
+
+            $file = $request->get('file');
+            $translation->setScreenshot($file);
+            $translation->setImageMaps(array());
+            $this->dm->persist($translation);
+            $this->dm->flush($translation);
+            return $this->printResult(
+                array(
+                    'result' => true,
+                )
+            );
+
+        }
+
+
+        $files = array();
+        $finder = new Finder();
+        $finder->files()->in($this->root . "/web/uploads")->name('*.jpg');
+
+        foreach($finder as $file){
+            //$fileFull = $file->getRealpath();
+            //$relativePath = $file->getRelativePath();
+            //$fileName = $file->getRelativePathname();
+            $files[] = $file->getRelativePathname();
+        }
+
+        //if($this->checkPermission(Permission::GENERAL_KEY, Permission::ADMIN_PERM)){
+
+        $project = $this->getProjectRepository()->find($translation->getProjectId());
+
+            return array(
+                'translation' => $translation,
+                'project'     => $project,
+                'action'      => '',
+                'permissions' => $this->user->getPermission(),
+                'files'       => $files,
+            );
+
+        //}else{
+            //return $this->createNotFoundException('message.not_eough_permissions');
+        //}
+
+    }
+
+    /**
+     * @Route("/show-screenshot/{translationId}.jpg", name="translation_screenshot_show")
+     */
+    public function showScrenshotAction(Request $request, $translationId)
+    {
+        $this->init();
+
+        /** @var Translation $translation */
+        $translation = $this->getTranslationRepository()->find($translationId);
+
+        $fileName = "/uploads/" . $translation->getScreenshot();
+
+        $image = imagecreatefromjpeg($this->root . "/web" . $fileName);
+
+        $pink = imagecolorallocate($image, 255, 105, 180);
+        $white = imagecolorallocate($image, 255, 255, 255);
+        //$green = imagecolorallocate($image, 132, 135, 28);
+
+        $selection = $translation->getImageMaps();
+        //var_dump($selection); die;
+
+        list($w,$h) = getimagesize($this->root . "/web" . $fileName);
+
+        $fx = $w/$selection['w'];
+        $fy = $h/$selection['h'];
+        $x1 = $selection['x1'] * $fx;
+        $x2 = $selection['x2'] * $fx;
+        $y1 = $selection['y1'] * $fy;
+        $y2 = $selection['y2'] * $fy;
+
+        for($i=1;$i<4;$i++){
+            imagerectangle($image, $x1-$i, $y1-$i, $x2+$i, $y2+$i, $white);
+        }
+        for($i=0;$i<3;$i++){
+            imagerectangle($image, $x1+$i, $y1+$i, $x2-$i, $y2-$i, $pink);
+        }
+
+//        $headers = array(
+//            'Content-Type'     => 'image/jpeg',
+//            'Content-Disposition' => 'inline; filename="'.$fileName.'"');
+//        return new Response($image, 200, $headers);
+
+        header('Content-Type: image/jpeg');
+
+        imagejpeg($image);
+        imagedestroy($image);
+        die;
+
+    }
+
+
 
     public function searchMessagesAction(Request $request)
     {
