@@ -152,6 +152,40 @@
             </div>
         </div><!-- class=translations-group -->
 
+
+        <div class="screenshot-zone">
+
+            {% if translation.screenshot is not null %}
+
+                {% set image = path("translation_screenshot_show", {'translationId': translation.id, 'no-cache': "now"|date("U")}) %}
+
+                <div style="border:3px solid #aaa;">
+                    <a class="image-link" href="{{ image }}">
+                        <img id="screenshot" src="{{ image }}" width="100%"/>
+                    </a>
+                </div>
+
+            {% endif %}
+
+            <form action="{{ path("upload_screenshot", {"translationId": translation.id}) }}"
+                  method="post" enctype="multipart/form-data"
+                  class="dropzone">
+                <a class="btn btn-success" target="_blank" href="{{ path('translation_screenshot', {'translationId': translation.id, 'no-cache': "now"|date("U")}) }}">
+                    {{ "general.button.edit"|trans|raw }}
+                </a> &nbsp;
+                <a class="btn btn-success" target="_blank" href="{{ path('translation_select_screenshot', {'translationId': translation.id, 'no-cache': "now"|date("U")}) }}">
+                    {{ "general.button.select_from_gallery"|trans|raw }}
+                </a> &nbsp;
+                <div class="fallback">
+                    {{ "upload_screenshot"|trans|raw }} &nbsp;
+                    <input id="screenshot-file" name="screenshot-file" type='file' />
+                    <input type="submit"/>
+                </div>
+            </form>
+
+        </div>
+
+
     </div>
 
 </div>

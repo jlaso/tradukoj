@@ -28,6 +28,10 @@
 
         <link href="{{ asset('bundles/translations/css/styles.css') }}" rel="stylesheet">
 
+        <link href="{{ asset('bundles/translations/css/magnific-popup.css') }}" type="text/css" rel="stylesheet">
+        <link href="{{ asset('bundles/translations/jquery.imgareaselect/css/imgareaselect-default.css') }}" type="text/css" rel="stylesheet">
+        <link href="{{ asset('bundles/translations/dropzone/css/basic.css') }}" type="text/css" rel="stylesheet">
+
         <!--[if lt IE 9]>
         <script src="{{ asset('bundles/translations/bootstrap/js/html5.js') }}"></script>
         <![endif]-->
@@ -291,6 +295,9 @@
     <script type="text/javascript" src="{{ asset('bundles/translations/jqueryte/jquery-te-1.4.0.min.js') }}"></script>
     <script type="text/javascript" src="{{ asset('bundles/translations/js/jstree/jquery.jstree.js') }}"></script>
 
+    <script type="text/javascript" src="{{ asset('bundles/translations/js/jquery.magnific-popup.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('bundles/translations/jquery.imgareaselect/scripts/jquery.imgareaselect.pack.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('bundles/translations/dropzone/dropzone.js') }}"></script>
 
     {% block javascripts %}
     {% endblock javascripts %}
@@ -300,38 +307,39 @@
 
             {% for key,message in app.session.flashBag %}
 
-            {% for flash in message %}
+                {% for flash in message %}
 
-          setTimeout(function() {
+                      setTimeout(function() {
 
-                    var unique_id = $.gritter.add({
-                        // (string | mandatory) the heading of the notification
-                        title: '{{ key == "notice" ? 'Attention' : 'Hey' }}',
-                        // (string | mandatory) the text inside the notification
-                        text: '{{ flash }}',
-                        // (string | optional) the image to display on the left
-                        //image: './img/user-big.jpg',
-                        // (bool | optional) if you want it to fade out on its own or just sit there
-                        sticky: false,
-                        // (int | optional) the time you want it to be alive for before fading out
-                        time: '',
-                        // (string | optional) the class name you want to apply to that specific message
-                        class_name: 'gritter-{{ key == "notice" ? 'notice' : 'custom' }}'
-                    });
+                                var unique_id = $.gritter.add({
+                                    // (string | mandatory) the heading of the notification
+                                    title: '{{ key == "notice" ? 'Attention' : 'Hey' }}',
+                                    // (string | mandatory) the text inside the notification
+                                    text: '{{ flash }}',
+                                    // (string | optional) the image to display on the left
+                                    //image: './img/user-big.jpg',
+                                    // (bool | optional) if you want it to fade out on its own or just sit there
+                                    sticky: false,
+                                    // (int | optional) the time you want it to be alive for before fading out
+                                    time: '',
+                                    // (string | optional) the class name you want to apply to that specific message
+                                    class_name: 'gritter-{{ key == "notice" ? 'notice' : 'custom' }}'
+                                });
 
-                    // You can have it return a unique id, this can be used to manually remove it later using
-//                    setTimeout(function () {
-//                        $.gritter.remove(unique_id, {
-//                            fade: true,
-//                            speed: 'slow'
-//                        });
-//                    }, 10000);
+                                // You can have it return a unique id, this can be used to manually remove it later using
+            //                    setTimeout(function () {
+            //                        $.gritter.remove(unique_id, {
+            //                            fade: true,
+            //                            speed: 'slow'
+            //                        });
+            //                    }, 10000);
 
-          }, 500);
+                      }, 500);
+
+                {% endfor %}
 
             {% endfor %}
 
-        {% endfor %}
 
         });
     </script>

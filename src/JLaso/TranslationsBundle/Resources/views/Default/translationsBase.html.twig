@@ -649,6 +649,10 @@
                                 $('#translations-group').html(data.html);
                                 currentKey = data.key;
                                 $('#translations-group .wysiwyg').jqte();
+                                $('.dropzone').dropzone({
+                                    uploadMultiple: false,
+                                    maxFiles: 1
+                                });
                             }else{
                                 logEvent('error: '+data.reason);
                             }
@@ -949,6 +953,16 @@
                 var H = parseInt( 0.75 * document.body.clientHeight);
                 $('#bundle-keys').css('height', (H - 50) + 'px');
             },1000);
+
+            $('#translations-group').magnificPopup({
+                delegate: '.image-link',
+                type: 'image',
+                closeOnContentClick: true,
+                mainClass: 'mfp-img-mobile',
+                image: {
+                    verticalFit: true
+                }
+            });
 
         });
     </script>
