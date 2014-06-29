@@ -1310,14 +1310,14 @@ class DefaultController extends BaseController
         if(!$translation){
             throw $this->createNotFoundException();
         }
-
-        $project = $this->getProjectRepository()->find($translation->getProjectId());
+        $projectId = $translation->getProjectId();
+        $project = $this->getProjectRepository()->find($projectId);
 
         $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        // if bla bla bla
+        // if permissions bla bla bla
 
-        $directory = $this->root . "/web/uploads/";
+        $directory = $this->root . "/web/uploads/{$$projectId}/";
         $files = $request->files;
         foreach($files as $uploadedFile){
             break;
@@ -1454,10 +1454,10 @@ class DefaultController extends BaseController
 
         }
 
-
+        $projectId = $translation->getProjectId();
         $files = array();
         $finder = new Finder();
-        $finder->files()->in($this->root . "/web/uploads")->name('*.jpg');
+        $finder->files()->in($this->root . "/web/uploads/{$projectId}")->name('*.jpg');
 
         foreach($finder as $file){
             //$fileFull = $file->getRealpath();
@@ -1493,8 +1493,8 @@ class DefaultController extends BaseController
 
         /** @var Translation $translation */
         $translation = $this->getTranslationRepository()->find($translationId);
-
-        $fileName = "/uploads/" . $translation->getScreenshot();
+        $projectId = $translation->getProjectId();
+        $fileName = "/uploads/{$projectId}/" . $translation->getScreenshot();
 
         $image = imagecreatefromjpeg($this->root . "/web" . $fileName);
 
