@@ -128,13 +128,15 @@ class TranslationRepository extends DocumentRepository
             }
 
             if($show){
+                $key = $item->getKey();
                 $keys[] = array(
-                    'key' => $item->getKey(),
+                    'key' => $key,
                     'id'  => $item->getId(),
                 );
 
             }
         }
+        ksort($keys, SORT_NATURAL ^ SORT_FLAG_CASE);
 
         return $keys;
     }
