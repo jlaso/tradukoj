@@ -732,6 +732,12 @@
 //                }, 250);
 //            });
 
+            $('input[name="search"]').keyup(function(event){
+                if(event.keyCode == 13){
+                    $("#search").click();
+                }
+            });
+
             {# Indicates if the tree should be filtered to show only matching nodes (keep in mind this can be a heavy on large trees in old browsers). Default is false. #}
             $.jstree.defaults.search.show_only_matches = true;
 
@@ -760,6 +766,8 @@
                 }else{
                     tree.search(search);
                 }
+                var el = document.getElementById(block);
+                el.scrollIntoView(true);
             });
 
             var currentLocale = "";
