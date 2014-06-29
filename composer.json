@@ -37,9 +37,7 @@
         "behat/mink-selenium2-driver": "*",
         "behat/mink-goutte-driver": "*",
 
-        "jlaso/translations-apibundle": "dev-master",
-
-        "liuggio/excelbundle": "~2.0"
+        "jlaso/translations-apibundle": "dev-master"
     },
     "config": {
         "bin-dir": "bin/"
