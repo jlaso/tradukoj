@@ -6,7 +6,7 @@
             {% if canAdmin(permissions) %}
                 &nbsp;<a href="#" id="change-key-icon"><i class="icon-edit"></i></a>
                 &nbsp;<a href="{{ path('translations_remove_key', {'projectId':translation.projectId, 'catalog':translation.catalog, 'key':translation.key}) }}" id="remove-key-icon"><i class="icon-trash"></i></a>
-                &nbsp;<a href="#" id="screenshot-icon" title="{{ "translation.hint.screenshot_to_help"|trans }}"><i class="icon-screenshot"></i></a>
+                {#&nbsp;<a href="#" id="screenshot-icon" title="{{ "translation.hint.screenshot_to_help"|trans }}"><i class="icon-screenshot"></i></a>#}
 
                 <div id="change-key" class="modal hide fade" tabindex="-1"
                      role="dialog" aria-labelledby="change_key_label" aria-hidden="true">
