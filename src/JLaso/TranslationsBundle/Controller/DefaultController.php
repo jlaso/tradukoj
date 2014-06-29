@@ -387,7 +387,7 @@ class DefaultController extends BaseController
         if($translation){
             $this->translationsManager->saveLog($translation->getId(), '', $key, TranslationLog::REMOVE_KEY, $this->user, TranslationLog::TRANSLATIONS_GROUP);
             $this->dm->remove($translation);
-            $this->dm->flush($translation);
+            $this->dm->flush();
         }else{
             $this->addNoticeFlash('translations.remove_key.error.key_dont_exists', array('%key%' => $keyName));
         }
