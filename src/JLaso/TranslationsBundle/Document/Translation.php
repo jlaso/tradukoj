@@ -240,7 +240,7 @@ class Translation
      */
     public function getScreenshot()
     {
-        return $this->screenshot;
+        return $this->screenshot ? '/uploads/' . $this->getProjectId() . '/' . $this->screenshot : '';
     }
 
     /**

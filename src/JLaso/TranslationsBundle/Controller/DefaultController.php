@@ -1316,10 +1316,10 @@ class DefaultController extends BaseController
 
         // if permissions bla bla bla
 
-        $directory = $this->root . "/web/uploads/{$$projectId}/";
+        $directory = $this->root . "/web/uploads/{$projectId}/";
         $files = $request->files;
         foreach($files as $uploadedFile){
-            break;
+            break;  // I want only the first file, dont allow to upload more than one
         };
         /** @var UploadedFile $uploadedFile */
         $ext = $uploadedFile->getClientOriginalExtension();
@@ -1462,7 +1462,7 @@ class DefaultController extends BaseController
             //$fileFull = $file->getRealpath();
             //$relativePath = $file->getRelativePath();
             //$fileName = $file->getRelativePathname();
-            $files[] = $projectId . '/' . $file->getRelativePathname();
+            $files[] = '/uploads/' . $projectId . '/' . $file->getRelativePathname();
         }
 
         //if($this->checkPermission(Permission::GENERAL_KEY, Permission::ADMIN_PERM)){
@@ -1492,12 +1492,12 @@ class DefaultController extends BaseController
 
         /** @var Translation $translation */
         $translation = $this->getTranslationRepository()->find($translationId);
-        $projectId = $translation->getProjectId();
-        $fileName = "/uploads/{$projectId}/" . $translation->getScreenshot();
+        $projectId   = $translation->getProjectId();
+        $fileName    = $translation->getScreenshot();
 
         $image = imagecreatefromjpeg($this->root . "/web" . $fileName);
 
-        $pink = imagecolorallocate($image, 255, 105, 180);
+        $pink  = imagecolorallocate($image, 255, 105, 180);
         $white = imagecolorallocate($image, 255, 255, 255);
         //$green = imagecolorallocate($image, 132, 135, 28);
 
