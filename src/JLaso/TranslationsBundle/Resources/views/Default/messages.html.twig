@@ -167,6 +167,7 @@
 
             {% endif %}
 
+            {% if canAdmin(permissions) %}
             <form action="{{ path("upload_screenshot", {"translationId": translation.id}) }}"
                   method="post" enctype="multipart/form-data"
                   class="dropzone">
@@ -182,6 +183,7 @@
                     <input type="submit"/>
                 </div>
             </form>
+            {% endif %}
 
         </div>
 
