@@ -1446,7 +1446,7 @@ class DefaultController extends BaseController
                 return $this->printResult(
                     array(
                         'result' => false,
-                        'message' => 'file not recognized ' . $file;
+                        'message' => 'file not recognized ' . $file,
                     )
                 );
             };
