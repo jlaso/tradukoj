@@ -36,7 +36,7 @@
         <ul id="screenshot-list">
         {% for file in files %}
             <li>
-                <img class="screenshot" src="/uploads/{{ file }}" alt="" file="{{ file }}" width="300"/>
+                <img class="screenshot" src="{{ file }}" alt="" file="{{ file }}" width="300"/>
             </li>
         {% endfor %}
         </ul>
