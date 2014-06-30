@@ -1441,6 +1441,15 @@ class DefaultController extends BaseController
         if($request->isMethod('POST')){
 
             $file = $request->get('file');
+            if(!preg_match("/^\/uploads\/\d+\/(?<file>.*?)$/", $file, $match)){
+                return $this->printResult(
+                    array(
+                        'result' => false,
+                        'message' => 'file not recognized ' . $file;
+                    )
+                );
+            };
+            $file = $match['file'];
             $translation->setScreenshot($file);
             $translation->setImageMaps(array());
             $this->dm->persist($translation);
