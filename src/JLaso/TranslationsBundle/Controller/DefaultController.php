@@ -1183,14 +1183,31 @@ class DefaultController extends BaseController
 
         /** @var Translation[] $translations */
         $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId() ));
+        $normalized = array();
 
         foreach($translations as $translation){
 
+            $bundle = "";
             $transArray = $translation->getTranslations();
             foreach($managedLocales as $locale){
                 if(!isset($transArray[$locale])){
                     $transArray[$locale] = Translation::genTranslationItem('');
+                    $normalized[] = $translation->getKey() .  "[$locale]";
+                }else{
+                    if(!$bundle && isset($transArray[$locale]['fileName']) && $transArray[$locale]['fileName']){
+                        if(preg_match("@/(?<bundle>\w*?Bundle)/@", $transArray[$locale]['fileName'], $match)){
+                            $bundle = $match['bundle'];
+                        }else{
+                            if(preg_match("@/app/@", $transArray[$locale]['fileName'])){
+                                $bundle = "app*";
+                            }
+                        };
+                    }
                 }
+            }
+            if($bundle && !$translation->getBundle()){
+                $normalized[] = $translation->getKey() .  " -> " . $bundle;
+                $translation->setBundle($bundle);
             }
             $translation->setTranslations($transArray);
             $this->dm->persist($translation);
@@ -1215,7 +1232,8 @@ class DefaultController extends BaseController
         }
 
         return $this->printResult(array(
-                'result' => true,
+                'result'     => true,
+                'normalized' => $normalized,
             )
         );
     }
