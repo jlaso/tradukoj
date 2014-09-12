@@ -185,29 +185,40 @@ class UsersController extends BaseController
         }
 
         $email = $request->get('email');
-        die($email);
         $user = $this->getUserRepository()->findOneBy(array('email'=>$email));
         if(!$user){
-            $user = new User();
-            $user->setEmail($email);
-            //$user->set
-        }
-        $managedLocales = explode(',',$project->getManagedLocales());
+//            $user = new User();
+//            $user->setEmail($email);
+//            //$user->set
 
-        /** @var Permission[] $permissions */
-        $permissions = $this->getPermissionRepository()->findBy(array('project'=>$project));
+            /** @var MailerService $mailer */
+            $mailer = $this->get('jlaso.mailer_service');
+            try{
+                $send = $mailer->sendWelcomeMessage($user);
+            }catch(\Exception $e){
 
-        $usersData = array();
-        foreach($permissions as $perm){
-            $user = $perm->getUser();
-            $usersData[] = array(
-                'id'          => $user->getId(),
-                'name'        => $user->getName(),
-                'email'       => $user->getEmail(),
-                'createdAt'   => $user->getCreatedAt(),
-                'active'      => $user->getActive(),
-                'permissions' => $this->expandPermissions($managedLocales, $perm->getPermissions()),
-            );
+            }
+            if(is_string($send)){
+                $this->addNoticeFlash($send);
+            }
+        }else{
+            $managedLocales = explode(',',$project->getManagedLocales());
+
+            /** @var Permission[] $permissions */
+            $permissions = $this->getPermissionRepository()->findBy(array('project'=>$project));
+
+            $usersData = array();
+            foreach($permissions as $perm){
+                $user = $perm->getUser();
+                $usersData[] = array(
+                    'id'          => $user->getId(),
+                    'name'        => $user->getName(),
+                    'email'       => $user->getEmail(),
+                    'createdAt'   => $user->getCreatedAt(),
+                    'active'      => $user->getActive(),
+                    'permissions' => $this->expandPermissions($managedLocales, $perm->getPermissions()),
+                );
+            }
         }
 
         // ldd($usersData, $permission->getPermissions());

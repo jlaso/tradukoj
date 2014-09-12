@@ -130,15 +130,15 @@
                                 </td>
                             </tr>
                         {% endfor %}
-                        {#<tr>
+                        <tr>
                             <td colspan="4">
                                 <form action="{{ path("users_add_new_user", {"projectId":project.id}) }}" method="post">
-                                    Add new user:&nbsp;
+                                    {{ "users.add_user.label"|trans|raw }}:&nbsp;
                                     <input type="text" name="email"/>
                                     <input type="submit" class="btn btn-primary btn-large" value="{{ "users.permissions.add_user.button.add"|trans|raw }}"/>
                                 </form>
                             </td>
-                        </tr>#}
+                        </tr>
                         </tbody>
                     </table>
 

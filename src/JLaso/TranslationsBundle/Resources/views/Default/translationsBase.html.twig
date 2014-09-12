@@ -876,8 +876,8 @@
                         key: key,
                     },
                     success: function(info){
-                        console.log(data);
                         var data = info.logs;
+                        console.log(data);
                         var users = info.users;
                         var html = '<table class="table table-bordered"><thead><tr><th>id</th><th>Date</th><th>User</th><th>Locale</th><th>Action</th><th>Message</th></thead><tbody>';
                         for(var i=0;i<data.length;i++){
@@ -893,7 +893,8 @@
                             html += "</tr>";
                         }
                         html += "</tbody></table>";
-                        $('#logs-content').html(html);
+                        $('#logs-translations .modal-body').html(html);
+                        console.log(html);
                         $('#logs-translations').modal();
                     },
                     error: function(text){

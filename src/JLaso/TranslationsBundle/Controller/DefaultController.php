@@ -1307,7 +1307,7 @@ class DefaultController extends BaseController
 
         $result = $this->translationsManager->getStatistics($project);
 
-        var_dump($result); die;
+        //var_dump($result); die;
         return $this->printResult($result);
 
     }
