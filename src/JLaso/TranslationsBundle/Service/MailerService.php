@@ -15,7 +15,7 @@ class MailerService
     const SUPPORT_MAIL = 'jlaso@joseluislaso'; //'support@tradukoj.com';
 
     const CONTENT_TYPE = 'text/html';
-    const SELF_NAME    = 'Translations for Symfony2 projects By JLaso';
+    const SELF_NAME    = 'Tradukoj, translations for developers';
 
     protected $mailer;
     protected $templating;
