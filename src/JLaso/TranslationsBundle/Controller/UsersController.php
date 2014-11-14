@@ -187,8 +187,8 @@ class UsersController extends BaseController
         $email = $request->get('email');
         $user = $this->getUserRepository()->findOneBy(array('email'=>$email));
         if(!$user){
-//            $user = new User();
-//            $user->setEmail($email);
+            $user = new User();
+            $user->setEmail($email);
 //            //$user->set
 
             /** @var MailerService $mailer */
@@ -200,6 +200,8 @@ class UsersController extends BaseController
             }
             if(is_string($send)){
                 $this->addNoticeFlash($send);
+            }else{
+                $this->addNoticeFlash('user.permissions.user_invited');
             }
         }else{
             $managedLocales = explode(',',$project->getManagedLocales());
@@ -208,28 +210,105 @@ class UsersController extends BaseController
             $permissions = $this->getPermissionRepository()->findBy(array('project'=>$project));
 
             $usersData = array();
+            $alreadyExists = false;
             foreach($permissions as $perm){
-                $user = $perm->getUser();
+                $currentUser = $perm->getUser();
                 $usersData[] = array(
-                    'id'          => $user->getId(),
-                    'name'        => $user->getName(),
-                    'email'       => $user->getEmail(),
-                    'createdAt'   => $user->getCreatedAt(),
-                    'active'      => $user->getActive(),
+                    'id'          => $currentUser->getId(),
+                    'name'        => $currentUser->getName(),
+                    'email'       => $currentUser->getEmail(),
+                    'createdAt'   => $currentUser->getCreatedAt(),
+                    'active'      => $currentUser->getActive(),
                     'permissions' => $this->expandPermissions($managedLocales, $perm->getPermissions()),
                 );
+                if($currentUser->getEmail() == $email){
+                    $this->addNoticeFlash('user.permissions.user_already_exists');
+                    $alreadyExists = true;
+                }
+            }
+
+            if(!$alreadyExists){
+                $permission = new Permission();
+                $permission->setUser($user);
+                $permission->setProject($project);
+                $permission->addPermission(Permission::COLLABORATOR);
+                // Give permission to write in all languages
+                $permission->addPermission(Permission::READ_PERM, '*');
+                $this->em->persist($permission);
+                $this->em->flush();
             }
         }
 
         // ldd($usersData, $permission->getPermissions());
+        return $this->redirect($this->generateUrl('users_index', array('projectId'=>$project->getId())));
+//        return array(
+//            'action'         => 'users',
+//            'project'        => $project,
+//            'permissions'    => $permission->getPermissions(),
+//            'users'          => $usersData,
+//            'managedLocales' => $managedLocales,
+//        );
+    }
 
-        return array(
-            'action'         => 'users',
-            'project'        => $project,
-            'permissions'    => $permission->getPermissions(),
-            'users'          => $usersData,
-            'managedLocales' => $managedLocales,
-        );
+    /**
+     * @Route("/remove-user/{projectId}/{email}", name="users_remove_user")
+     * @Template()
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function removeUserAction(Project $project, $email, Request $request)
+    {
+        $session = $request->getSession();
+
+        $this->init();
+        /** @var Permission $permission */
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+
+        if(!$permission || ($permission->getPermissions(Permission::GENERAL_KEY) != Permission::OWNER) ){
+            throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
+        }
+
+        $user = $this->getUserRepository()->findOneBy(array('email'=>$email));
+        if(!$user){
+            $this->addNoticeFlash("User doesn't exists yet in our system");
+        }else{
+            $managedLocales = explode(',',$project->getManagedLocales());
+
+            /** @var Permission[] $permissions */
+            $permissions = $this->getPermissionRepository()->findBy(array('project'=>$project));
+
+            $usersData = array();
+            $exists = false;
+            foreach($permissions as $perm){
+                $currentUser = $perm->getUser();
+                if($currentUser->getEmail() != $email){/*
+                    $usersData[] = array(
+                        'id'          => $currentUser->getId(),
+                        'name'        => $currentUser->getName(),
+                        'email'       => $currentUser->getEmail(),
+                        'createdAt'   => $currentUser->getCreatedAt(),
+                        'active'      => $currentUser->getActive(),
+                        'permissions' => $this->expandPermissions($managedLocales, $perm->getPermissions()),
+                    );*/
+                }else{
+                    $exists = true;
+                    $this->em->remove($perm);
+                }
+            }
+
+            if($exists){
+                $this->em->flush();
+            }
+        }
+
+        // ldd($usersData, $permission->getPermissions());
+        return $this->redirect($this->generateUrl('users_index', array('projectId'=>$project->getId())));
+//        return array(
+//            'action'         => 'users',
+//            'project'        => $project,
+//            'permissions'    => $permission->getPermissions(),
+//            'users'          => $usersData,
+//            'managedLocales' => $managedLocales,
+//        );
     }
 
     protected function expandPermissions($managedLocales, $permissionsArray)
