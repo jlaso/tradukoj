@@ -1,7 +1,7 @@
 {
-    "name": "Translations for symfony2 projects",
+    "name": "Translations for developers",
     "type": "project",
-    "description": "Translation framework for symfony2 projects",
+    "description": "Translation for developers",
     "autoload": {
         "psr-0": { "": "src/" }
     },

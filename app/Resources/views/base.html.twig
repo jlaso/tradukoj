@@ -2,7 +2,7 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8" />
-        <title>{% block title %}Translations by JLaso for symfony2 projects{% endblock %}</title>
+        <title>{% block title %}tradukoj | Translations for developers{% endblock %}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="">
         <meta name="author" content="Joseluis Laso">
@@ -36,7 +36,7 @@
         <script src="{{ asset('bundles/translations/bootstrap/js/html5.js') }}"></script>
         <![endif]-->
 
-        <link rel="shortcut icon" href="{{ asset('favicon-translations.png') }}">
+        <link rel="shortcut icon" href="{{ asset('favicon.ico?v=1') }}">
         <link rel="apple-touch-icon-precomposed" sizes="144x144" href="{{ asset('bundles/translations/bootstrap/ico/bootstrap-apple-114x114.png') }}">
         <link rel="apple-touch-icon-precomposed" sizes="114x114" href="{{ asset('bundles/translations/bootstrap/ico/bootstrap-apple-114x114.png') }}">
         <link rel="apple-touch-icon-precomposed" sizes="72x72" href="{{ asset('bundles/translations/bootstrap/ico/bootstrap-apple-72x72.png') }}">
@@ -69,7 +69,7 @@
                             <span class="icon-bar"></span>
                         </a>
                         <a class="brand" href="{{ path('home') }}">
-                            <img src="{{ asset('logo-translations-white.png') }}" width="22" alt=""/>&nbsp;
+                            <img src="{{ asset('/bundles/translations/img/square-icon-white.png') }}" width="22" alt=""/>&nbsp;
                             {{ block('title') }}
                         </a>
 
