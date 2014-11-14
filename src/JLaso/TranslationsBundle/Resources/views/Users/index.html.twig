@@ -130,9 +130,13 @@
 
                                 </td>
                                 <td>
+                                    {% if user.email != app.user.email %}
                                     <form action="{{ path("users_remove_user", {"projectId":project.id, "email": user.email}) }}" method="post">
                                         <input type="submit" class="btn btn-primary btn-large remove-user" value="{{ "users.permissions.remove_user.button.remove"|trans|raw }}"/>
                                     </form>
+                                    {% else %}
+                                        &nbsp;
+                                    {% endif %}
                                 </td>
                             </tr>
                         {% endfor %}
