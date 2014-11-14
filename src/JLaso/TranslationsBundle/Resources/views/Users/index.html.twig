@@ -101,6 +101,7 @@
                             <th>name</th>
                             <th>from</th>
                             <th>permissions</th>
+                            <th>actions</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -128,12 +129,17 @@
                                     </ul>
 
                                 </td>
+                                <td>
+                                    <form action="{{ path("users_remove_user", {"projectId":project.id, "email": user.email}) }}" method="post">
+                                        <input type="submit" class="btn btn-primary btn-large remove-user" value="{{ "users.permissions.remove_user.button.remove"|trans|raw }}"/>
+                                    </form>
+                                </td>
                             </tr>
                         {% endfor %}
                         <tr>
                             <td colspan="4">
                                 <form action="{{ path("users_add_new_user", {"projectId":project.id}) }}" method="post">
-                                    {{ "users.add_user.label"|trans|raw }}:&nbsp;
+                                    {{ "users.permissions.add_user.label"|trans|raw }}:&nbsp;
                                     <input type="text" name="email"/>
                                     <input type="submit" class="btn btn-primary btn-large" value="{{ "users.permissions.add_user.button.add"|trans|raw }}"/>
                                 </form>
@@ -170,6 +176,13 @@
                 var iconClasses  = {{ icon|json_encode|raw }};
 
                 $(function () {
+
+                    $(".remove-user").click(function(e){
+                        if(!confirm("{{ "user.permissions.sure_to_remove"|trans|raw }}")){
+                            e.preventDefault();
+                            return false;
+                        }
+                    });
                     //console.log("declaring hover for perm");
                     $(".perm").hover(function () {
                         $('.perm').removeClass('hover');
