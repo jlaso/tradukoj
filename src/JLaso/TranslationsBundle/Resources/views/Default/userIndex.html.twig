@@ -169,6 +169,25 @@
                                                     &nbsp;&nbsp;&nbsp;&nbsp;secret: {{ prj.apiSecret }}<br/>
                                                     &nbsp;&nbsp;&nbsp;&nbsp;url: 'https://www.tradukoj.com/api/'
                                                 </div>
+
+                                                {# #}
+                                                <div>
+
+                                                    Options & Tools
+                                                    <hr/>
+
+                                                    <div class="btn-group">
+
+                                                        <a type="button" class="btn btn-primary"
+                                                            href="{{ path('export-to-excel', {'projectId': prj.id}) }}">
+                                                            EXPORT TO EXCEL
+                                                        </a>
+
+                                                    </div>
+
+                                                </div>
+                                                {# #}
+
                                                 {% endif %}
                                             </td>
                                             <td>
@@ -177,22 +196,25 @@
                                                     <tr>
                                                         <th>Locale</th>
                                                         <th>
-                                                            Qty
+                                                            Qty / Status
                                                         </th>
-                                                        <th>Status</th>
                                                     </tr>
                                                     </thead>
                                                     {% for locale in languages[prj.id] %}
                                                         <tr>
                                                             <td><code>{{ locale.info.locale }}</code> &nbsp;<i class="icon-flag"></i> {{ locale.info.name }}</td>
+{#
                                                             <td><span class="label label-success">{{ locale.keys }}</span></td>
+#}
                                                             <td>
                                                                 <table>
                                                                     <tr>
+                                                                        <td><span class="label label-success">{{ locale.approved }}</span></td>
                                                                         <td>Approved</td>
                                                                         <td></td>
                                                                     </tr>
                                                                     <tr>
+                                                                        <td><span class="label label-success">{{ locale.pending }}</span></td>
                                                                         <td>Pending</td>
                                                                         <td></td>
                                                                     </tr>

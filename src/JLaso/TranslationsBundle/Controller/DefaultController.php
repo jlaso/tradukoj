@@ -13,7 +13,9 @@ use JLaso\TranslationsBundle\Entity\Repository\LanguageRepository;
 use JLaso\TranslationsBundle\Entity\User;
 
 use JLaso\TranslationsBundle\Exception\AclException;
+use JLaso\TranslationsBundle\Form\Type\ExportToExcelType;
 use JLaso\TranslationsBundle\Form\Type\NewProjectType;
+use JLaso\TranslationsBundle\Model\ExportToExcel;
 use JLaso\TranslationsBundle\Service\MailerService;
 use JLaso\TranslationsBundle\Service\Manager\TranslationsManager;
 use JLaso\TranslationsBundle\Service\RestService;
@@ -107,12 +109,14 @@ class DefaultController extends BaseController
             }
             $managedLocales = explode(',',$prj->getManagedLocales());
             $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
-            foreach($managedLocales as $locale){
-                $langInfo[$prjId][$locale] = array(
-                    'keys' => 10,
-                    'info' => $languages[$locale],
-                );
-            }
+//var_dump($languages); die;
+            $langInfo[$prjId] = $this->getTranslationRepository()->getKeysByLanguage($prjId, $languages);
+//            foreach($managedLocales as $locale){
+//                $langInfo[$prjId][$locale] = array(
+//                    'keys' => 10,
+//                    'info' => $languages[$locale],
+//                );
+//            }
             $stats[] = array(
                 'project' => $prj->getId(),
                 'locales' => $managedLocales,
@@ -132,6 +136,308 @@ class DefaultController extends BaseController
             'permissions' => $permissions,
             'stats'       => $stats,
         );
+    }
+
+    /**
+     * clean data replacing typographic commas and escaping doubles commas
+     *
+     * @param string $data
+     *
+     * @return string
+     */
+    protected function clean($data)
+    {
+        $data = str_replace(
+            array(
+                '”','‘','’','´','“','€',"\r","\n",
+            ),array(
+                '"',"'","'","'",'"','&euro;','','',
+            ),$data);
+
+        return str_replace('"', '""', $data);
+    }
+
+    /**
+     * @Route("/export-to-excel/{projectId}", name="export-to-excel")
+     * @Template()
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function exportToExcelAction(Request $request, Project $project)
+    {
+        $this->init();
+        //$permission = $this->translationsManager->userHasProject($this->user, $project);
+        $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+
+        if(!$permission instanceof Permission){
+            throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
+        }
+
+        $locales = preg_split("/,/", $project->getManagedLocales());
+        $exportToExcel = new ExportToExcel($project);
+        $form = $this->createForm(new ExportToExcelType($locales), $exportToExcel);
+
+        if($request->isMethod('POST')){
+            $form->bind($request);
+
+            if ($form->isValid()) {
+
+                $language = $locales[$exportToExcel->getLocale()];
+                $tmpFile = tempnam('/tmp', 'excel');
+                /** @var DocumentManager $dm */
+                $dm = $this->container->get('doctrine.odm.mongodb.document_manager');
+                /** @var TranslationRepository $translationsRepository */
+                $translationsRepository = $dm->getRepository('TranslationsBundle:Translation');
+
+                //$phpExcel = new \PHPExcel();
+                $phpExcel  = $this->container->get('phpexcel');
+
+                /** @var \PHPExcel $excel */
+                $excel = $phpExcel->createPHPExcelObject();
+
+                $excel->getProperties()->setCreator("Maarten Balliauw")
+                    ->setLastModifiedBy("Maarten Balliauw")
+                    ->setTitle("Office 2007 XLSX Test Document")
+                    ->setSubject("Office 2007 XLSX Test Document")
+                    ->setDescription("Test document for Office 2007 XLSX, generated using PHP classes.")
+                    ->setKeywords("office 2007 openxml php")
+                    ->setCategory("Test result file");
+
+                $newSheet = clone $excel->getActiveSheet();
+                $newSheet2 = clone $excel->getActiveSheet();
+
+                /**
+                 * MAIN SHEET
+                 */
+
+                $mainSheet = $excel->setActiveSheetIndex(0);
+                $mainSheet
+                    ->setTitle($language)
+                    ->setCellValue('A1', "key (don't translate)")
+                    ->setCellValue('B1', $language . " (don't translate)")
+                    ->setCellValue('C1', 'New language (here the translation)');
+
+                $mainSheet->getColumnDimension("A")->setAutoSize(true);
+                $mainSheet->getColumnDimension("B")->setAutoSize(true);
+                $mainSheet->getColumnDimension("C")->setAutoSize(true);
+
+                $mainSheet->getStyle('A1')->getFont()->setName('Candara')->setSize(20)->setBold(true);
+                $mainSheet->getStyle('B1')->getFont()->setName('Candara')->setSize(20)->setBold(true);
+                $mainSheet->getStyle('C1')->getFont()->setName('Candara')->setSize(20)->setBold(true);
+
+                /** @var Translation[] $translations */
+                $translations = $translationsRepository->findBy(
+                    array(
+                        'projectId' => $project->getId(),
+                        //'catalog'   => $catalog,
+                        'deleted'   => false,
+                    ),
+                    array('key'=>'ASC')
+                );
+
+                $i = 2;
+                $labels = array();
+                $index = 1;
+
+                foreach($translations as $translation){
+                    foreach($translation->getTranslations() as $locale=>$key){
+
+                        if($locale == $language){
+
+                            $message = $key['message'];
+                            if(preg_match_all("|(</?[^<]*>)|i", $message, $matches)){
+                                foreach($matches[1] as $match){
+                                    if($match && !isset($labels[$match])){
+                                        $labels[$match] = sprintf("[%d]", $index++);
+                                        $subst = $labels[$match];
+                                        $message = str_replace($match, $subst, $message);
+                                    }
+
+                                }
+                            }
+                            if(preg_match_all("|(\%([^%]*)\%)|i", $message, $matches, PREG_SET_ORDER)){
+                                foreach($matches as $match){
+                                    $varName = $match[2];
+                                    $textVar = $match[1];
+                                    if($textVar && !isset($labels[$textVar])){
+                                        $labels[$textVar] = sprintf("(%d)", $index++);
+                                        $subst = $labels[$textVar];
+                                        $subst = sprintf("%s%s%s", $subst, $varName, $subst);
+                                        $message = str_replace($textVar, $subst, $message);
+                                    }
+                                }
+                            }
+                            $message = $this->clean($message);
+
+                            $mainSheet
+                                ->setCellValue("A{$i}", $translation->getKey())
+                                ->setCellValue("B{$i}", $message);
+
+                            $i++;
+                        }
+
+                    }
+                }
+
+                /**
+                 * KEY SHEET
+                 */
+
+                $excel->addSheet($newSheet);
+
+                $keySheet = $excel->setActiveSheetIndex(1);
+
+                $keySheet->setTitle('keys');
+                $keySheet->getColumnDimension("A")->setAutoSize(true);
+                $keySheet->getColumnDimension("B")->setAutoSize(true);
+
+                $i = 1;
+                foreach($labels as $label=>$num){
+                    $num0 = $num;
+                    if(preg_match("|^\((.*?)\)$|",$num,$match)){
+                        $col = "A";
+                        $num = $match[1];
+                    }else{
+                        if(preg_match("|^\[(.*?)\]$|",$num,$match)){
+                            $col = "B";
+                            $num = $match[1];
+                        }else{
+                            die("error de interpretacion $num");
+                        }
+                    }
+                    $keySheet
+                        ->setCellValue("{$col}{$num}", $label)
+                        //->setCellValue("C{$num}", $num0)
+                        //->setCellValue("D{$i}", "$label=>$num0")
+                        ;
+
+                    $i++;
+                }
+
+                //$keySheet
+                //    ->setCellValue("D1", print_r($labels, true));
+
+                /**
+                 * BUNDLE & FILE SHEETS
+                 */
+
+                if($exportToExcel->getBundleFile()){
+
+                    // Info about bundles and filenames by keys
+                    $newSheet2->setTitle("bundle");
+                    $excel->addSheet($newSheet2);
+
+                    $newSheet = clone $newSheet2;
+                    $newSheet->setTitle("fileName");
+                    $excel->addSheet($newSheet);
+
+                    $bundleSheet = $excel->setActiveSheetIndex(2);
+                    $fileSheet = $excel->setActiveSheetIndex(3);
+                    $bundleSheet->getColumnDimension("A")->setAutoSize(true);
+                    $fileSheet->getColumnDimension("A")->setAutoSize(true);
+
+                    $i = 1;
+                    $localeCol = array();
+                    foreach($locales as $locale)
+                    {
+                        $localeCol[$locale] = count($localeCol) + 1;
+                        $col = $this->column($localeCol[$locale]);
+                        $bundleSheet
+                            ->setCellValue("{$col}{$i}", $locale)
+                            ->getColumnDimension("{$col}")->setAutoSize(true);
+                        $fileSheet
+                            ->setCellValue("{$col}{$i}", $locale)
+                            ->getColumnDimension("{$col}")->setAutoSize(true);
+                    }
+                    $i++;
+
+                    foreach($translations as $translation){
+
+                        foreach($translation->getTranslations() as $locale=>$key){
+
+                            $message = $key['message'];
+                            if(preg_match_all("|(</?[^<]*>)|i", $message, $matches)){
+                                foreach($matches[1] as $match){
+                                    if($match && !isset($labels[$match])){
+                                        $labels[$match] = sprintf("[%d]", $index++);
+                                        $subst = $labels[$match];
+                                        $message = str_replace($match, $subst, $message);
+                                    }
+
+                                }
+                            }
+                            if(preg_match_all("|(\%([^%]*)\%)|i", $message, $matches, PREG_SET_ORDER)){
+                                foreach($matches as $match){
+                                    $varName = $match[2];
+                                    $textVar = $match[1];
+                                    if($textVar && !isset($labels[$textVar])){
+                                        $labels[$textVar] = sprintf("(%d)", $index++);
+                                        $subst = $labels[$textVar];
+                                        $subst = sprintf("%s%s%s", $subst, $varName, $subst);
+                                        $message = str_replace($textVar, $subst, $message);
+                                    }
+                                }
+                            }
+                            $message = $this->clean($message);
+
+                            $colName = $this->column($localeCol[$locale]);
+
+                            $bundleSheet
+                                ->setCellValue("A{$i}", $translation->getKey())
+                                ->setCellValue("{$colName}{$i}", $translation->getBundle());
+
+                            $fileSheet
+                                ->setCellValue("A{$i}", $translation->getKey())
+                                ->setCellValue("{$colName}{$i}", isset($key['fileName']) ? $key['fileName'] : '' );
+
+                            $col++;
+                        }
+                        $i++;
+
+                    }
+                }
+
+                //$excel->getActiveSheet()->getRowDimension(8)->setRowHeight(-1);
+                //$excel->getActiveSheet()->getStyle('A8')->getAlignment()->setWrapText(true);
+
+                $objWriter = new \PHPExcel_Writer_Excel5($excel);
+                $objWriter->save($tmpFile);
+
+                header('Content-Description: File Transfer');
+                header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+                header('Content-Disposition: attachment;filename="' . $tmpFile . '"');
+                header('Content-Transfer-Encoding: binary');
+                header('Expires: 0');
+                header('Cache-Control: must-revalidate');
+                header('Pragma: public');
+                header('Content-Length: ' . filesize($tmpFile));
+
+                die(file_get_contents($tmpFile));
+
+                return $this->redirect($this->generateUrl('user_index'));
+            }
+
+        }
+
+        return array(
+            'error'         => null,
+            'form'          => $form->createView(),
+            'project'       => $project,
+            'action'        => 'export-to-excel',
+            'permissions'   => $permission->getPermissions(),
+        );
+    }
+
+    protected function column($col)
+    {
+        $result = "";
+        while($col>26){
+            $remain = $col%26;
+            $result = $result . chr(65+$remain);
+            $col = intval($col/26);
+        };
+        $result = $result . chr(65+$col);
+
+        return $result;
     }
 
     /**
@@ -1230,6 +1536,57 @@ class DefaultController extends BaseController
 
             $this->dm->flush();
         }
+
+        return $this->printResult(array(
+                'result'     => true,
+                'normalized' => $normalized,
+            )
+        );
+    }
+
+    /**
+     * @Route("/normalize-bundle/{projectId}/{keyStart}/{bundleName}", name="normalize_bundle")
+     * @ Method("POST")
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function normalizeBundleAction(Request $request, Project $project, $keyStart, $bundleName)
+    {
+        $this->init();
+        $bundleName = preg_replace("/bundle$/", "", $bundleName);
+        $bundleName = ucfirst(strtolower($bundleName)) . "Bundle";
+
+        // completar los documentos  a los que le falten subdocumentos de traducciones
+
+        //$this->translationsManager->userHasProject($this->user, $project);
+        $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+        $permissions = $permissions->getPermissions();
+
+        if($permissions['general'] != Permission::OWNER){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => 'not enough permissions to do this',
+                )
+            );
+        }
+
+        $managedLocales = explode(',',$project->getManagedLocales());
+
+        /** @var Translation[] $translations */
+        $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId(), 'bundle'=>'' ));
+        $normalized = array();
+
+        foreach($translations as $translation){
+
+            $key = $translation->getKey();
+            if(preg_match("/^{$keyStart}/", $key)){
+                $translation->setBundle($bundleName);
+                $this->dm->persist($translation);
+                $normalized[] = $key;
+            }
+
+        }
+
+        $this->dm->flush();
 
         return $this->printResult(array(
                 'result'     => true,
