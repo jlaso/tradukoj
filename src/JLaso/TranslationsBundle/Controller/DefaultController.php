@@ -282,25 +282,22 @@ class DefaultController extends BaseController
                         if($locale == $language){
 
                             $message = $key['message'];
-                            if($exportToExcel->getCompressHtmlLabels()){
-                                if(preg_match_all("|(</?[^<]*>)|i", $message, $matches)){
-                                    foreach($matches[1] as $match){
-                                        if($match && !isset($labels[$match])){
-                                            $labels[$match] = sprintf("[%d]", $index++);
-                                        }
+                            if(preg_match_all("|(</?[^<]*>)|i", $message, $matches)){
+                                foreach($matches[1] as $match){
+                                    if($match && !isset($labels[$match])){
+                                        $labels[$match] = sprintf("[%d]", $index++);
                                         $subst = $labels[$match];
                                         $message = str_replace($match, $subst, $message);
                                     }
+
                                 }
                             }
-                            if($exportToExcel->getCompressVariables()){
-                                if(preg_match_all("|(\%([^%]*)\%)|i", $message, $matches, PREG_SET_ORDER)){
-                                    foreach($matches as $match){
-                                        $varName = $match[2];
-                                        $textVar = $match[1];
-                                        if($textVar && !isset($labels[$textVar])){
-                                            $labels[$textVar] = sprintf("(%d)", $index++);
-                                        }
+                            if(preg_match_all("|(\%([^%]*)\%)|i", $message, $matches, PREG_SET_ORDER)){
+                                foreach($matches as $match){
+                                    $varName = $match[2];
+                                    $textVar = $match[1];
+                                    if($textVar && !isset($labels[$textVar])){
+                                        $labels[$textVar] = sprintf("(%d)", $index++);
                                         $subst = $labels[$textVar];
                                         $subst = sprintf("%s%s%s", $subst, $varName, $subst);
                                         $message = str_replace($textVar, $subst, $message);
@@ -395,6 +392,31 @@ class DefaultController extends BaseController
 
                         foreach($translation->getTranslations() as $locale=>$key){
 
+                            $message = $key['message'];
+                            if(preg_match_all("|(</?[^<]*>)|i", $message, $matches)){
+                                foreach($matches[1] as $match){
+                                    if($match && !isset($labels[$match])){
+                                        $labels[$match] = sprintf("[%d]", $index++);
+                                        $subst = $labels[$match];
+                                        $message = str_replace($match, $subst, $message);
+                                    }
+
+                                }
+                            }
+                            if(preg_match_all("|(\%([^%]*)\%)|i", $message, $matches, PREG_SET_ORDER)){
+                                foreach($matches as $match){
+                                    $varName = $match[2];
+                                    $textVar = $match[1];
+                                    if($textVar && !isset($labels[$textVar])){
+                                        $labels[$textVar] = sprintf("(%d)", $index++);
+                                        $subst = $labels[$textVar];
+                                        $subst = sprintf("%s%s%s", $subst, $varName, $subst);
+                                        $message = str_replace($textVar, $subst, $message);
+                                    }
+                                }
+                            }
+                            $message = $this->clean($message);
+
                             $colName = $this->column($localeCol[$locale]);
 
                             $bundleSheet
@@ -412,12 +434,15 @@ class DefaultController extends BaseController
                     }
                 }
 
+                //$excel->getActiveSheet()->getRowDimension(8)->setRowHeight(-1);
+                //$excel->getActiveSheet()->getStyle('A8')->getAlignment()->setWrapText(true);
+
                 $objWriter = new \PHPExcel_Writer_Excel5($excel);
                 $objWriter->save($tmpFile);
 
                 header('Content-Description: File Transfer');
                 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                header('Content-Disposition: attachment;filename="' . $tmpFile . '.xls"');
+                header('Content-Disposition: attachment;filename="' . $tmpFile . '"');
                 header('Content-Transfer-Encoding: binary');
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate');
@@ -1570,16 +1595,19 @@ class DefaultController extends BaseController
     }
 
     /**
-     * @Route("/normalize-bundle/{projectId}/{bundleName}/{keyStart}", name="normalize_bundle")
+     * @Route("/normalize-bundle/{projectId}/{keyStart}/{bundleName}", name="normalize_bundle")
      * @ Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function normalizeBundleAction(Request $request, Project $project, $bundleName, $keyStart = "*")
+    public function normalizeBundleAction(Request $request, Project $project, $keyStart, $bundleName)
     {
         $this->init();
-        $bundleName = preg_replace("/bundle$/i", "", $bundleName);
+        $bundleName = preg_replace("/bundle$/", "", $bundleName);
         $bundleName = ucfirst(strtolower($bundleName)) . "Bundle";
 
+        // completar los documentos  a los que le falten subdocumentos de traducciones
+
+        //$this->translationsManager->userHasProject($this->user, $project);
         $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
         $permissions = $permissions->getPermissions();
 
@@ -1600,7 +1628,7 @@ class DefaultController extends BaseController
         foreach($translations as $translation){
 
             $key = $translation->getKey();
-            if(($keyStart=="*") || preg_match("/^{$keyStart}/", $key)){
+            if(preg_match("/^{$keyStart}/", $key)){
                 $translation->setBundle($bundleName);
                 $this->dm->persist($translation);
                 $normalized[] = $key;
@@ -1613,55 +1641,6 @@ class DefaultController extends BaseController
         return $this->printResult(array(
                 'result'     => true,
                 'normalized' => $normalized,
-            )
-        );
-    }
-
-    /**
-     * @Route("/change-bundle/{projectId}/bundle-origin/{bundleOrig}/to/{bundleDest}", name="normalize_bundle")
-     * @ Method("POST")
-     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
-     */
-    public function changeBundleAction(Request $request, Project $project, $bundleOrig, $bundleDest)
-    {
-        $this->init();
-
-        $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
-        $permissions = $permissions->getPermissions();
-
-        if($permissions['general'] != Permission::OWNER){
-            return $this->printResult(array(
-                    'result' => false,
-                    'reason' => 'not enough permissions to do this',
-                )
-            );
-        }
-        $bundleOrig = preg_replace("/bundle$/i", "", $bundleOrig);
-        $bundleOrig = ucfirst(strtolower($bundleOrig)) . "Bundle";
-        $bundleDest = preg_replace("/bundle$/i", "", $bundleDest);
-        $bundleDest = ucfirst(strtolower($bundleDest)) . "Bundle";
-
-        $managedLocales = explode(',',$project->getManagedLocales());
-
-        /** @var Translation[] $translations */
-        $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId(), 'bundle'=>$bundleOrig ));
-        $normalized = array();
-
-        foreach($translations as $translation){
-
-            $translation->setBundle($bundleDest);
-            $this->dm->persist($translation);
-            $normalized[] = $key;
-
-        }
-
-        $this->dm->flush();
-
-        return $this->printResult(array(
-                'bundle-origin' => $bundleOrig,
-                'bundle-dest'   => $bundleDest,
-                'result'        => true,
-                'normalized'    => $normalized,
             )
         );
     }
