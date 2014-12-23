@@ -282,25 +282,29 @@ class DefaultController extends BaseController
                         if($locale == $language){
 
                             $message = $key['message'];
-                            if(preg_match_all("|(</?[^<]*>)|i", $message, $matches)){
-                                foreach($matches[1] as $match){
-                                    if($match && !isset($labels[$match])){
-                                        $labels[$match] = sprintf("[%d]", $index++);
+                            if($exportToExcel->getCompressHtmlLabels()){
+                                if(preg_match_all("|(</?[^<]*>)|i", $message, $matches)){
+                                    foreach($matches[1] as $match){
+                                        if($match && !isset($labels[$match])){
+                                            $labels[$match] = sprintf("[%d]", $index++);
+                                        }
+                                        $subst = $labels[$match];
+                                        $message = str_replace($match, $subst, $message);
                                     }
-                                    $subst = $labels[$match];
-                                    $message = str_replace($match, $subst, $message);
                                 }
                             }
-                            if(preg_match_all("|(\%([^%]*)\%)|i", $message, $matches, PREG_SET_ORDER)){
-                                foreach($matches as $match){
-                                    $varName = $match[2];
-                                    $textVar = $match[1];
-                                    if($textVar && !isset($labels[$textVar])){
-                                        $labels[$textVar] = sprintf("(%d)", $index++);
+                            if($exportToExcel->getCompressVariables()){
+                                if(preg_match_all("|(\%([^%]*)\%)|i", $message, $matches, PREG_SET_ORDER)){
+                                    foreach($matches as $match){
+                                        $varName = $match[2];
+                                        $textVar = $match[1];
+                                        if($textVar && !isset($labels[$textVar])){
+                                            $labels[$textVar] = sprintf("(%d)", $index++);
+                                        }
+                                        $subst = $labels[$textVar];
+                                        $subst = sprintf("%s%s%s", $subst, $varName, $subst);
+                                        $message = str_replace($textVar, $subst, $message);
                                     }
-                                    $subst = $labels[$textVar];
-                                    $subst = sprintf("%s%s%s", $subst, $varName, $subst);
-                                    $message = str_replace($textVar, $subst, $message);
                                 }
                             }
                             $message = $this->clean($message);
