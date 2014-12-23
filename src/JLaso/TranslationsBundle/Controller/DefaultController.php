@@ -248,10 +248,9 @@ class DefaultController extends BaseController
                                 foreach($matches[1] as $match){
                                     if($match && !isset($labels[$match])){
                                         $labels[$match] = sprintf("[%d]", $index++);
-                                        $subst = $labels[$match];
-                                        $message = str_replace($match, $subst, $message);
                                     }
-
+                                    $subst = $labels[$match];
+                                    $message = str_replace($match, $subst, $message);
                                 }
                             }
                             if(preg_match_all("|(\%([^%]*)\%)|i", $message, $matches, PREG_SET_ORDER)){
@@ -260,10 +259,10 @@ class DefaultController extends BaseController
                                     $textVar = $match[1];
                                     if($textVar && !isset($labels[$textVar])){
                                         $labels[$textVar] = sprintf("(%d)", $index++);
-                                        $subst = $labels[$textVar];
-                                        $subst = sprintf("%s%s%s", $subst, $varName, $subst);
-                                        $message = str_replace($textVar, $subst, $message);
                                     }
+                                    $subst = $labels[$textVar];
+                                    $subst = sprintf("%s%s%s", $subst, $varName, $subst);
+                                    $message = str_replace($textVar, $subst, $message);
                                 }
                             }
                             $message = $this->clean($message);
@@ -354,31 +353,6 @@ class DefaultController extends BaseController
 
                         foreach($translation->getTranslations() as $locale=>$key){
 
-                            $message = $key['message'];
-                            if(preg_match_all("|(</?[^<]*>)|i", $message, $matches)){
-                                foreach($matches[1] as $match){
-                                    if($match && !isset($labels[$match])){
-                                        $labels[$match] = sprintf("[%d]", $index++);
-                                        $subst = $labels[$match];
-                                        $message = str_replace($match, $subst, $message);
-                                    }
-
-                                }
-                            }
-                            if(preg_match_all("|(\%([^%]*)\%)|i", $message, $matches, PREG_SET_ORDER)){
-                                foreach($matches as $match){
-                                    $varName = $match[2];
-                                    $textVar = $match[1];
-                                    if($textVar && !isset($labels[$textVar])){
-                                        $labels[$textVar] = sprintf("(%d)", $index++);
-                                        $subst = $labels[$textVar];
-                                        $subst = sprintf("%s%s%s", $subst, $varName, $subst);
-                                        $message = str_replace($textVar, $subst, $message);
-                                    }
-                                }
-                            }
-                            $message = $this->clean($message);
-
                             $colName = $this->column($localeCol[$locale]);
 
                             $bundleSheet
@@ -396,15 +370,12 @@ class DefaultController extends BaseController
                     }
                 }
 
-                //$excel->getActiveSheet()->getRowDimension(8)->setRowHeight(-1);
-                //$excel->getActiveSheet()->getStyle('A8')->getAlignment()->setWrapText(true);
-
                 $objWriter = new \PHPExcel_Writer_Excel5($excel);
                 $objWriter->save($tmpFile);
 
                 header('Content-Description: File Transfer');
                 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                header('Content-Disposition: attachment;filename="' . $tmpFile . '"');
+                header('Content-Disposition: attachment;filename="' . $tmpFile . '.xls"');
                 header('Content-Transfer-Encoding: binary');
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate');
