@@ -20,6 +20,10 @@ class ExportToExcel
     protected $locale;
     /** @var  boolean */
     protected $bundle_file;
+    /** @var  boolean */
+    protected $compress_html_labels;
+    /** @var  boolean */
+    protected $compress_variables;
     /**
      * @var Project
      */
@@ -68,6 +72,39 @@ class ExportToExcel
     {
         return $this->bundle_file;
     }
+
+    /**
+     * @param boolean $compress_html_labels
+     */
+    public function setCompressHtmlLabels($compress_html_labels)
+    {
+        $this->compress_html_labels = $compress_html_labels;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getCompressHtmlLabels()
+    {
+        return $this->compress_html_labels;
+    }
+
+    /**
+     * @param boolean $compress_variables
+     */
+    public function setCompressVariables($compress_variables)
+    {
+        $this->compress_variables = $compress_variables;
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getCompressVariables()
+    {
+        return $this->compress_variables;
+    }
+
 
 
 } 

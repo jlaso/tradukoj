@@ -39,6 +39,22 @@ class ExportToExcelType extends AbstractType
                         'class'       => 'uniform',
                     )
                 ))
+
+            ->add('compress_html_labels', 'checkbox', array(
+                    'required'    => false,
+                    'attr'        => array(
+                        'placeholder' => 'export_to_excel.placeholder.compress_html_labels',
+                        'class'       => 'uniform',
+                    )
+                ))
+
+            ->add('compress_variables', 'checkbox', array(
+                    'required'    => false,
+                    'attr'        => array(
+                        'placeholder' => 'export_to_excel.placeholder.compress_variables',
+                        'class'       => 'uniform',
+                    )
+                ))
         ;
     }
 

@@ -95,6 +95,30 @@
                 </div>
             </div>
 
+
+            <div class="control-group">
+                <div class="error red">{{ form_errors(form.compress_html_labels) }}</div>
+                <label class="control-label" for="_locale">
+                    <i class="icon-cog"></i> Compress html labels
+                </label>
+
+                <div class="controls">
+                    {{ form_widget(form.compress_html_labels) }}
+                </div>
+            </div>
+
+
+            <div class="control-group">
+                <div class="error red">{{ form_errors(form.compress_variables) }}</div>
+                <label class="control-label" for="_locale">
+                    <i class="icon-cog"></i> Compress variables
+                </label>
+
+                <div class="controls">
+                    {{ form_widget(form.compress_variables) }}
+                </div>
+            </div>
+
             <div class="control-group">
                 <div class="controls" style="margin-left:0 !important;">
                     {{ form_rest(form) }}
