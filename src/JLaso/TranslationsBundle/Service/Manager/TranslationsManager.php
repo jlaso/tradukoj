@@ -7,6 +7,7 @@ namespace JLaso\TranslationsBundle\Service\Manager;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
+use JLaso\TranslationsBundle\Document\Repository\ProjectInfoRepository;
 use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
 use JLaso\TranslationsBundle\Entity\Repository\PermissionRepository;
@@ -148,7 +149,17 @@ class TranslationsManager
      */
     public function getAllBundlesForProject(Project $project)
     {
-        return $this->getTranslationRepository()->getBundles($project->getId());
+        return $this->getProjectInfoRepository()->getBundles($project->getId());
+    }
+
+    /**
+     * @param Project $project
+     *
+     * @return array
+     */
+    public function getAllCatalogsForProject(Project $project)
+    {
+        return $this->getProjectInfoRepository()->getCatalogs($project->getId());
     }
 
     /**
@@ -320,6 +331,14 @@ class TranslationsManager
     protected function getTranslationRepository()
     {
         return $this->dm->getRepository('TranslationsBundle:Translation');
+    }
+
+    /**
+     * @return ProjectInfoRepository
+     */
+    protected function getProjectInfoRepository()
+    {
+        return $this->dm->getRepository('TranslationsBundle:ProjectInfo');
     }
 
 

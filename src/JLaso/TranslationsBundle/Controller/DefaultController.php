@@ -4,6 +4,8 @@ namespace JLaso\TranslationsBundle\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
 
+use JLaso\TranslationsBundle\Document\ProjectInfo;
+use JLaso\TranslationsBundle\Document\Repository\ProjectInfoRepository;
 use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
 use JLaso\TranslationsBundle\Entity\Repository\ProjectRepository;
@@ -89,12 +91,48 @@ class DefaultController extends BaseController
     }
 
     /**
+     * @Route("/regenerate-project-info/{projectId}", name="regenerate_project_info")
+     */
+    public function regenerateProjectInfoAction($projectId)
+    {
+        $this->init();
+        /** @var ProjectInfo $projectInfo */
+        $projectInfo = $this->dm->getRepository("TranslationsBundle:ProjectInfo")->getProjectInfo($projectId);
+        if(!$projectInfo){
+            $projectInfo = new ProjectInfo();
+            $projectInfo->setProjectId($projectId);
+        }
+        $projectInfo->setBundles(array());
+        $projectInfo->setCatalogs(array());
+
+        $translations = $this->getTranslationRepository()->findBy(array("projectId"=>intval($projectId)));
+        //ldd($projectId, $translations);
+        foreach($translations as $translation){
+            $bundle = $translation->getBundle();
+            $projectInfo->addBundle($bundle);
+            $catalog = $translation->getCatalog();
+            $projectInfo->addCatalog($catalog);
+        }
+        $this->dm->persist($projectInfo);
+        $this->dm->flush();
+        ld($projectInfo->getBundles());
+        die("done!");
+    }
+
+    /**
      * @Route("/translations", name="user_index")
      * @Template()
      */
     public function userIndexAction($projectId = 0)
     {
         $this->init();
+
+//        $t = $this->getTranslationRepository()->find("52d5a2dd346002d371000019");
+//        //$t->setBundle(md5(date("U")));
+//        $t->setBundle("AdminBundle0");
+//        //$this->dm->persist($t);
+//        $this->dm->flush();
+//        ldd("t");
 
         $projects  = $this->translationsManager->getProjectsForUser($this->user);
         $project   = null;
@@ -534,7 +572,7 @@ class DefaultController extends BaseController
 
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
         $projects  = $this->translationsManager->getProjectsForUser($this->user);
-        $catalogs  = $translationRepository->getCatalogs($project->getId());
+        $catalogs  = $this->translationsManager->getAllCatalogsForProject($project);
 
         return array(
             'action'            => 'catalogs',
@@ -616,15 +654,16 @@ class DefaultController extends BaseController
         }else{
             $keys = $translationRepository->getKeys($project->getId(), $current);
         }
-        $tree = $this->keysToPlainArray($keys);
-
+        $tree      = $this->keysToPlainArray($keys);
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+        $bundles   = $this->getProjectInfoRepository()->getBundles($project->getId());
 
         $html = $this->renderView("TranslationsBundle:Default:messages.html.twig",array(
                 'translation'     => $translation,
                 'managed_locales' => $managedLocales,
                 'permissions'     => $permission->getPermissions(),
                 'languages'       => $languages,
+                'bundles'         => $bundles,
             )
         );
 
@@ -701,8 +740,9 @@ class DefaultController extends BaseController
         $catalog = trim($request->get('catalog'));
         $keyNew  = trim($request->get('keyNew'));
         $keyOld  = trim($request->get('keyOld'));
+        $bundle  = trim($request->get('bundle'));
         $current = trim($request->get('current'));
-        if(!$catalog || !$current || !$keyNew || !$keyOld){
+        if(!$catalog || !$current || !$keyNew || !$keyOld || !$bundle){
             return $this->printResult(array(
                     'result' => false,
                     'reason' => $this->translator->trans('translations.change_key_dialog.error.not_enough_parameters'),
@@ -716,7 +756,7 @@ class DefaultController extends BaseController
                 'key'       => $keyNew,
             )
         );
-        if($key){
+        if($key && ($keyNew!=$keyOld)){
             return $this->printResult(array(
                     'result' => false,
                     'reason' => $this->translator->trans('translations.change_key_dialog.error.key_already_exists', array('%key%' => $keyNew)),
@@ -739,6 +779,7 @@ class DefaultController extends BaseController
             );
         }
         $translation->setKey($keyNew);
+        $translation->setBundle($bundle);
         $translation = $this->translationsManager->normalizeTranslation($translation, $managedLocales);
         $this->dm->persist($translation);
         $this->dm->flush($translation);
@@ -752,15 +793,16 @@ class DefaultController extends BaseController
         }else{
             $keys = $translationRepository->getKeys($project->getId(), $current);
         }
-        $tree = $this->keysToPlainArray($keys);
-
+        $tree      = $this->keysToPlainArray($keys);
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+        $bundles   = $this->getProjectInfoRepository()->getBundles($project->getId());
 
         $html = $this->renderView("TranslationsBundle:Default:messages.html.twig",array(
                 'translation'     => $translation,
                 'managed_locales' => $managedLocales,
                 'permissions'     => $permission->getPermissions(),
                 'languages'       => $languages,
+                'bundles'         => $bundles,
             )
         );
 
@@ -869,9 +911,9 @@ class DefaultController extends BaseController
 
         /** @var TranslationRepository $translationRepository */
         $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
-        $bundles         = $this->translationsManager->getAllBundlesForProject($project);
-        $keys = $translationRepository->getKeysByBundle($project->getId(), $bundle);
-        $keysAssoc = array();
+        $bundles               = $this->getProjectInfoRepository()->getBundles($project->getId());
+        $keys                  = $translationRepository->getKeysByBundle($project->getId(), $bundle);
+        $keysAssoc             = array();
         foreach($keys as $key){
             $keysAssoc = $this->translationsManager->iniToAssoc($key['key'], $keysAssoc);
         }
@@ -880,7 +922,7 @@ class DefaultController extends BaseController
         $transData = array();
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
         $projects  = $this->translationsManager->getProjectsForUser($this->user);
-        $catalogs  = $translationRepository->getCatalogs($project->getId());
+        $catalogs  = $this->translationsManager->getAllCatalogsForProject($project);
 
         return array(
             'action'            => 'bundles',
@@ -1079,17 +1121,21 @@ class DefaultController extends BaseController
                 )
             );
         };
+        /** @var TranslationRepository $translationRepository */
+        $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
 
         $managedLocales = explode(',', $project->getManagedLocales());
         $translation    = $this->translationsManager->getTranslation($project, $catalog ?: $bundle, $key);
         $permission     = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
         $languages      = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+        $bundles        = $this->getProjectInfoRepository()->getBundles($project->getId());
 
         $html = $this->renderView("TranslationsBundle:Default:messages.html.twig",array(
                 'translation'     => $translation,
                 'managed_locales' => $managedLocales,
                 'permissions'     => $permission->getPermissions(),
                 'languages'       => $languages,
+                'bundles'         => $bundles,
             )
         );
         $this->printResult(array(
@@ -1125,6 +1171,8 @@ class DefaultController extends BaseController
 
         /** @var TranslatableDocumentRepository $translationRepository */
         $transDocRepository = $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
+        /** @var TranslationRepository $translationRepository */
+        $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
         /** @var TranslatableDocument $document */
         $translation = $transDocRepository->findOneBy(
             array(
@@ -1134,13 +1182,15 @@ class DefaultController extends BaseController
             )
         );
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
-        $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+        $languages  = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
+        $bundles    = $this->getProjectInfoRepository()->getBundles($project->getId());
 
         $html = $this->renderView("TranslationsBundle:Default:document-messages.html.twig",array(
                 'translation'     => $translation,
                 'managed_locales' => $managedLocales,
                 'permissions'     => $permission->getPermissions(),
                 'languages'       => $languages,
+                'bundles'         => $bundles,
             )
         );
         $this->printResult(array(
@@ -1961,6 +2011,14 @@ class DefaultController extends BaseController
     protected function getTranslationRepository()
     {
         return $this->dm->getRepository('TranslationsBundle:Translation');
+    }
+
+    /**
+     * @return ProjectInfoRepository
+     */
+    protected function getProjectInfoRepository()
+    {
+        return $this->dm->getRepository('TranslationsBundle:ProjectInfo');
     }
 
     /**

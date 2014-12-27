@@ -20,6 +20,13 @@
             <argument>%locale%</argument>
         </service>
 
+        <service id="translations_listener" class="JLaso\TranslationsBundle\Listener\TranslationsListener">
+            <tag name="doctrine_mongodb.odm.event_listener" event="postLoad" connection="default" />
+            <tag name="doctrine_mongodb.odm.event_listener" event="postPersist" connection="default" />
+            <tag name="doctrine_mongodb.odm.event_listener" event="postUpdate" connection="default" />
+            <tag name="doctrine_mongodb.odm.event_listener" event="preRemove" connection="default" />
+        </service>
+
     </services>
 
 </container>
