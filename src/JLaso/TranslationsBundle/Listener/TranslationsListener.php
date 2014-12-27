@@ -87,19 +87,17 @@ class TranslationsListener
      */
     public function postLoad(LifecycleEventArgs $eventArgs)
     {
+        //echo('OK postLoad<hr/>');
         $document = $eventArgs->getDocument();
 
-        if ($document instanceof Translation) {
-            $this->cache = array(
-                'id'      => $document->getId(),
-                'bundle'  => $document->getBundle(),
-                'catalog' => $document->getCatalog(),
-            );
+        if (!$document instanceof Translation) {
             return;
         }
-
-        // if document ...
-
+        $this->cache = array(
+            'id'      => $document->getId(),
+            'bundle'  => $document->getBundle(),
+            'catalog' => $document->getCatalog(),
+        );
     }
 
 }
