@@ -32,12 +32,12 @@ class TranslationsListener
                 $projectInfo = new ProjectInfo();
                 $projectInfo->setProjectId($projectId);
             }
-            if(isset($this->cache["id"] && ($this->cache["id"]==$document->getId()]))){
+            if(isset($this->cache["id"]) && ($this->cache["id"]==$document->getId())){
                 $projectInfo->subBundle($this->cache['bundle']);
                 $projectInfo->subCatalog($this->cache['catalog']);
             }
             $projectInfo->addBundle($document->getBundle());
-            $projectInfo->addCatalog($document->getCatlog());
+            $projectInfo->addCatalog($document->getCatalog());
             $dm->persist($projectInfo);
             $dm->flush();
             return;
