@@ -132,19 +132,23 @@ class ProjectInfo
 
     public function addCatalog($catalog)
     {
-        if(!isset($this->catalogs[$catalog])){
-            $this->catalogs[$catalog] = 1;
-        }else{
-            $this->catalogs[$catalog]++;
+        if($catalog){
+            if(!isset($this->catalogs[$catalog])){
+                $this->catalogs[$catalog] = 1;
+            }else{
+                $this->catalogs[$catalog]++;
+            }
         }
     }
 
     public function subCatalog($catalog)
     {
-        if(isset($this->catalogs[$catalog])){
-            $this->catalogs[$catalog]--;
-            if($this->catalogs[$catalog] == 0){
-                unset($this->catalogs[$catalog]);
+        if($catalog){
+            if(isset($this->catalogs[$catalog])){
+                $this->catalogs[$catalog]--;
+                if($this->catalogs[$catalog] == 0){
+                    unset($this->catalogs[$catalog]);
+                }
             }
         }
     }
@@ -167,19 +171,23 @@ class ProjectInfo
 
     public function addBundle($bundle)
     {
-        if(!isset($this->bundles[$bundle])){
-            $this->bundles[$bundle] = 1;
-        }else{
-            $this->bundles[$bundle]++;
+        if($bundle){
+            if(!isset($this->bundles[$bundle])){
+                $this->bundles[$bundle] = 1;
+            }else{
+                $this->bundles[$bundle]++;
+            }
         }
     }
 
     public function subBundle($bundle)
     {
-        if(isset($this->bundles[$bundle])){
-            $this->bundles[$bundle]--;
-            if($this->bundles[$bundle] == 0){
-                unset($this->bundles[$bundle]);
+        if($bundle){
+            if(isset($this->bundles[$bundle])){
+                $this->bundles[$bundle]--;
+                if($this->bundles[$bundle] == 0){
+                    unset($this->bundles[$bundle]);
+                }
             }
         }
     }
