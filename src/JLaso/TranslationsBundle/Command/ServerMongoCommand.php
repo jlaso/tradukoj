@@ -17,6 +17,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use JLaso\TranslationsBundle\Document\File;
+use JLaso\TranslationsBundle\Document\Repository\ProjectInfoRepository;
 use JLaso\TranslationsBundle\Document\Repository\TranslatableDocumentRepository;
 use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
 use JLaso\TranslationsBundle\Document\TranslatableDocument;
@@ -403,7 +404,7 @@ class ServerMongoCommand extends ContainerAwareCommand
 
     protected function getCatalogIndex($projectId)
     {
-        $catalogs = $this->getTranslationRepository()->getCatalogs($projectId);
+        $catalogs = $this->getProjectInfoRepository()->getCatalogs($projectId);
 
         return $this->resultOk(array('catalogs' => $catalogs));
     }
@@ -868,6 +869,14 @@ class ServerMongoCommand extends ContainerAwareCommand
     protected function getTranslationRepository()
     {
         return $this->dm->getRepository('TranslationsBundle:Translation');
+    }
+
+    /**
+     * @return ProjectInfoRepository
+     */
+    protected function getProjectInfoRepository()
+    {
+        return $this->dm->getRepository('TranslationsBundle:ProjectInfo');
     }
 
     /**
