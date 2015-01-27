@@ -1577,7 +1577,7 @@ class DefaultController extends BaseController
     public function normalizeBundleAction(Request $request, Project $project, $bundleName, $keyStart = "*")
     {
         $this->init();
-        $bundleName = preg_replace("/bundle$/", "", $bundleName);
+        $bundleName = preg_replace("/bundle$/i", "", $bundleName);
         $bundleName = ucfirst(strtolower($bundleName)) . "Bundle";
 
         $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
@@ -1622,7 +1622,7 @@ class DefaultController extends BaseController
      * @ Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function normalizeBundleAction(Request $request, Project $project, $bundleOrig, $bundleDest)
+    public function changeBundleAction(Request $request, Project $project, $bundleOrig, $bundleDest)
     {
         $this->init();
 
@@ -1636,9 +1636,9 @@ class DefaultController extends BaseController
                 )
             );
         }
-        $bundleOrig = preg_replace("/bundle$/", "", $bundleOrig);
+        $bundleOrig = preg_replace("/bundle$/i", "", $bundleOrig);
         $bundleOrig = ucfirst(strtolower($bundleOrig)) . "Bundle";
-        $bundleDest = preg_replace("/bundle$/", "", $bundleDest);
+        $bundleDest = preg_replace("/bundle$/i", "", $bundleDest);
         $bundleDest = ucfirst(strtolower($bundleDest)) . "Bundle";
 
         $managedLocales = explode(',',$project->getManagedLocales());
@@ -1658,8 +1658,10 @@ class DefaultController extends BaseController
         $this->dm->flush();
 
         return $this->printResult(array(
-                'result'     => true,
-                'normalized' => $normalized,
+                'bundle-origin' => $bundleOrig,
+                'bundle-dest'   => $bundleDest,
+                'result'        => true,
+                'normalized'    => $normalized,
             )
         );
     }
