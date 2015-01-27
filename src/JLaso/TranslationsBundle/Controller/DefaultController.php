@@ -1570,19 +1570,16 @@ class DefaultController extends BaseController
     }
 
     /**
-     * @Route("/normalize-bundle/{projectId}/{keyStart}/{bundleName}", name="normalize_bundle")
+     * @Route("/normalize-bundle/{projectId}/{bundleName}/{keyStart}", name="normalize_bundle")
      * @ Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function normalizeBundleAction(Request $request, Project $project, $keyStart, $bundleName)
+    public function normalizeBundleAction(Request $request, Project $project, $bundleName, $keyStart = "*")
     {
         $this->init();
         $bundleName = preg_replace("/bundle$/", "", $bundleName);
         $bundleName = ucfirst(strtolower($bundleName)) . "Bundle";
 
-        // completar los documentos  a los que le falten subdocumentos de traducciones
-
-        //$this->translationsManager->userHasProject($this->user, $project);
         $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
         $permissions = $permissions->getPermissions();
 
@@ -1603,11 +1600,58 @@ class DefaultController extends BaseController
         foreach($translations as $translation){
 
             $key = $translation->getKey();
-            if(preg_match("/^{$keyStart}/", $key)){
+            if(($keyStart=="*") || preg_match("/^{$keyStart}/", $key)){
                 $translation->setBundle($bundleName);
                 $this->dm->persist($translation);
                 $normalized[] = $key;
             }
+
+        }
+
+        $this->dm->flush();
+
+        return $this->printResult(array(
+                'result'     => true,
+                'normalized' => $normalized,
+            )
+        );
+    }
+
+    /**
+     * @Route("/change-bundle/{projectId}/bundle-origin/{bundleOrig}/to/{bundleDest}", name="normalize_bundle")
+     * @ Method("POST")
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function normalizeBundleAction(Request $request, Project $project, $bundleOrig, $bundleDest)
+    {
+        $this->init();
+
+        $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
+        $permissions = $permissions->getPermissions();
+
+        if($permissions['general'] != Permission::OWNER){
+            return $this->printResult(array(
+                    'result' => false,
+                    'reason' => 'not enough permissions to do this',
+                )
+            );
+        }
+        $bundleOrig = preg_replace("/bundle$/", "", $bundleOrig);
+        $bundleOrig = ucfirst(strtolower($bundleOrig)) . "Bundle";
+        $bundleDest = preg_replace("/bundle$/", "", $bundleDest);
+        $bundleDest = ucfirst(strtolower($bundleDest)) . "Bundle";
+
+        $managedLocales = explode(',',$project->getManagedLocales());
+
+        /** @var Translation[] $translations */
+        $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId(), 'bundle'=>$bundleOrig ));
+        $normalized = array();
+
+        foreach($translations as $translation){
+
+            $translation->setBundle($bundleDest);
+            $this->dm->persist($translation);
+            $normalized[] = $key;
 
         }
 
