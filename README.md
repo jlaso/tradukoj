@@ -6,8 +6,7 @@ In esperanto TRADUKOJ means translations (and is pronounced with the stress in t
 1) Installing
 -------------
 
-When it comes to installing the Symfony Standard Edition, you have the
-following options.
+When it comes to installing you have the following options.
 
 ### Use Composer (*recommended*)
 
@@ -26,6 +25,7 @@ Then, use the `create-project` command to generate a new Symfony application:
 Composer will install Tradukoj and all its dependencies under the
 `path/to/install` directory.
 
+### Downloading ZIP from github and uncompressing in the folder you want.
 
 2) Checking your System Configuration
 -------------------------------------
