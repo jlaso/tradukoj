@@ -16,19 +16,17 @@ class {'apt':
 
 package {
     [
-        'imagemagick',
-        'vim',
+        'nano',
         'htop',
         'php5-cli',
         'git',
         'cifs-utils',
         'curl',
-        'redis-server'
     ]:
     ensure => 'latest'
 }
 
-class { ['php', 'php::extension::mysql', 'php::extension::intl', 'php::extension::redis', 'php::extension::curl', 'php::composer', 'php::composer::auto_update']:
+class { ['php', 'php::extension::mysql', 'php::extension::intl', 'php::extension::lzf', 'php::extension::curl', 'php::composer', 'php::composer::auto_update']:
     before => Exec['composer_config']
 }
 
