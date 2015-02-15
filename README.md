@@ -8,7 +8,7 @@ In esperanto TRADUKOJ means translations (and is pronounced with the stress in t
 
 When it comes to installing you have the following options.
 
-### Use Composer (*recommended*)
+### Use Composer create-project (*recommended*)
 
 As Symfony uses [Composer][2] to manage its dependencies, the recommended way
 to create a new project is to use it.
@@ -21,11 +21,19 @@ http://getcomposer.org/ or just run the following command:
 Then, use the `create-project` command to generate a new Symfony application:
 
     php composer.phar create-project jlaso/tradukoj path/to/install
+    
+    composer create-project --repository-url=http://tradukoj.dev  jlaso/tradukoj tradukoj
 
 Composer will install Tradukoj and all its dependencies under the
 `path/to/install` directory.
 
-### Downloading ZIP from github and uncompressing in the folder you want.
+### Use Composer and start virtual server
+
+Please, note that vagrant and bindfs need to bee installed into the system
+
+    vagrant plugin install vagrant-bindfs
+    
+if you get an error for vboxsf upping vagrant check this [link](http://stackoverflow.com/questions/22717428/vagrant-error-failed-to-mount-folders-in-linux-guest) 
 
 2) Checking your System Configuration
 -------------------------------------

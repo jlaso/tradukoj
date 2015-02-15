@@ -36,7 +36,7 @@ php::config { 'opcache.enable_cli=1':
 }
 
 exec {'composer_config':
-    command => '/usr/local/bin/composer config -g github-oauth.github.com f0a71c9745759dd6ca7b4dc45355d5d407dc9667',
+    command => '/usr/local/bin/composer config -g github-oauth.github.com 462578c8baf9d72e181c82ee279887d785614881',
     environment => 'HOME=/home/vagrant',
     cwd => '/home/vagrant',
     user => 'vagrant',
