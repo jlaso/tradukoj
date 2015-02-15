@@ -19,20 +19,28 @@ package {
         'nano',
         'htop',
         'php5-cli',
+        'php5-dev',
         'git',
+        "php-pear",
         'cifs-utils',
         'curl',
     ]:
     ensure => 'latest'
 }
 
-class { ['php', 'php::extension::mysql', 'php::extension::intl', 'php::extension::lzf', 'php::extension::curl', 'php::composer', 'php::composer::auto_update']:
+class { ['php', 'php::extension::mysql', 'php::extension::intl', 'php::extension::curl', 'php::composer', 'php::composer::auto_update']:
     before => Exec['composer_config']
 }
 
 php::config { 'opcache.enable_cli=1':
     file    => '/etc/php5/cli/conf.d/05-opcache.ini',
     require   => Package['php5-cli']
+}
+
+file {'/etc/php5/conf.d/lzf.conf':
+  ensure => present,
+  owner => root, group => root, mode => 444,
+  content => "extension=lzf.so\n",
 }
 
 exec {'composer_config':
