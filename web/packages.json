@@ -1,0 +1,17 @@
+{
+  "packages": {
+    "jlaso/tradukoj": {
+      "dev-master":
+        {
+          "name": "jlaso/tradukoj",
+          "version": "1.2",
+          "source": {
+            "url": "https://github.com/jlaso/tradukoj.git",
+            "type": "git",
+            "reference": "tags/1.2"
+          }
+        }
+
+    }
+  }
+}
