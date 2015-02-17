@@ -1,0 +1,6 @@
+---
+
+- name: Fix permissions for the storage location (CIS Benchmark override)
+  file: path=/var/lib/mongodb owner=mongodb group=mongodb recurse=yes
+  notify: Restart MongoDB
+

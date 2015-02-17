@@ -1,0 +1,5 @@
+---
+
+- name: Write our configuration
+  template: src=mongodb.conf dest=/etc/mongodb.conf owner=root group=root mode=0644
+  notify: Restart MongoDB

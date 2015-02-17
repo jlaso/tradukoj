@@ -1,0 +1,27 @@
+---
+
+- name: Install MongoDB Server (Debian)
+  apt:
+    pkg: mongodb-server
+    state: present
+  when: ansible_os_family == "Debian"
+  notify: Start MongoDB
+
+- name: Install MongoDB Client (Debian)
+  apt:
+    pkg: mongodb
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Install MongoDB Server (RedHat)
+  yum:
+    name: mongodb-server
+    state: present
+  when: ansible_os_family == "RedHat"
+  notify: Start MongoDB
+
+- name: Install MongoDB Client (RedHat)
+  yum:
+    name: mongodb
+    state: present
+  when: ansible_os_family == "RedHat"

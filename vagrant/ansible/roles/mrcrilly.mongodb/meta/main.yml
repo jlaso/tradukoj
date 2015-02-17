@@ -1,0 +1,21 @@
+---
+galaxy_info:
+  author: Michael Crilly
+  description: MongoDB 2.4 role
+  company: AutoLogic Technology Ltd
+  license: BSD
+  min_ansible_version: 1.7
+  platforms:
+  - name: EL
+    versions:
+      - 6
+  #- name: Ubuntu
+  #  versions:
+  #  - trusty
+  #- name: Debian
+  #  versions:
+  #  - wheezy
+  categories:
+    - database
+    - database:nosql
+dependencies: []

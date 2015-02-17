@@ -1,0 +1,25 @@
+---
+
+- include: software.yml
+  tags:
+    - mrcrilly_mongodb
+    - mrcrilly_mongodb_software
+  when: mrcrilly_mongodb_manage_software
+
+- include: configuration.yml
+  tags:
+    - mrcrilly_mongodb
+    - mrcrilly_mongodb_configuration
+  when: mrcrilly_mongodb_manage_configuration
+
+- include: permissions.yml
+  tags:
+    - mrcrilly_mongodb
+    - mrcrilly_mongodb_permissions
+  when: mrcrilly_mongodb_manage_permissions
+
+- include: service.yml
+  tags:
+    - mrcrilly_mongodb
+    - mrcrilly_mongodb_service
+  when: mrcrilly_mongodb_manage_service

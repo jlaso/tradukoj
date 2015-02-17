@@ -28,7 +28,7 @@ package {
     ensure => 'latest'
 }
 
-class { ['php', 'php::extension::mysql', 'php::extension::intl', 'php::extension::curl', 'php::composer', 'php::composer::auto_update']:
+class { ['php', 'php::extension::mysql', 'php::extension::mongo', 'php::extension::intl', 'php::extension::curl', 'php::composer', 'php::composer::auto_update']:
     before => Exec['composer_config']
 }
 
@@ -86,11 +86,11 @@ class { 'mysql::client':
     before => Exec['tradukoj_install']
 }
 
-exec { 'tradukoj_install':
-    command     => '/home/vagrant/tradukoj/app/install.sh',
-    user        => 'vagrant',
-    cwd         => '/home/vagrant/tradukoj',
-    logoutput   => true,
-    timeout     => 1800,
-    require     => Exec['composer_config']
-}
+#exec { 'tradukoj_install':
+#    command     => '/home/vagrant/tradukoj/app/install.sh',
+#    user        => 'vagrant',
+#    cwd         => '/home/vagrant/tradukoj',
+#    logoutput   => true,
+#    timeout     => 1800,
+#    require     => Exec['composer_config']
+#}

@@ -1,0 +1,7 @@
+---
+    php_ppa: php5-5.6
+    doc_root: /vagrant
+    sys_packages: ["vim","git","htop"]
+    dist: precise
+    php_packages: ["php5-cli","php-pear","php5-curl","php5-common","php5-intl","php5-mcrypt","php5-mysql","php5-xdebug"]
+    pecl_packages: ["lzf","mongo"]

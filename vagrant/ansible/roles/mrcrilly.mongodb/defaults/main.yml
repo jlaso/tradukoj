@@ -1,0 +1,12 @@
+---
+mrcrilly_mongodb_manage_software: true
+mrcrilly_mongodb_manage_service: true
+mrcrilly_mongodb_manage_configuration: true
+mrcrilly_mongodb_manage_permissions: true
+mrcrilly_mongodb_manage_service: true
+mrcrilly_mongodb_configuration:
+  dbpath: /var/lib/mongodb
+  logpath: /var/log/mongodb/mongodb.log
+  logappend: true
+  bind_ip: 127.0.0.1
+  port: 27017
