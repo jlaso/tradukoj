@@ -23,5 +23,5 @@
 
   tasks:
     - name: post install script
-      script: /vagrant/app/install.sh
+      command: sh /vagrant/app/install.sh
 

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /vagrant
+
 # Copies the parameters dist file to the actual parameters.yml.
 # If you run composer manually, you will benefit from Incenteev
 # ParameterHandler, which will interactively ask you for
@@ -11,11 +13,12 @@ fi
 # Firing up composer. Better to invoke the INSTALL than an UPDATE
 HOME=$(pwd) sh -c 'composer install --no-interaction'
 
-cd /vagrant
-
 # Creating database schema and tables
-/usr/bin/env php app/console --no-interaction doctrine:database:create
+#/usr/bin/env php app/console --no-interaction doctrine:database:create # is created by ansible
 /usr/bin/env php app/console --no-interaction doctrine:schema:create
+
+# creating user in mongo and create schema
+echo 'db.addUser("tradukoj","tradukoj");' | mongo tradukoj
 /usr/bin/env php app/console --no-interaction doctrine:mongodb:schema:create
 
 # Allowed fixtures go here
