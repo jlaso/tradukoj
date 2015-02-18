@@ -1,7 +1,7 @@
 parameters:
     database_driver:   pdo_mysql
     database_host:     localhost
-    database_port:     ~
+    database_port:     3306
     database_name:     tradukoj
     database_user:     root
     database_password: root
@@ -15,7 +15,7 @@ parameters:
     mailer_transport:  smtp
     mailer_host:       mail.tradukoj.com
     mailer_user:       no-reply@tradukoj.com
-    mailer_password:   *********
+    mailer_password:   put-here-real-password
     mailer_auth_mode:  plain
 
     locale:            es

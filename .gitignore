@@ -19,6 +19,7 @@ web/uploads/*
 
 # -- Composer -----------------------------------------
 composer.phar
+.composer
 
 # -- PHPUnit ------------------------------------------
 app/phpunit.xml  
@@ -91,4 +92,7 @@ Icon
 ._*
 .Spotlight-V100
 .Trashes
+
+# -- Vagrant -----------------
+vagrant/.vagrant
 

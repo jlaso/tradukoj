@@ -11,13 +11,15 @@ fi
 # Firing up composer. Better to invoke the INSTALL than an UPDATE
 HOME=$(pwd) sh -c 'composer install --no-interaction'
 
+cd /vagrant
+
 # Creating database schema and tables
 /usr/bin/env php app/console --no-interaction doctrine:database:create
 /usr/bin/env php app/console --no-interaction doctrine:schema:create
 /usr/bin/env php app/console --no-interaction doctrine:mongodb:schema:create
 
 # Allowed fixtures go here
-/usr/bin/env php app/console --no-interaction doctrine:fixtures:load
+/usr/bin/env php app/console --no-interaction tradukoj:init:data
 
 # Load first project
 /usr/bin/env php app/console jlaso:translations:dump

@@ -17,6 +17,27 @@
     mode=0644
   with_items: pecl_packages
 
-- name: Enable extesion
+- name: Enable extension
   shell: php5enmod {{ item }}
+  with_items: pecl_packages
+
+# I need mongo 1.5.5
+
+- name: Install Mongo Specific version Package
+  shell: echo "\n\n\n\n\n\n\n\n\n" | pecl install mongo-1.5.5
+  register: pecl_result
+  changed_when: "'already installed' not in pecl_result.stdout"
+  failed_when: "pecl_result.stderr or ('ERROR' in pecl_result.stdout)"
+
+- name: Create extension .ini file
+  template: >
+    src="extension.tpl"
+    dest="/etc/php5/mods-available/mongo.ini"
+    owner="root"
+    group="root"
+    mode=0644
+  with_items: pecl_packages
+
+- name: Enable extension
+  shell: php5enmod mongo
   with_items: pecl_packages
