@@ -16,5 +16,10 @@
         AllowOverride All
         Order allow,deny
         Allow from all
+        RewriteEngine On
+        DirectoryIndex app_dev.php
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteRule ^(.*)$ app_dev.php [QSA,L]
+        RewriteBase /
     </Directory>
 </VirtualHost>

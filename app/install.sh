@@ -14,7 +14,8 @@ fi
 HOME=$(pwd) sh -c 'composer install --no-interaction'
 
 # Creating database schema and tables
-#/usr/bin/env php app/console --no-interaction doctrine:database:create # is created by ansible
+/usr/bin/env php app/console --no-interaction doctrine:database:drop --force
+/usr/bin/env php app/console --no-interaction doctrine:database:create
 /usr/bin/env php app/console --no-interaction doctrine:schema:create
 
 # creating user in mongo and create schema
