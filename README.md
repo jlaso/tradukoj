@@ -3,6 +3,8 @@ Tradukoj, tradukoj por programistoj (translations for developers)
 
 In esperanto TRADUKOJ means translations (and is pronounced with the stress in the U)
 
+Please: follow @tradukoj in twitter to be updated!.
+
 1) Installing
 -------------
 
@@ -35,6 +37,8 @@ Please, note that vagrant and bindfs need to bee installed into the system
     
 if you get an error for vboxsf upping vagrant check this [link](http://stackoverflow.com/questions/22717428/vagrant-error-failed-to-mount-folders-in-linux-guest) 
 
+move to vagrant folder (```cd vagrant```) and start vagrant machine with ```vagrant up``, please get some coffee for the first time
+
 2) Checking your System Configuration
 -------------------------------------
 
@@ -45,18 +49,40 @@ Execute the `check.php` script from the command line:
 
     php app/check.php
 
-Access the `config.php` script from a browser:
-
-    http://localhost/path/to/tradukoj/app/web/config.php
-
 If you get any warnings or recommendations, fix them before moving on.
 
 
 3) Getting started with Tradukoj
 -------------------------------
 
+If the vagrant machine has been started successfully, you can start tradukoj with this url:
 
-Lets see the config paramteres we need to adjust
+http://10.10.10.8
+
+
+4) Collaboration
+----------------
+
+Please, feel free to contribute, or proposal improvements.
+
+Thank you so much to spend your time testing this project.
+
+
+5) Bundles
+----------
+
+Currently there are two bundles to communicate symfony2 projects or not with tradukoj, in order to centralize translations.
+
+- [translations-apibundle](https://github.com/jlaso/translations-apibundle)
+- [tradukoj-po-mo-module](https://github.com/jlaso/tradukoj-po-mo-module)
+
+The connection between this modules and the server occurs with socket native implementation. The explanation of this solution has been explained for me in several occasions:
+
+- [Talk in spanish in GeeksHubs, Valencia 2014-05-15](http://youtu.be/zjZG3eY_QNg)
+- [Talk in spanish in DrupalCamp Valencia 2014](https://vimeo.com/channels/drupalcampspain2014/98160710)
+
+Explanations in english are welcome.
+
 
 
 References:
