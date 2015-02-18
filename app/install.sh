@@ -29,7 +29,7 @@ echo 'db.addUser("tradukoj","tradukoj");' | mongo tradukoj
 /usr/bin/env php app/console --no-interaction tradukoj:init:data
 
 # Load first project
-/usr/bin/env php app/console jlaso:translations:dump
+/usr/bin/env php app/console jlaso:translations:dump --force=yes
 /usr/bin/env php app/console jlaso:translations:sync --upload-first=yes
 
 # Assets & Assetic
