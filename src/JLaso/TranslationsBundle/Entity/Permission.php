@@ -21,7 +21,6 @@ class Permission
 
     const OWNER        = 'OWNER';
     const ADMIN        = 'ADMIN';
-
     const COLLABORATOR = 'COLLABORATOR';
     const INVITED      = 'INVITED';
 

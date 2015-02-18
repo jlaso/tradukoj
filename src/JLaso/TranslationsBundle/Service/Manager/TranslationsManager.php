@@ -322,4 +322,5 @@ class TranslationsManager
         return $this->dm->getRepository('TranslationsBundle:Translation');
     }
 
+
 }

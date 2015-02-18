@@ -98,7 +98,6 @@ class User implements UserInterface, EquatableInterface
     protected $salt;
 
     /**
-
      * @var string $active
      *
      * @ORM\Column(name="active", type="boolean", nullable=false)
@@ -270,6 +269,7 @@ class User implements UserInterface, EquatableInterface
     {
         $this->id = unserialize($data);
     }
+
     public function isActive()
     {
         return $this->active;

@@ -238,7 +238,6 @@ class SecurityController extends BaseController
                 /** @var Session $session */
                 $session = $this->get('session');
                 /** @var EntityManager $em */
-
                 $em = $this->getDoctrine()->getManager();
 
                 /** @var EncoderFactory $encoderFactory */
@@ -263,7 +262,6 @@ class SecurityController extends BaseController
                 }catch(\Exception $e){
 
                 }
-
                 if(is_string($send)){
                     $this->addNoticeFlash($send);
                 }

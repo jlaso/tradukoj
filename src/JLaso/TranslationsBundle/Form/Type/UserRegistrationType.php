@@ -22,6 +22,8 @@ class UserRegistrationType extends AbstractType
 
 
             ->add('password', 'repeated', array(
+                    'label'   => '',
+                    'type'    => 'password',
 //                    'invalid_message' => "account_settings.change_password.placeholder.password_mismatch",
                     'options' => array(
                         'required' => true
@@ -49,7 +51,6 @@ class UserRegistrationType extends AbstractType
                     'mapped'      => false,
                     'constraints' => new NotBlank(),
                     'required'    => true,
-
                 ))
         ;
     }
