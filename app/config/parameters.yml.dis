@@ -32,5 +32,5 @@ parameters:
         project_id: 1
         key:  tradukoj.com
         secret: Tradukoj$1234
-        url: http://10.10.10.8/api/
+        url: http://localhost/api/
         managed_locales: ['es', 'en']

@@ -27,7 +27,7 @@ echo 'db.addUser("tradukoj","tradukoj");' | mongo tradukoj
 
 # Load first project
 /usr/bin/env php app/console jlaso:translations:dump
-/usr/bin/env php app/console jlaso:translations:sync
+/usr/bin/env php app/console jlaso:translations:sync --upload-first=yes
 
 # Assets & Assetic
 /usr/bin/env php app/console --no-interaction assets:install web --symlink
