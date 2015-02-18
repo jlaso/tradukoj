@@ -4,4 +4,4 @@
     sys_packages: ["vim","git","htop"]
     dist: precise
     php_packages: ["php5-cli","php-pear","php5-curl","php5-common","php5-intl","php5-mcrypt","php5-mysql","php5-xdebug"]
-    pecl_packages: ["lzf","mongo"]
+    pecl_packages: ["lzf","mongo-1.5.5"]

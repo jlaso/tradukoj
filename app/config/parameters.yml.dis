@@ -30,7 +30,7 @@ parameters:
 
     jlaso_translations_api_access:
         project_id: 1
-        key:  tradukoj.com.e
-        secret: ********
+        key:  tradukoj.com
+        secret: 1234
         url: http://10.10.10.8/api/
         managed_locales: ['es', 'en']

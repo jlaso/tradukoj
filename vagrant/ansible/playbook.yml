@@ -20,3 +20,8 @@
     - php-pecl
     - app
     - mrcrilly.mongodb
+
+  tasks:
+    - name: post install script
+      script: /vagrant/app/install.sh
+
