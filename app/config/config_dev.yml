@@ -26,4 +26,5 @@ assetic:
     use_controller: true
 
 swiftmailer:
-    delivery_address: wld1373@gmail.com
+    delivery_address: admin@tradukoj.com
+

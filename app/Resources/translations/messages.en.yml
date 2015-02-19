@@ -1,0 +1,53 @@
+home:
+    welcome: 'WELCOME TO TRADUKOJ'
+label:
+    actions: Actions
+    language: Language
+    project_new: 'New project<br>'
+labelH3:
+    documents: Documents
+    export_to_excel: 'Export to excel'
+    projects: Projects
+login:
+    login_button: Login
+    login_with_github: w/Github
+    placeholder:
+        email: Email
+        password: Password
+menu:
+    bundles: Bundles
+    catalogs: Catalogs
+    documents: Documents
+    users: Users
+profile:
+    menu: Profile
+register:
+    placeholder:
+        email: email
+translations:
+    new_key_dialog:
+        button:
+            close: Close
+            save: Save
+        error:
+            key_already_exists: 'Key already exists'
+        help: 'The key you create appears inmediatly in order to put messages for all languages.<br>'
+        key: 'New key<br>'
+        select_one: 'Select one<br>'
+        title: 'Create new key<br>'
+    user_index: 'User area<br>'
+user:
+    permissions:
+        sure_to_remove: 'Are you sure to remove user from the project?'
+        user_already_exists: 'User already exists in the project, you can assign permissions.'
+        user_invited: 'User has been invited to system, you have to wait that user registers to assign permissions'
+user_area:
+    subtitle: 'Here you can control all your projects.'
+    title: 'User area'
+users:
+    permissions:
+        add_user:
+            label: 'User to add'
+        remove_user:
+            button:
+                remove: Remove
