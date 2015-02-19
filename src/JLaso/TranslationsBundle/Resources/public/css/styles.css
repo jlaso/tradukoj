@@ -1,0 +1,18 @@
+
+[class^=sprite-comment-]{
+    background-image: url(/bundles/translations/img/messages/comment-sprites.png);
+    background-repeat: no-repeat;
+    background-position: top left;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.sprite-comment-user-add-icon{ background-position: 0 0; width: 32px; height: 32px; }
+.sprite-comment-user-chart-icon{ background-position: 0 -82px; width: 32px; height: 32px; }
+.sprite-comment-user-close-icon{ background-position: 0 -164px; width: 32px; height: 32px; }
+.sprite-comment-user-icon{ background-position: 0 -246px; width: 32px; height: 32px; }
+.sprite-comment-user-info-icon{ background-position: 0 -328px; width: 32px; height: 32px; }
+.sprite-comment-user-page-icon{ background-position: 0 -410px; width: 32px; height: 32px; }
+.sprite-comment-user-rss-icon{ background-position: 0 -492px; width: 32px; height: 32px; }
+.sprite-comment-user-search-icon{ background-position: 0 -574px; width: 32px; height: 32px; }
+.sprite-comment-user-warning-icon{ background-position: 0 -656px; width: 32px; height: 32px; }

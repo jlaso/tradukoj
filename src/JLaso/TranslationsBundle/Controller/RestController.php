@@ -144,6 +144,8 @@ class RestController extends Controller
      */
     public function createSocketAction(Request $request, Project $project)
     {
+        //@TODO: Ver si es una brecha el ir probando con diferentes projects y saturar al servidor, sería mejor no utilizar ParamConverter y
+        // no permitir más de x peticiones por segundo de la misma IP
         $this->init();
         //ob_implicit_flush();
 

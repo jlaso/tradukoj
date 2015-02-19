@@ -1,0 +1,978 @@
+{% extends '::base.html.twig' %}
+
+{% if (permissions.general == 'OWNER' or permissions.general == 'ADMIN') and current and action == "catalogs" %}
+    {% set canCreateKeys = true %}
+{% else %}
+    {% set canCreateKeys = false %}
+{% endif %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style type="text/css">
+        [class*="span"] {
+            margin-left: 0px !important;
+        }
+        input.transparent{
+            background: transparent;
+        }
+        #bundle-keys{
+            background: none repeat scroll 0 0 rgba(0, 0, 0, 0.18);
+            border: 2px solid rgba(127, 127, 127, 0.5);
+            border-radius: 4px;
+            height: 480px;
+            margin-top: 10px;
+            overflow: scroll;
+            padding: 1px;
+        }
+        .h300{
+            min-height: 300px;
+            max-height: 300px;
+            height: 300px;
+            overflow: scroll;
+        }
+        #editor{
+            background: none repeat scroll 0 0 rgba(255, 255, 255, 0.95);
+            display: none;
+            height: 99%;
+            left: 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1050;
+        }
+        #editor #left,
+        #editor #right{
+            border: 2px solid;
+            border-radius: 6px;
+            float: left;
+            height: 100%;
+            margin: 0;
+            overflow: scroll;
+            padding: 0;
+            width: 49%;
+        }
+        #editor .jqte{
+            margin: 0 !important;
+        }
+        #editor .save-button{
+            position: absolute;
+            right: 25px;
+            top: 5px;
+            z-index: 1051;
+        }
+        #ajax_loader{
+            background: url(/bundles/translations/img/220.GIF) no-repeat scroll center center rgba(255, 255, 255, 0.25);
+            /*background: url(/bundles/translations/img/465.GIF) no-repeat scroll center center rgba(255, 255, 255, 0.9);*/
+            display: none;
+            height: 99%;
+            left: 0;
+            position: fixed;
+            top: 0;
+            width: 100%;
+            z-index: 1060;
+        }
+        a.only.active code{
+            background: #DD1144;
+            color: antiquewhite;
+        }
+    </style>
+{% endblock stylesheets %}
+
+
+{% macro node(nodes) %}
+    <ul>
+        {% for key,item in nodes %}
+            <li id="phtml_{{ loop.index }}">
+                <a href="#" class="key-tree-node" key="{{ item is iterable ? '' : item }}">{{ key }}</a>
+                {{ _self.node(item) }}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{# cron periodico para releer si hay cambios por parte de otro usuario o de la api #}
+
+{% block sidebar %}
+    {# here the sidebar #}
+{% endblock sidebar %}
+
+{% block content %}
+
+    {% block page_header %}
+        <!-- Page heading -->
+        <div class="page-head">
+            <!-- Page heading -->
+            <h2 class="pull-left">Translations by catalog
+                <!-- page meta -->
+                <span class="page-meta">These are the translations for <em>{{ project.name }}</em> project</span>
+            </h2>
+
+
+            <!-- Breadcrumb -->
+            <div class="bread-crumb pull-right">
+                <a href="{{ path('user_index') }}"><i class="icon-home"></i> Home</a>
+                <!-- Divider -->
+                <span class="divider">/</span>
+                <a href="{{ path('translations', {"projectId":project.id}) }}"><i class="icon-tasks"></i> Translations</a>
+                <span class="divider">/</span>
+                <a href="#" class="bread-current">Catalogs</a>
+            </div>
+
+            <div class="clearfix"></div>
+
+        </div>
+        <!-- Page heading ends -->
+    {% endblock page_header %}
+
+    <div class="matter">
+
+        <div class="container-fluid">
+
+        {% if current %}
+        <div class="span3">
+            <div class="widget worange">
+
+                <div class="widget-head">
+                    <div class="pull-left"><i class="icon-tasks"></i>&nbsp;{{ current }}</div>
+                    <div class="clearfix"></div>
+                </div>
+
+                <div class="widget-content">
+                    <div class="padd">
+
+                        {% if action!="documents" %}
+                        <div class="row-fluid">
+                        {% spaceless %}
+                            <div class="span12">
+                                <input type="text" name="search" class="span10" style="display:inline-block;" placeholder="search..."/>
+                                <a href="#" style="margin-top:-10px;" class="btn btn-primary" id="search"><i class="icon icon-search"></i></a>
+                            </div>
+                            <span class="badge">{{ "show_only"|trans|raw }}:</span>
+                            {#
+
+                             To filter only disapproved messages
+                             &nbsp;
+                             <a href="#" class="only only-disapproved>
+                                 <code><icon icon-thumbs-down"></code>
+                             </a>
+
+                             #}
+                            {% for locale in managed_languages %}
+                                &nbsp;
+                                <a href="#" class="only only-locale" locale="{{ locale }}">
+                                    <code>{{ locale }}</code>
+                                </a>
+                            {% endfor %}
+
+                            &nbsp;
+
+                            <span class="badge">{{ "status"|trans|raw }}:</span>&nbsp;
+                            <a href="#" class="only only-approved" status="all">
+                                <code>All</code>
+                            </a>
+
+                            <div class="row-fluid">
+                                {% if canCreateKeys %}
+                                    <a href="#new_key" role="button" data-toggle="modal" class="btn btn-danger">
+                                        <i class="icon icon-plus-sign"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+
+                        {% endspaceless %}
+                        </div>
+                        {% endif %}
+
+                        <div class="row-fluid">
+                            <div id="bundle-keys" class="span12">
+                                {# { _self.node(keys) } #}
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="span7" style="min-width:70%;margin-left: 20px !important;" id="translations-group"></div>
+
+        {% endif %}
+    </div>
+
+
+    <div id="ajax_loader"></div>
+
+    <div id="editor">
+
+        <div id="left"></div>
+
+        <div id="right">
+
+            <div id="wysiwyg"></div>
+
+            <div class="btn btn-primary save-button">
+                <i class="icon-save"></i>
+            </div>
+
+        </div>
+
+    </div>
+
+    {% if canCreateKeys %}
+
+    <div id="new_key" class="modal hide fade" tabindex="-1"
+         role="dialog" aria-labelledby="new_key_label" aria-hidden="true">
+
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+            <h3 id="new_key_label">
+                <i class="icon-list-alt"></i> {{ "translations.new_key_dialog.title"|trans|raw }}
+            </h3>
+        </div>
+
+        <form class="form-horizontal" id="form_new_key">
+
+            <div class="modal-body">
+
+                <fieldset>
+                    <div class="control-group">
+                        <label class="control-label" for="key_name">{{ "translations.new_key_dialog.key"|trans|raw }}</label>
+                        <div class="controls">
+                            <input type="text" class="input-xlarge" name="key_name">
+                            <p class="help-block">{{ "translations.new_key_dialog.help"|trans|raw }}</p>
+                        </div>
+                    </div>
+                    {#<div class="control-group">
+                        <label class="control-label" for="optionsCheckbox">Checkbox</label>
+                        <div class="controls">
+                            <label class="checkbox">
+                                <input type="checkbox" id="optionsCheckbox" value="option1">
+                                Option one is this and that—be sure to include why it's great
+                            </label>
+                        </div>
+                    </div>#}
+                    <div class="control-group">
+                        <label class="control-label" for="select01">Bundle</label>
+                        <div class="controls">
+                            <select name="bundle">
+                                <option value="">{{ "translations.new_key_dialog.select_one"|trans|raw }}</option>
+                                {% for b in bundles %}
+                                    {% if b != '' %}
+                                        <option value="{{ b }}" {% if bundles|length == 1 %}selected="selected"{% endif %}>
+                                            {{ b }}
+                                        </option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </fieldset>
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">{{ "translations.new_key_dialog.button.close"|trans|raw }}</button>
+                <button class="btn btn-primary">{{ "translations.new_key_dialog.button.save"|trans|raw }}</button>
+            </div>
+
+        </form>
+    </div>
+
+    {% endif %}
+
+
+        <div id="logs-translations" class="modal hide fade" tabindex="-1"
+             role="dialog" aria-labelledby="new_key_label" aria-hidden="true">
+
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                <h3 id="new_key_label">
+                    <i class="icon-list-alt"></i> {{ "translations.translation_logs.title"|trans|raw }}
+                </h3>
+            </div>
+
+            <div class="modal-body" id="logs-content">
+
+                {# here the log content loaded by ajax #}
+
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn" data-dismiss="modal" aria-hidden="true">{{ "translations.button.close"|trans|raw }}</button>
+            </div>
+
+        </div>
+
+{% endblock content %}
+
+{% block javascripts %}
+    <script type="text/javascript">
+
+        var currentKey = null;
+        var editorContentFrom = null;
+        var bundleKeysTree = null;
+        var current = null;
+        var interval = null;
+        var idTemp = null;
+
+        function logEvent(message)
+        {
+            var fecha = new Date();
+            var html = '<div class="row-fluid">' +
+                       '<span class="label label-warning pull-right">' + fecha + '</span>' +
+                       '</div>' +
+                       '<div class="row-fluid">'+
+                       '<p>'  + message + '</p>' +
+                       '</div>' +
+                       '<hr>';
+            $('#event_list').append(html);
+        }
+
+        function saveMessage(id)
+        {
+            if(!currentKey) return false;
+            console.log(id);
+            idTemp = id;
+            //var button  = $(id).find('a.btn');
+            //current = button;
+            //interval = setInterval(function() { $(current).toggleClass('btn-primary'); }, 80);
+
+            {% if action=='documents' %}
+
+                var message = $(id).html();
+                var locale = $(id).attr('locale');
+
+                console.log(message);
+
+                if(!message || !locale) return false;
+
+                $.ajax({
+                    type: 'post',
+                    url: '{{ path('save_document', {'projectId': project.id}) }}',
+                    data: {
+                        bundle: '{{ current }}',
+                        locale: locale,
+                        key: currentKey,
+                        message: message
+                    },
+                    success: function(data){
+                        //clearInterval(interval);
+                        //$(current).addClass('btn-primary');
+                        //console.log(data);
+                        if(data.result){
+                            $(id).parent().find('.wysiwyg').val(data.message);
+                        }else{
+                            logEvent(data.reason);
+                        }
+                    },
+                    error: function(){
+                        //clearInterval(interval);
+                        //$(current).addClass('btn-primary');
+                        logEvent('Error');
+                    }
+                });
+
+            {% else %}
+
+                var message = $(id).parent().find('textarea').val();
+                $.ajax({
+                    type: 'post',
+                    url: '{{ path('save_message', {'projectId': project.id}) }}',
+                    data: {
+                        catalog: '{{ current }}',
+                        locale: $(id).attr('locale'),
+                        key: currentKey,
+                        message: message
+                    },
+                    success: function(data){
+                        //clearInterval(interval);
+                        //$(current).addClass('btn-primary');
+                        //console.log(data);
+                        if(data.result){
+                            $(id).parent().find('textarea').val(data.message);
+                        }else{
+                            logEvent(data.reason);
+                        }
+                    },
+                    error: function(){
+                        //clearInterval(interval);
+                        //$(current).addClass('btn-primary');
+                        logEvent('Error');
+                    }
+                });
+
+            {% endif %}
+        }
+
+        function saveComment(id)
+        {
+            console.log($(id)); //return;
+            var comment = $(id).find('input').val();
+            var button  = $(id).find('a.btn');
+            current = button;
+            interval = setInterval(function() { $(current).toggleClass('btn-primary'); }, 80);
+            var data = {
+                catalog: '{{ current }}',
+                key: $(button).attr('key'),
+                comment: comment
+            };
+            //console.log(data); return;
+            $.ajax({
+                type: 'post',
+                url: '{{ path('save_comment', {'projectId': project.id}) }}',
+                data: data,
+                success: function(data){
+                    clearInterval(interval);
+                    $(current).addClass('btn-primary');
+                    console.log(data);
+                    if(data.result){
+                        $("#comment-"+data.id_html).html(data.comment);
+                    }else{
+                        logEvent(data);
+                    }
+                },
+                error: function(){
+                    clearInterval(interval);
+                    $(current).addClass('btn-primary');
+                    logEvent('Error');
+                }
+            });
+        }
+
+        {% if current %}
+        function loadTree(language, status)
+        {
+            var language = language || "";
+            var status = status || "all";
+            if('{{ current }}'){
+
+                {% if action=="documents" %}
+                    var url = "{{ path('tree-docs.json', {'projectId':project.id, 'bundle':current|default(''), 'no-cache':'000000'}) }}";
+                {% else %}
+                    var url = "{{ path('tree.json', {'projectId':project.id, 'criteria':current|default(''), 'no-cache':'000000'}) }}";
+                {% endif %}
+
+                var d = new Date();
+
+                $.ajax({
+                    url: url.replace('000000', d.getTime()),
+                    data: {
+                        language: language,
+                        status: status
+                    },
+                    success: function(data){
+                        //console.log(data);
+                        putDataIntoTree(data);
+                    },
+                    error: function(){
+                        logEvent('{{ "errors.error_getting_tree"|trans|raw }}')
+                    }
+                });
+            }
+        }
+
+        function putDataIntoTree(treeData, key)
+        {
+            var tree = $("#bundle-keys").jstree(true);
+            if(typeof tree == "object"){
+                tree.destroy();
+            }
+            for(var i=0; i<treeData.length; i++){
+                var data = treeData[i];
+                //console.log(data);
+                if(typeof data.parent == "undefined"){
+                    console.log(data);
+                    return;
+                }
+            }
+            $("#bundle-keys").jstree({
+                "plugins" : [ "themes", "html_data", "search" ],
+                "core" : { 'data' : treeData }
+            });
+            tree = $("#bundle-keys").jstree(true);
+            if(key != undefined){
+                tree.open_node(key);
+                tree.select_node(key);
+            }
+            tree.redraw('all');
+        }
+        {% endif %}
+
+        $(function(){
+
+            $(document).ajaxStart(function(){
+                $('#ajax_loader').fadeIn();
+            });
+
+            $(document).ajaxStop(function(){
+                $('#ajax_loader').fadeOut();
+            });
+
+            $('#wysiwyg').jqte();
+
+            $('.accordion-heading').click(function(e){
+                $('.accordion-body.in').collapse('toggle');
+            });
+
+            $("#translations-group").on("click", ".save-message", function(e){
+                e.preventDefault();
+                console.log('saving-message');
+                saveMessage($(this).parent());
+            });
+
+            $("#translations-group").on("click", ".save-comment", function(e){
+                e.preventDefault();
+                console.log('saving-comment');
+                saveComment($(this).parent().parent());
+            });
+
+            $('#editor .save-button').click(function(e){
+                e.preventDefault();
+                var content = $("#editor .jqte_editor").html();
+                //console.log(content);
+                $(editorContentFrom).html(content);
+                //console.log('saving-message');
+                saveMessage($(editorContentFrom));
+                $('#editor').hide();
+            });
+
+            $("#translations-group").on("click", ".edit-message", function(e){
+                e.preventDefault();
+                console.log('edit-message');
+                var leftContent = $('input[name="scroll-mark"]:checked').parent().parent().parent().find('.message').html();
+                editorContentFrom = $(this).parent().parent().find('.wysiwyg');
+                var rightContent = $(editorContentFrom).html();
+                $("#left").html(leftContent);
+                $("#editor .jqte").jqteVal(rightContent);
+                $("#editor").show();
+                $('#right .jqte_editor').on('scroll', function () {
+                    //console.log('scrolling');
+                    $('#left').scrollTop($(this).scrollTop());
+                });
+                $('#left').on('scroll', function () {
+                    //console.log('scrolling');
+                    $('#right .jqte_editor').scrollTop($(this).scrollTop());
+                });
+            });
+
+            /*$(".key-row textarea").blur(function(e){
+                e.preventDefault();
+                if ($(this).hasChanged()){
+                    console.log('bluring...');
+                    var id = $(this).parent().find('a.btn').attr('data-role');
+                    saveMessage(id);
+                }
+            });*/
+
+//            $(".key-row textarea").change(function(e){
+//                e.preventDefault();
+//                console.log('bluring...');
+//                var id = $(this).parent().parent().find('a.btn').attr('data-role');
+//                saveMessage(id);
+//            });
+//
+//            $(".comment-row input").change(function(e){
+//                e.preventDefault();
+//                console.log('bluring...');
+//                var id = $(this).parent().parent().find('a.btn').attr('data-role');
+//                saveComment(id);
+//            });
+
+//            $("#bundle-keys").jstree({
+//                "plugins" : [ "themes", "html_data", "search" ]
+//            });
+//            bundleKeysTree = $("#bundle-keys").jstree(true);
+
+            $("#bundle-keys").jstree({
+                core: {
+                    "plugins" : [ "themes", "html_data", "search" ],
+                    'data' : [] {#
+                        url: '{{ path('tree.json', {'projectId':project.id, 'criteria':current}) }}',
+                        data : function (node) {
+                            return { 'id' : node.id };
+                        }
+                    #}
+                }
+            });
+            {% if current %}
+                loadTree('');
+            {% endif %}
+
+            $('#bundle-keys').on('click','.jstree-node',function(e){
+                console.log(this);
+                var tree = $("#bundle-keys").jstree(true);
+                if(tree.is_parent(this)){
+                    tree.toggle_node(this);
+                    return false;
+                }
+                e.preventDefault();
+                var key = $(this).attr('id');
+                $('#translations-group').slideUp("slow").html('Loading...').fadeIn();
+
+                {% if action=='documents' %}
+                    $.ajax({
+                        url: '{{ path('documents_messages') }}',
+                        type: 'post',
+                        data:{
+                            projectId: {{ project.id }},
+                            bundle: "{{ current }}",
+                            key: key
+                        },
+                        success: function(data){
+                            if(data.result){
+                                $('#translations-group').html(data.html);
+                                currentKey = data.key;
+                                //$('#translations-group .wysiwyg').jqte();
+                                $('.scroll-ctrl').on('scroll', function () {
+                                    $('.scroll-ctrl').scrollTop($(this).scrollTop());
+                                });
+                            }else{
+                                logEvent('error: '+data.reason);
+                            }
+                        },
+                        error: function(data){
+                            logEvent('error: '+data.reason);
+                        }
+                    });
+                {% else %}
+                    $.ajax({
+                        url: '{{ path('translations_messages') }}',
+                        type: 'post',
+                        data:{
+                            projectId: {{ project.id }},
+                            catalog: "{{ current }}",
+                            key: key
+                        },
+                        success: function(data){
+                            if(data.result){
+                                $('#translations-group').html(data.html);
+                                currentKey = data.key;
+                                $('#translations-group .wysiwyg').jqte();
+                                $('.dropzone').dropzone({
+                                    uploadMultiple: false,
+                                    maxFiles: 1
+                                });
+                            }else{
+                                logEvent('error: '+data.reason);
+                            }
+                        },
+                        error: function(data){
+                            logEvent('error: '+data.reason);
+                        }
+                    });
+                {% endif %}
+                return false;
+            });
+
+            $('#translations-group').on('click','.approve',function(e){
+                e.preventDefault();
+                var id = $(this).attr('key');
+                var locale = $(this).attr('locale');
+                var url = '{{ path('approve_translation', {"translationId": "000", "locale":"999"}) }}'.replace("000", id).replace("999", locale);
+                //console.log(url, id, locale); return;
+                $.ajax({
+                    url: url,
+                    type: 'post',
+                    success: function(data){
+                        if(data.result && data.approved){
+                            $('.approve[locale="'+data.locale+'"]')
+                                .removeClass('btn-success approve').addClass('btn-danger disapprove')
+                                .html('<i class="icon-thumbs-down"></i> {{ "button.disapprove"|trans|raw }}');
+                            $('.approved_indicator[locale="'+data.locale+'"]')
+                                    .find('i')
+                                    .removeClass('icon-thumbs-down')
+                                    .addClass('icon-thumbs-up');
+                        }else{
+                            alert(data.reason);
+                        }
+                        //console.log(data);
+                    },
+                    error: function(data){
+                        alert(data);
+                    }
+                });
+            });
+
+            $('#translations-group').on('click','.disapprove',function(e){
+                e.preventDefault();
+                var id = $(this).attr('key');
+                var locale = $(this).attr('locale');
+                var url = '{{ path('disapprove_translation', {"translationId": "000", "locale":"999"}) }}'.replace("000", id).replace("999", locale);
+                //console.log(url, id, locale); return;
+                $.ajax({
+                    url: url,
+                    type: 'post',
+                    success: function(data){
+                        if(data.result && !data.approved){
+                            $('.disapprove[locale="'+data.locale+'"]')
+                                    .removeClass('btn-danger disapprove').addClass('btn-success approve')
+                                    .html('<i class="icon-thumbs-up"></i> {{ "button.approve"|trans|raw }}');
+                            $('.approved_indicator[locale="'+data.locale+'"]')
+                                    .find('i')
+                                    .removeClass('icon-thumbs-up')
+                                    .addClass('icon-thumbs-down');
+                        }else{
+                            alert(data.reason);
+                        }
+                        //console.log(data);
+                    },
+                    error: function(data){
+                        alert(data);
+                    }
+                });
+            });
+
+//            var to = false;
+//            $('input[name="search"]').keyup(function () {
+//                if(to) { clearTimeout(to); }
+//                to = setTimeout(function () {
+//                    var v = $('input[name="search"]').val();
+//                    $('#bundle-keys').jstree(true).search(v);
+//                }, 250);
+//            });
+
+            $('input[name="search"]').keyup(function(event){
+                if(event.keyCode == 13){
+                    $("#search").click();
+                }
+            });
+
+            {# Indicates if the tree should be filtered to show only matching nodes (keep in mind this can be a heavy on large trees in old browsers). Default is false. #}
+            $.jstree.defaults.search.show_only_matches = true;
+
+            {# Indicates if the search should be fuzzy or not (should chnd3 match child node 3). Default is true. #}
+            $.jstree.defaults.search.fuzzy = true;
+
+            $('#search').click(function(e){
+                e.preventDefault();
+                var search = $('input[name="search"]').val();
+                console.log('searching '+search+' ...');
+                var tree = $("#bundle-keys").jstree(true);
+                var parts = search.split(".");
+                if (parts.length){
+                    tree.deselect_all(true);
+                    var block = '';
+                    for(var i=0;i<parts.length;i++){
+                        var item = parts[i];
+                        if(block){
+                            block = block + '.' + item;
+                        }else{
+                            block = item;
+                        }
+                        tree.open_node('[id="'+block+'"]');
+                    }
+                    tree.select_node('[id="'+block+'"]', true);
+                }else{
+                    tree.search(search);
+                }
+                var el = document.getElementById(block);
+                el.scrollIntoView(true);
+            });
+
+            var currentLocale = "";
+
+            {# only filters #}
+            $('.only-locale').click(function(e){
+                e.preventDefault();
+                var locale = $(this).attr("locale");
+                var active = $(this).hasClass('active');
+                $('.only-locale').removeClass('active');
+                if(!active){
+                    $(this).addClass('active');
+                    currentLocale = locale;
+                    loadTree(currentLocale, approvedFilter);
+                }else{
+                    currentLocale = "";
+                    loadTree(currentLocale, approvedFilter);
+                }
+            });
+
+            var approvedFilter = "all";
+
+            $('.only-approved').click(function(e){
+                e.preventDefault();
+                if(!currentLocale){
+                    return;
+                }
+                var status = $(this).attr("status");
+                switch(status){
+                    case "all":
+                        approvedFilter = "approved";
+                        html = "<code>Approved</code>";
+                        break;
+
+                    case "approved":
+                        approvedFilter = "disapproved";
+                        html = "<code>Disapproved</code>";
+                        break;
+
+                    case "disapproved":
+                        approvedFilter = "all";
+                        html = "<code>All</code>";
+                        break;
+                }
+                $('.only-approved').attr("status", approvedFilter).html(html);
+                loadTree(currentLocale, approvedFilter);
+            });
+
+            {% if canCreateKeys %}
+
+                {# new key form #}
+                $('#form_new_key').submit(function(e){
+                    e.preventDefault();
+                    console.log('new key form submit');
+                    var key = $('#form_new_key input[name="key_name"]').val();
+                    if(!key){
+                        alert('{{ "translations.new_key_dialog.error.key_blank"|trans|raw }}');
+                        return false;
+                    }
+                    var bundle = $('#form_new_key select[name="bundle"] option:selected').val();
+                    if(!bundle){
+                        alert('{{ "translations.new_key_dialog.error.bundle_blank"|trans|raw }}');
+                        return false;
+                    }
+                    //$('#new_key').modal('hide');
+                    $.ajax({
+                        url: '{{ path('translations_new_key', {'projectId': project.id, 'catalog': current}) }}',
+                        type: 'post',
+                        data: {
+                            key: key,
+                            bundle: bundle,
+                            current: '{{ current }}'
+                        },
+                        success: function(data){
+                            if(data.result){
+                                // tree
+                                putDataIntoTree(data.tree, data.key);
+                                // translations
+                                $('#translations-group').html(data.html);
+                                currentKey = data.key;
+                                $('#translations-group .wysiwyg').jqte();
+                                $('#new_key').modal('hide');
+                            }else{
+                                console.log(data.reason);
+                                alert(data.reason);
+                            }
+                        },
+                        error: function(data){
+                            console.log(data);
+                            alert(data);
+                        }
+                    });
+                    return true;
+                });
+
+            {% endif %}
+
+            {% if current %}
+            $('#translations-group').on('click', '.get-logs', function(e){
+                e.preventDefault();
+                console.log('get-logs');
+                var key = $(this).attr('data-role');
+                $.ajax({
+                    url: '{{ path('translation_logs.json', {'projectId':project.id, 'catalog':current}) }}',
+                    data: {
+                        key: key,
+                    },
+                    success: function(info){
+                        var data = info.logs;
+                        console.log(data);
+                        var users = info.users;
+                        var html = '<table class="table table-bordered"><thead><tr><th>id</th><th>Date</th><th>User</th><th>Locale</th><th>Action</th><th>Message</th></thead><tbody>';
+                        for(var i=0;i<data.length;i++){
+                            html += "<tr>";
+                            var item = data[i];
+                            var user = users[item.user_id];
+                            html += "<td>"+item.id+"</td>";
+                            html += "<td>"+item.date+"</td>";
+                            html += "<td>"+user+"</td>";
+                            html += "<td>"+item.locale+"</td>";
+                            html += "<td>"+item.action+"</td>";
+                            html += "<td>"+item.message+"</td>";
+                            html += "</tr>";
+                        }
+                        html += "</tbody></table>";
+                        $('#logs-translations .modal-body').html(html);
+                        console.log(html);
+                        $('#logs-translations').modal();
+                    },
+                    error: function(text){
+                        alert(text);
+                        console.log(text);
+                    }
+                });
+            });
+            {% endif %}
+
+            {# to change the key name #}
+            $(document).on("click", "#change-key-icon", function(e){
+                e.preventDefault();
+                $("#change-key").modal();
+            });
+
+            $(document).on("click", "#change-key-save", function(e){
+                console.log('changing key name ...');
+                e.preventDefault();
+                var keyNew = $('input[name="key-name"]').val();
+                var keyOld = $("#current-key").html();
+                var catalog = $(this).attr("data-role");
+                console.log(keyOld + ' to ' +keyNew);
+                if(keyNew && (keyNew!=keyOld)){
+                    $.ajax({
+                        url: "{{ path('translations_change_key', {"projectId":project.id}) }}",
+                        type: "post",
+                        data: {
+                            keyOld: keyOld,
+                            keyNew: keyNew,
+                            current: "{{ current }}",
+                            catalog: catalog
+                        },
+                        success: function(data){
+                            if(data.result){
+                                // tree
+                                putDataIntoTree(data.tree, data.key);
+                                $("#current-key").html(keyNew);
+                                $('input[name="key-name"]').val(keyNew);
+                                $("#change-key").modal("hide");
+                            }else{
+                                alert(data.reason);
+                            }
+                        },
+                        error: function(text){
+                            alert(text.responseText);
+                            console.log(text);
+                        }
+                    })
+                }
+            });
+
+            {# to remove the key #}
+            $(document).on("click", "#remove-key-icon", function(e){
+                e.preventDefault();
+                if(confirm('{{ "confirmation.sure_to_delete_this_key" }}')){
+                    var url = $(this).attr("href");
+                    window.location = url;
+                }
+                return false;
+            });
+
+            // height adjustement for bundle-keys tree area
+            setTimeout(function(){
+                var H = parseInt( 0.75 * document.body.clientHeight);
+                $('#bundle-keys').css('height', (H - 50) + 'px');
+            },1000);
+
+            $('#translations-group').magnificPopup({
+                delegate: '.image-link',
+                type: 'image',
+                closeOnContentClick: true,
+                mainClass: 'mfp-img-mobile',
+                image: {
+                    verticalFit: true
+                }
+            });
+
+        });
+    </script>
+{% endblock javascripts %}

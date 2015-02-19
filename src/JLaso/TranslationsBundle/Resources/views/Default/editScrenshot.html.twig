@@ -1,0 +1,77 @@
+{% extends '::base.html.twig' %}
+
+
+{# cron periodico para releer si hay cambios por parte de otro usuario o de la api #}
+
+{% block sidebar %}
+    {# here the sidebar #}
+
+    <a href="#" id="save" class="btn btn-danger">
+        {{ "general.button.save"|trans|raw }}
+    </a>
+
+{% endblock sidebar %}
+
+{% block content %}
+
+    <h1>{{ translation.key }}</h1>
+
+    <div>
+
+
+        <img id="screenshot" src="{{ translation.screenshot }}" alt=""/>
+
+
+    </div>
+
+{% endblock content %}
+
+
+{% block javascripts %}
+
+    <script>
+
+        $(function(){
+
+            var selection = {};
+
+            $('img#screenshot').imgAreaSelect({
+                handles: true,
+                onSelectEnd: function (img, theSelection) {
+                    selection = theSelection;
+                    //alert('width: ' + selection.width + '; height: ' + selection.height);
+                    selection.w = $('#screenshot').width();
+                    selection.h = $('#screenshot').height();
+                    console.log(selection);
+
+                }
+            });
+
+            $("#save").click(function(e){
+
+                e.preventDefault();
+                $.ajax({
+
+                    url: "#",
+                    data: {
+                        selection: selection
+                    },
+                    type: "post",
+                    success: function(data){
+                        if(data.result){
+                            window.close();
+                        }
+                    },
+                    error: function(data){
+                        alert(data);
+                    }
+
+                });
+
+            });
+
+        });
+
+    </script>
+
+{% endblock javascripts %}

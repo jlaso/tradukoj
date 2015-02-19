@@ -15,71 +15,84 @@
 {% endblock stylesheets %}
 
 {% block body %}
-    <div class="container">
+    <!-- Form area -->
+    <div class="admin-form">
+        <div class="container-fluid">
 
-        <div class="row">
+            <div class="row-fluid">
+                <div class="span12">
+                    <!-- Widget starts -->
+                    <div class="widget wviolet">
+                        <!-- Widget head -->
+                        <div class="widget-head">
 
-            <div class="span4 offset4">
-                <div class="navbar">
-                    <div class="navbar-inner">
-                        <div class="container">
-                            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                            </a>
                             <a class="brand" href="{{ path('home') }}" style="color: #ffffff;">
-                                <img src="{{ asset('logo-translations-white.png') }}" height="42" alt=""/>&nbsp;
+                                <img src="{{ asset('logo-translations-white.png') }}" width="24" alt=""/>&nbsp;
                                 {{ "login.title"|trans|raw }}
                             </a>
 
-                            <div class="nav-collapse pull-right">
-                                {% include ':Languages:languages-select.html.twig' %}
+                            <span class="pull-right">
+                                Login <i class="icon-lock"></i>
+                            </span>
+
+                        </div>
+
+                        <div class="widget-content">
+                            <div class="padd">
+                                <!-- Login form -->
+                                <form class="form-horizontal" action="{{ path('user_login_check') }}" novalidate  method="post">
+                                    <!-- Language -->
+                                    <div class="control-group">
+                                        <label class="control-label" for="lang_selector"><i class="icon-flag"></i> Language</label>
+                                        <div class="controls">
+                                            {% include ':Languages:languages-select.html.twig' %}
+                                        </div>
+                                    </div>
+                                    <div class="error">{{ error is not null ? error.message : '' }}</div>
+                                    <!-- Email -->
+                                    <div class="control-group">
+                                        <label class="control-label" for="_username"><i class="icon-envelope"></i> Email</label>
+                                        <div class="controls">
+                                            <input type="text" id="_username" name="_username" value="{{ last_username }}"
+                                                   placeholder="{{ "login.placeholder.email"|trans|raw }}">
+                                        </div>
+                                    </div>
+                                    <!-- Password -->
+                                    <div class="control-group">
+                                        <label class="control-label" for="_password"><i class="icon-key"></i> Password</label>
+                                        <div class="controls">
+                                            <input type="password" id="_password" name="_password"
+                                                   placeholder="{{ "login.placeholder.password"|trans|raw }}">
+                                        </div>
+                                    </div>
+                                    <!-- Remember me checkbox and sign in button -->
+                                    <div class="control-group">
+                                        <div class="controls">
+                                            <label class="checkbox">
+                                                <input type="checkbox"> Remember me
+                                            </label>
+                                            <br>
+                                            <button type="submit" class="btn btn-danger">{{ "login.login_button"|trans|raw }}</button>
+                                            <button type="reset" class="btn">Reset</button>
+                                            <button class="btn pull-right" id="login_github">{{ "login.login_with_github"|trans|raw }}</button>
+                                        </div>
+                                    </div>
+                                </form>
+
                             </div>
-                            <!-- /.nav-collapse -->
+                        </div>
+                        <div class="widget-foot">
+                            {{ "login.not_a_member_yet"|trans|raw }}
+                            <a href="{{ url('user_register') }}">
+                                {{ "login.register"|trans|raw }}
+                            </a>
                         </div>
                     </div>
-                    <!-- /navbar-inner -->
                 </div>
-
-                <form class="well" action="{{ path('user_login_check') }}" novalidate  method="post">
-                    <div class="input-prepend">
-                        <div class="error">{{ error is not null ? error.message : '' }}</div>
-                        <span class="add-on"><i class="icon-envelope"></i></span>
-                        <input class="span2" type="text"
-                               id="_username" name="_username" value="{{ last_username }}"
-                               placeholder="{{ "login.placeholder.email"|trans|raw }}">
-                    </div>
-                    <div class="input-prepend">
-                        <span class="add-on"><i class="icon-key"></i></span>
-                        <input class="span2" type="password"
-                               id="_password" name="_password" placeholder="{{ "login.placeholder.password"|trans|raw }}">
-                    </div>
-                    <br />
-
-                    <div class="container">
-                        <div class="row">
-                            <div class="span3">
-                                <button class="btn btn-danger">{{ "login.login_button"|trans|raw }}</button>
-                                <button class="btn pull-right" id="login_github">{{ "login.login_with_github"|trans|raw }}</button>
-                            </div>
-                            <div class="span12">&nbsp;</div>
-                            <div class="span12">
-                                <span>{{ "login.not_a_member_yet"|trans|raw }}
-                                    <a href="{{ url('user_register') }}">
-                                        {{ "login.register"|trans|raw }}
-                                    </a>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                </form>
             </div>
-
         </div>
-
     </div>
+
 {% endblock body %}
 
 {% block javascripts %}

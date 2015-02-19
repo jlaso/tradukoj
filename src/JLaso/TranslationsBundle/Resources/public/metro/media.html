@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta charset="utf-8">
+  <!-- Title and other stuffs -->
+  <title>Media - Metro King</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+  <meta name="author" content="">
+
+
+  <!-- Stylesheets -->
+  <link href="style/bootstrap.css" rel="stylesheet">
+  <!-- Font awesome icon -->
+  <link rel="stylesheet" href="style/font-awesome.css"> 
+  <!-- jQuery UI -->
+  <link rel="stylesheet" href="style/jquery-ui.css"> 
+  <!-- Calendar -->
+  <link rel="stylesheet" href="style/fullcalendar.css">
+  <!-- prettyPhoto -->
+  <link rel="stylesheet" href="style/prettyPhoto.css">   
+  <!-- Star rating -->
+  <link rel="stylesheet" href="style/rateit.css">
+  <!-- Date picker -->
+  <link rel="stylesheet" href="style/bootstrap-datetimepicker.min.css">
+  <!-- jQuery Gritter -->
+  <link rel="stylesheet" href="style/jquery.gritter.css">
+  <!-- CLEditor -->
+  <link rel="stylesheet" href="style/jquery.cleditor.css"> 
+  <!-- Bootstrap toggle -->
+  <link rel="stylesheet" href="style/bootstrap-toggle-buttons.css">
+  <!-- Main stylesheet -->
+  <link href="style/style.css" rel="stylesheet">
+  <!-- Widgets stylesheet -->
+  <link href="style/widgets.css" rel="stylesheet">   
+  <!-- Responsive style (from Bootstrap) -->
+  <link href="style/bootstrap-responsive.css" rel="stylesheet">
+  
+  <!-- HTML5 Support for IE -->
+  <!--[if lt IE 9]>
+  <script src="js/html5shim.js"></script>
+  <![endif]-->
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="img/favicon/favicon.png">
+</head>
+
+<body>
+
+<div class="navbar navbar-fixed-top navbar-inverse">
+  <div class="navbar-inner">
+    <div class="container">
+      <!-- Menu button for smallar screens -->
+      <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+      </a>
+      <!-- Site name for smallar screens -->
+      <a href="index.html" class="brand">Metro <span class="bold">King</span></a>
+
+      <!-- Navigation starts -->
+      <div class="nav-collapse collapse">        
+
+
+
+        <!-- Links -->
+        <ul class="nav pull-right">
+          <li class="dropdown pull-right">            
+            <a data-toggle="dropdown" class="dropdown-toggle" href="#">
+              <img src="img/user.jpg" alt="" class="nav-user-pic" /> Admin <b class="caret"></b>              
+            </a>
+            
+            <!-- Dropdown menu -->
+            <ul class="dropdown-menu">
+              <li><a href="#"><i class="icon-user"></i> Profile</a></li>
+              <li><a href="#"><i class="icon-cogs"></i> Settings</a></li>
+              <li><a href="login.html"><i class="icon-off"></i> Logout</a></li>
+            </ul>
+          </li>
+          
+        </ul>
+
+        <!-- Notifications -->
+        <ul class="nav pull-right">
+          
+          <!-- Comment button with number of latest comments count -->
+            <li class="dropdown dropdown-big">
+              <a class="dropdown-toggle" href="#" data-toggle="dropdown">
+                <i class="icon-comments"></i> Chats <span   class="badge badge-info">6</span> 
+              </a>
+
+                <ul class="dropdown-menu">
+                  <li>
+                    <!-- Heading - h5 -->
+                    <h5><i class="icon-comments"></i> Chats</h5>
+                    <!-- Use hr tag to add border -->
+                    <hr />
+                  </li>
+                  <li>
+                    <!-- List item heading h6 -->
+                    <a href="#">Hi :)</a> <span class="label label-warning pull-right">10:42</span>
+                    <div class="clearfix"></div>
+                    <hr />
+                  </li>
+                  <li>
+                    <a href="#">How are you?</a> <span class="label label-warning pull-right">20:42</span>
+                    <div class="clearfix"></div>
+                    <hr />
+                  </li>
+                  <li>
+                    <a href="#">What are you doing?</a> <span class="label label-warning pull-right">14:42</span>
+                    <div class="clearfix"></div>
+                    <hr />
+                  </li>                  
+                  <li>
+                    <div class="drop-foot">
+                      <a href="#">View All</a>
+                    </div>
+                  </li>                                    
+                </ul>
+            </li>
+
+            <!-- Message button with number of latest messages count-->
+            <li class="dropdown dropdown-big">
+              <a class="dropdown-toggle" href="#" data-toggle="dropdown">
+                <i class="icon-envelope-alt"></i> Inbox <span class="badge badge-important">6</span> 
+              </a>
+
+                <ul class="dropdown-menu">
+                  <li>
+                    <!-- Heading - h5 -->
+                    <h5><i class="icon-envelope-alt"></i> Messages</h5>
+                    <!-- Use hr tag to add border -->
+                    <hr />
+                  </li>
+                  <li>
+                    <!-- List item heading h6 -->
+                    <a href="#">Hello how are you?</a>
+                    <!-- List item para -->
+                    <p>Quisque eu consectetur erat eget  semper...</p>
+                    <hr />
+                  </li>
+                  <li>
+                    <a href="#">Today is wonderful?</a>
+                    <p>Quisque eu consectetur erat eget  semper...</p>
+                    <hr />
+                  </li>
+                  <li>
+                    <div class="drop-foot">
+                      <a href="#">View All</a>
+                    </div>
+                  </li>                                    
+                </ul>
+            </li>
+
+            <!-- Members button with number of latest members count -->
+            <li class="dropdown dropdown-big">
+              <a class="dropdown-toggle" href="#" data-toggle="dropdown">
+                <i class="icon-user"></i> Users <span   class="badge badge-success">6</span> 
+              </a>
+
+                <ul class="dropdown-menu">
+                  <li>
+                    <!-- Heading - h5 -->
+                    <h5><i class="icon-user"></i> Users</h5>
+                    <!-- Use hr tag to add border -->
+                    <hr />
+                  </li>
+                  <li>
+                    <!-- List item heading h6-->
+                    <a href="#">Ravi Kumar</a> <span class="label label-warning pull-right">Free</span>
+                    <div class="clearfix"></div>
+                    <hr />
+                  </li>
+                  <li>
+                    <a href="#">Balaji</a> <span class="label label-important pull-right">Premium</span>
+                    <div class="clearfix"></div>
+                    <hr />
+                  </li>
+                  <li>
+                    <a href="#">Kumarasamy</a> <span class="label label-warning pull-right">Free</span>
+                    <div class="clearfix"></div>
+                    <hr />
+                  </li>                  
+                  <li>
+                    <div class="drop-foot">
+                      <a href="#">View All</a>
+                    </div>
+                  </li>                                    
+                </ul>
+            </li> 
+
+        </ul>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- Main content starts -->
+
+<div class="content">
+
+  	<!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-dropdown"><a href="#">Navigation</a></div>
+
+        <div class="sidebar-inner">
+
+
+
+          <!-- Search form -->
+          <div class="sidebar-widget">
+            <form class="form-inline">
+              <div class="input-append row-fluid">
+                <input type="text" class="span8" placeholder="Search">
+                <button type="submit" class="btn btn-info">Search</button>
+              </div>
+            </form>
+          </div>
+
+          <!--- Sidebar navigation -->
+          <!-- If the main navigation has sub navigation, then add the class "has_submenu" to "li" of main navigation. -->
+          <ul class="navi">
+
+            <!-- Use the class nred, ngreen, nblue, nlightblue, nviolet or norange to add background color. You need to use this in <li> tag. -->
+
+            <li class="nred"><a href="index.html"><i class="icon-desktop"></i> Dashboard</a></li>
+
+            <!-- Menu with sub menu -->
+            <li class="has_submenu nlightblue">
+              <a href="#">
+                <!-- Menu name with icon -->
+                <i class="icon-th"></i> Widgets 
+                <!-- Icon for dropdown -->
+                <span class="pull-right"><i class="icon-angle-right"></i></span>
+              </a>
+
+              <ul>
+                <li><a href="widgets1.html">Widgets #1</a></li>
+                <li><a href="widgets2.html">Widgets #2</a></li>
+              </ul>
+            </li>
+
+            <li class="ngreen"><a href="charts.html"><i class="icon-bar-chart"></i> Charts</a></li>
+
+            <li class="norange"><a href="ui.html"><i class="icon-sitemap"></i> UI Elements</a></li>
+
+            <li class="has_submenu nviolet">
+              <a href="#">
+                <i class="icon-file-alt"></i> Pages #1
+                <span class="pull-right"><i class="icon-angle-right"></i></span>
+              </a>
+
+              <ul>
+                <li><a href="calendar.html">Calendar</a></li>
+                <li><a href="post.html">Make Post</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="register.html">Register</a></li>
+                <li><a href="statement.html">Statement</a></li>
+                <li><a href="error-log.html">Error Log</a></li>
+                <li><a href="support.html">Support</a></li>
+              </ul>
+            </li> 
+
+            <li class="has_submenu nblue current open">
+              <a href="#">
+                <i class="icon-file-alt"></i> Pages #2
+                <span class="pull-right"><i class="icon-angle-right"></i></span>
+              </a>
+              
+              <ul>
+                <li><a href="error.html">Error</a></li>
+                <li><a href="gallery.html">Gallery</a></li>
+                <li><a href="grid.html">Grid</a></li>
+                <li><a href="invoice.html">Invoice</a></li>
+                <li class="active"><a href="media.html">Media</a></li>
+                <li><a href="profile.html">Profile</a></li>
+              </ul>
+            </li> 
+
+            <li class="nred"><a href="forms.html"><i class="icon-list"></i> Forms</a></li>
+
+            <li class="nlightblue"><a href="tables.html"><i class="icon-table"></i> Tables</a></li>
+
+          </ul>
+
+
+
+
+          <!-- Date -->
+
+          <div class="sidebar-widget">
+            <div id="todaydate"></div>
+          </div>
+
+
+
+        </div>
+
+    </div>
+
+    <!-- Sidebar ends -->
+
+  	<!-- Main bar -->
+  	<div class="mainbar">
+      
+	    <!-- Page heading -->
+	    <div class="page-head">
+        <!-- Page heading -->
+	      <h2 class="pull-left">Media
+          <!-- page meta -->
+          <span class="page-meta">Something Goes Here</span>
+        </h2>
+
+
+        <!-- Breadcrumb -->
+        <div class="bread-crumb pull-right">
+          <a href="index.html"><i class="icon-home"></i> Home</a> 
+          <!-- Divider -->
+          <span class="divider">/</span> 
+          <a href="#" class="bread-current">Media</a>
+        </div>
+
+        <div class="clearfix"></div>
+
+	    </div>
+	    <!-- Page heading ends -->
+
+
+
+	    <!-- Matter -->
+
+	    <div class="matter">
+        <div class="container-fluid">
+
+          <div class="row-fluid">
+
+            <div class="span12">
+
+              <div class="widget wred">
+                <div class="widget-head">
+                  <div class="pull-left">Media</div>
+                  <div class="widget-icons pull-right">
+                    <a href="#" class="wminimize"><i class="icon-chevron-up"></i></a> 
+                    <a href="#" class="wclose"><i class="icon-remove"></i></a>
+                  </div>
+                  <div class="clearfix"></div>
+                </div>
+
+                <div class="widget-content medias">
+                  
+                  <table class="table  table-bordered ">
+                      <thead>
+                        <tr>
+                          <th>
+                              <input type='checkbox' value='check1' />
+                          </th>
+                          <th>Media</th>
+                          <th>Name</th>
+                          <th>Author</th>
+                          <th>Date</th>
+                          <th>Size</th>
+                          <th>Control</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+
+                        <tr>
+                          <td>                  
+                              <input type='checkbox' value='check1' />
+                          </td>
+                          <td><img src="img/user.jpg" alt="" /></td>
+                          <td><a href="#">some_file_name</a><p>JPG</p></td>
+                          <td>Ashok</td>
+                          <td>23/12/2012</td>
+                          <td>1.25 MB</td>
+                          <td>
+
+                              <button class="btn btn-mini"><i class="icon-pencil"></i> </button>
+                              <button class="btn btn-mini btn-danger"><i class="icon-remove"></i> </button>
+                          
+                          </td>
+                        </tr>
+
+
+                        <tr>
+                          <td>
+                              <input type='checkbox' value='check1' />
+                          </td>
+                          <td><img src="img/user.jpg" alt="" /></td>
+                          <td><a href="#">some_file_name</a><p>PNG</p></td>
+                          <td>Ravi</td>
+                          <td>13/02/2012</td>
+                          <td>2.6 MB</td>
+                          <td>
+
+                              <button class="btn btn-mini"><i class="icon-pencil"></i> </button>
+                              <button class="btn btn-mini btn-danger"><i class="icon-remove"></i> </button>
+
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>
+                              <input type='checkbox' value='check1' />
+                          </td>
+                          <td><img src="img/user.jpg" alt="" /></td>
+                          <td><a href="#">some_file_name</a><p>GIF</p></td>
+                          <td>Babu</td>
+                          <td>12/03/2012</td>
+                          <td>4 MB</td>
+                          <td>
+
+                              <button class="btn btn-mini"><i class="icon-pencil"></i> </button>
+                              <button class="btn btn-mini btn-danger"><i class="icon-remove"></i> </button>
+
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>
+                              <input type='checkbox' value='check1' />
+                          </td>
+                          <td><img src="img/user.jpg" alt="" /></td>
+                          <td><a href="#">some_file_name</a><p>MPEG</p></td>
+                          <td>Ganga</td>
+                          <td>03/11/2012</td>
+                          <td>10 MB</td>
+                          <td>
+
+                              <button class="btn btn-mini"><i class="icon-pencil"></i> </button>
+                              <button class="btn btn-mini btn-danger"><i class="icon-remove"></i> </button>
+
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <td>
+                              <input type='checkbox' value='check1' />                        
+                          </td>
+                          <td><img src="img/user.jpg" alt="" /></td>
+                          <td><a href="#">some_file_name</a><p>FLV</p></td>
+                          <td>Munarai</td>
+                          <td>13/32/2012</td>
+                          <td>4 MB</td>
+                          <td>
+
+                              <button class="btn btn-mini"><i class="icon-pencil"></i> </button>
+                              <button class="btn btn-mini btn-danger"><i class="icon-remove"></i> </button>
+
+                          </td>
+                        </tr>                                                            
+
+                      </tbody>
+                    </table>
+
+                </div>
+
+                    <div class="widget-foot">
+
+                      <div class="pull-left">
+                        <select>
+                          <option>Actions</option>
+                          <option>Edit</option>
+                          <option>Delete</option>
+                        </select>
+                      </div>
+
+                      <div class="pagination pull-right">
+                        <ul>
+                          <li><a href="#">Prev</a></li>
+                          <li><a href="#">1</a></li>
+                          <li><a href="#">2</a></li>
+                          <li><a href="#">3</a></li>
+                          <li><a href="#">4</a></li>
+                          <li><a href="#">Next</a></li>
+                        </ul>
+                      </div>
+                      <div class="clearfix"></div> 
+
+                    </div>
+              </div>  
+              
+            </div>
+
+          </div>
+
+        </div>
+		  </div>
+
+		<!-- Matter ends -->
+
+    </div>
+
+   <!-- Mainbar ends -->	    	
+   <div class="clearfix"></div>
+
+</div>
+<!-- Content ends -->
+
+<!-- Notification box starts -->
+   <div class="slide-box">
+
+        <!-- Notification box head -->
+        <div class="slide-box-head bred">
+          <!-- Title -->
+          <div class="pull-left">Notification Box</div>          
+          <!-- Icon -->
+          <div class="slide-icons pull-right">
+            <a href="#" class="sminimize"><i class="icon-chevron-down"></i></a> 
+            <a href="#" class="sclose"><i class="icon-remove"></i></a>
+          </div>
+          <div class="clearfix"></div>
+        </div>
+
+        <div class="slide-content">
+
+          <!-- It is default bootstrap nav tabs. See official bootstrap doc for doubts -->
+            <ul class="nav nav-tabs">
+              <!-- Tab links -->
+              <li class="active"><a href="#tab1" data-toggle="tab"><i class="icon-bar-chart"></i></a></li>
+              <li><a href="#tab2" data-toggle="tab"><i class="icon-phone"></i></a></li>
+              <li><a href="#tab3" data-toggle="tab"><i class="icon-comments"></i></a></li>
+            </ul>
+
+            <!-- Tab content -->
+            
+            <div class="tab-content">
+
+              <div class="tab-pane active" id="tab1">
+
+                <!-- Graph #1 -->
+                <div class="slide-data">
+                  <div class="slide-data-text">Today Earnings</div>
+                  <div class="slide-data-result">$5,0000 <i class="icon-arrow-up red"></i> </div>
+                  <div class="clearfix"></div>
+                  <hr />
+                  <span id="todayspark4" class="spark"></span>
+                </div>
+
+                <!-- Graph #2 -->
+                <div class="slide-data">
+                  <div class="slide-data-text">Yesterday Earnings</div>
+                  <div class="slide-data-result">$4,6000 <i class="icon-arrow-down green"></i> </div>
+                  <div class="clearfix"></div>
+                  <hr />
+                  <span id="todayspark5" class="spark"></span>
+                </div>                
+
+              </div>
+
+              <div class="tab-pane" id="tab2">
+                <h5>Have some content here.</h5>
+                <p>Aliquam dui libero, pharetra nec venenatis in, scelerisque quis odio. In hac habitasse platea dictumst. Etiam porta placerat turpis, eget fermentum neque egestas at. Vestibulum ullamcorper, augue a sollicitudin vestibulum, orci purus semper felis, lobortis consequat nisi nunc eu enim. </p>
+              </div>
+
+              <div class="tab-pane" id="tab3">
+                <h5>Have some content here.</h5>
+                <p>Aliquam dui libero, pharetra nec venenatis in, scelerisque quis odio. In hac habitasse platea dictumst. Etiam porta placerat turpis, eget fermentum neque egestas at. Vestibulum ullamcorper, augue a sollicitudin vestibulum, orci purus semper felis, lobortis consequat nisi nunc eu enim.</p>
+              </div>              
+
+            </div>
+
+        </div>
+      
+    </div>
+
+<!-- Notification box ends -->  
+
+<!-- Scroll to top -->
+<span class="totop"><a href="#"><i class="icon-chevron-up"></i></a></span> 
+
+<!-- JS -->
+<script src="js/jquery.js"></script> <!-- jQuery -->
+<script src="js/bootstrap.js"></script> <!-- Bootstrap -->
+<script src="js/jquery-ui-1.10.2.custom.min.js"></script> <!-- jQuery UI -->
+<script src="js/fullcalendar.min.js"></script> <!-- Full Google Calendar - Calendar -->
+<script src="js/jquery.rateit.min.js"></script> <!-- RateIt - Star rating -->
+<script src="js/jquery.prettyPhoto.js"></script> <!-- prettyPhoto -->
+
+<!-- jQuery Flot -->
+<script src="js/excanvas.min.js"></script>
+<script src="js/jquery.flot.js"></script>
+<script src="js/jquery.flot.resize.js"></script>
+<script src="js/jquery.flot.pie.js"></script>
+<script src="js/jquery.flot.stack.js"></script>
+
+<script src="js/jquery.gritter.min.js"></script> <!-- jQuery Gritter -->
+<script src="js/sparklines.js"></script> <!-- Sparklines -->
+<script src="js/jquery.cleditor.min.js"></script> <!-- CLEditor -->
+<script src="js/bootstrap-datetimepicker.min.js"></script> <!-- Date picker -->
+<script src="js/jquery.toggle.buttons.js"></script> <!-- Bootstrap Toggle -->
+<script src="js/filter.js"></script> <!-- Filter for support page -->
+<script src="js/custom.js"></script> <!-- Custom codes -->
+<script src="js/charts.js"></script> <!-- Custom chart codes -->
+
+</body>
+</html>

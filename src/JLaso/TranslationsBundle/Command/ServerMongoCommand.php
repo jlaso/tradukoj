@@ -891,37 +891,53 @@ class ServerMongoCommand extends ContainerAwareCommand
 
             $key = $message->getKey();
             $bundle = '';
-
             $translations = $message->getTranslations();
-            foreach($translations as $locale=>$translation){
+            $dirty = false;
 
-                if(isset($data[$key][$locale])){
+            if(count($translations)){
 
-                    $current = $data[$key][$locale];
+                foreach($translations as $locale=>$translation){
 
-                    $updatedAt = new \DateTime($current['updatedAt']);
+                    if(isset($data[$key][$locale])){
 
-                    if($message->getUpdatedAt() < $updatedAt){
+                        $current = $data[$key][$locale];
+                        $updatedAt = new \DateTime($current['updatedAt']);
 
-                        $result[$key][$locale]    = $current['updatedAt'];
-                        $translations[$locale]['message']   = $current['message'];
-                        $translations[$locale]['updatedAt'] = $updatedAt;
+                        if($message->getUpdatedAt()->sec < intval($updatedAt->format("U"))){
+
+                            $result[$key][$locale]              = $current['updatedAt'];
+                            $translations[$locale]['message']   = $current['message'];
+                            $translations[$locale]['updatedAt'] = $updatedAt;
+                            if(isset($current['approved'])){
+                                $translations[$locale]['approved'] = $current['approved'];
+                            }
+                            $dirty = true;
+
+                        }
+
+                        $translations[$locale]['fileName']  = $current['fileName'];
+
+                        if(!$bundle){
+                            if($current['bundle']){
+                                $bundle = $current['bundle'];
+                            }else{
+                                preg_match('/\/(?<bundle>\w+Bundle)\//i', $current['fileName'], $matches);
+                                if(isset($matches['bundle'])){
+                                    $bundle = $matches['bundle'];
+                                }
+                            }
+                        }
+                        unset($data[$key][$locale]);
 
                     }
+                }
+                if($dirty){
+                    $message->setBundle($bundle);
+                    $message->setTranslations($translations);
 
-                    $translations[$locale]['fileName']  = $current['fileName'];
-
-                    $bundle = isset($current['bundle']) ? $current['bundle'] : $bundle;
-                    unset($data[$key][$locale]);
-
+                    $this->dm->persist($message);
                 }
             }
-            if($bundle){
-                $message->setBundle($bundle);
-            }
-            $message->setTranslations($translations);
-
-            $this->dm->persist($message);
         }
 
         if($this->debug){
@@ -936,10 +952,13 @@ class ServerMongoCommand extends ContainerAwareCommand
                     echo sprintf("processing key %s\n", $key);
                 }
 
+                $bundle = '';
+
                 $translation = new Translation();
                 $translation->setCatalog($catalog);
                 $translation->setKey($key);
                 $translation->setProjectId($project->getId());
+                $translation->setBundle();
 
                 $translations = array();
 
@@ -952,8 +971,19 @@ class ServerMongoCommand extends ContainerAwareCommand
                         'fileName'  => $message['fileName'],
                     );
 
+                    if(!$bundle){
+                        if($message['bundle']){
+                            $bundle = $message['bundle'];
+                        }else{
+                            preg_match('/\/(?<bundle>\w+Bundle)\//i', $current['fileName'], $matches);
+                            if(isset($matches['bundle'])){
+                                $bundle = $matches['bundle'];
+                            }
+                        }
+                    }
                 }
 
+                $translation->setBundle($bundle);
                 $translation->setTranslations($translations);
                 $this->dm->persist($translation);
 
@@ -989,12 +1019,13 @@ class ServerMongoCommand extends ContainerAwareCommand
                 'projectId' => $project->getId(),
                 'catalog'   => $catalog,
                 'deleted'   => false,
-            )
+            ),
+            array('key' => 'ASC')
         );
 
         if($this->debug){
+            echo sprintf("found %d in translations\n", count($messages));
         }
-        echo sprintf("found %d in translations\n", count($messages));
 
         $data    = array();
         $bundles = array();

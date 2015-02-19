@@ -23,76 +23,82 @@
 {% endblock stylesheets %}
 
 {% block body %}
-    <div class="container">
+    <!-- Form area -->
+    <div class="admin-form">
+        <div class="container-fluid">
 
-        <div class="row">
+            <div class="row-fluid">
+                <div class="span12">
+                    <!-- Widget starts -->
+                    <div class="widget worange">
+                        <!-- Widget head -->
+                        <div class="widget-head">
 
-            <div class="span4 offset4">
-                <div class="navbar">
-                    <div class="navbar-inner">
-                        <div class="container">
-                            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                                <span class="icon-bar"></span>
-                            </a>
-                            <a class="brand" href="#" style="color: #ffffff;">
-                                <img src="{{ asset('logo-translations-white.png') }}" height="42" alt=""/>&nbsp;
-                                {{ "register.title"|trans|raw }}
+                            <a class="brand" href="{{ path('home') }}" style="color: #ffffff;">
+                                <img src="{{ asset('logo-translations-white.png') }}" width="24" alt=""/>&nbsp;
+                                {{ "login.title"|trans|raw }}
                             </a>
 
-                            <div class="nav-collapse">
+                            <span class="pull-right">
+                                {{ "register.title"|trans|raw }} <i class="icon-user"></i>
+                            </span>
+
+                        </div>
+
+                        <div class="widget-content">
+                            <div class="padd">
+                                <!-- Login form -->
+                                <form class="form-horizontal"  action="{{ path('user_register') }}" novalidate  method="post" {{ form_enctype(form) }}>
+                                    <!-- Language -->
+                                    <div class="control-group">
+                                        <label class="control-label" for="inputEmail"><i class="icon-flag"></i> Language</label>
+                                        <div class="controls">
+                                            {% include ':Languages:languages-select.html.twig' %}
+                                        </div>
+                                    </div>
+                                    <div class="error">{{ error is not null ? error.message : '' }}</div>
+                                    <!-- Email -->
+                                    <div class="control-group">
+                                        <div class="error">{{ form_errors(form.email) }}</div>
+                                        <label class="control-label" for="_username"><i class="icon-envelope"></i> Email</label>
+                                        <div class="controls">
+                                            {{ form_widget(form.email) }}
+                                        </div>
+                                    </div>
+                                    <!-- Password -->
+                                    {% for passwordField in form.password %}
+                                        <div class="control-group">
+                                            <div class="error">{{ form_errors(passwordField, {'attr': {'class':'btn btn-danger'}}) }}</div>
+                                            <label class="control-label" for="_username"><i class="icon-key"></i>&nbsp;{{ (loop.index0 > 0) ? 'Repeat ' : '' }}Password</label>
+                                            <div class="controls">
+                                                {{ form_widget(passwordField) }}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                    <!-- Remember me checkbox and sign in button -->
+                                    <div class="control-group">
+                                        <div class="controls" style="margin-left:0 !important;">
+                                            <div class="error">{{ form_errors(form.confirmation) }}</div>
+                                            {{ form_widget(form.confirmation) }}&nbsp;{{ "register.placeholder.terms"|trans|raw }}
+                                            <br /><br />
+                                            {{ form_rest(form) }}
+                                            <button type="submit" class="btn btn-danger">{{ "register.register_button"|trans|raw }}</button>
+                                            <button type="reset" class="btn">Reset</button>
+                                            <a href="{{ path('user_login') }}" class="btn">
+                                                {{ "register.cancel"|trans|raw }}
+                                            </a>
+                                        </div>
+                                    </div>
+                                </form>
 
                             </div>
-                            <!-- /.nav-collapse -->
+                        </div>
+                        <div class="widget-foot">
+                            <span><a href="#">{{ "register.privacy_policy"|trans({'url':"{# {{ path('privacy_policy') }} #}"})|raw }}</a>   </span>
                         </div>
                     </div>
-                    <!-- /navbar-inner -->
                 </div>
-
-                <form class="well" action="{{ path('user_register') }}" novalidate  method="post" {{ form_enctype(form) }}>
-                    <div class="input-prepend">
-                        <div class="error">{{ form_errors(form.email) }}</div>
-                        <span class="add-on"><i class="icon-envelope"></i></span>
-                        {{ form_widget(form.email, {'attr' : {'class':'span2'} }) }}
-                    </div>
-                    {% for passwordField in form.password %}
-                    <div class="input-prepend">
-                        <div class="error">{{ form_errors(passwordField, {'attr': {'class':'btn btn-danger'}}) }}</div>
-                        <span class="add-on"><i class="icon-key"></i></span>
-                        {{ form_widget(passwordField, { 'attr': {'class': 'span2'} }) }}
-                    </div>
-                    {% endfor %}
-                    <br />
-
-                    <div class="input-prepend">
-                        <div class="error">{{ form_errors(form.confirmation) }}</div>
-                        {{ form_widget(form.confirmation, { 'attr': {'class': 'span1'} }) }}
-                        {{ form_label(form.confirmation, '', { 'label_attr': {'class': 'span2 check'} }) }}
-                    </div>
-
-                    {{ form_rest(form) }}
-
-                    <div class="container">
-                        <div class="row">
-                            <div class="span12">&nbsp;</div>
-                            <div class="span12">
-                                <input type="submit" class="btn btn-danger" value="{{ "register.register_button"|trans|raw }}" />
-                                <a href="{{ path('user_login') }}" class="btn btn-primary">
-                                    {{ "register.cancel"|trans|raw }}
-                                </a>
-                            </div>
-                            <div class="span12">&nbsp;</div>
-                            <div class="span12">
-                                <span>{{ "register.privacy_policy"|trans({'url':"{# {{ path('privacy_policy') }} #}"})|raw }}</span>
-                            </div>
-                        </div>
-                    </div>
-
-                </form>
             </div>
-
         </div>
-
     </div>
 {% endblock body %}

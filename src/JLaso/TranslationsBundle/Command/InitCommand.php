@@ -56,7 +56,7 @@ class InitCommand extends ContainerAwareCommand
         $user  = new User();
         $user->setEmail('admin@tradukoj.com');
         $user->setName('Admin Tradukoj');
-        $user->setActived(true);
+        $user->setActive(true);
         $user->addRole(User::ROLE_ADMIN);
         $user->setPassword('Tradukoj$1234');
 

@@ -20,6 +20,7 @@ class Permission
     const NONE_PERM    = 'NONE';
 
     const OWNER        = 'OWNER';
+    const ADMIN        = 'ADMIN';
     const COLLABORATOR = 'COLLABORATOR';
     const INVITED      = 'INVITED';
 
@@ -150,27 +151,26 @@ class Permission
     }
 
     /**
+     * @param null $key
+     *
      * @return array
      */
-    public function getPermissions()
+    public function getPermissions($key = null)
     {
-        return json_decode($this->permissions, true);
-    }
+        $permissions = json_decode($this->permissions, true);
+        if(null===$key){
+            return $permissions;
+        }
 
-
-    protected function allGeneralPermissions()
-    {
-        return array(self::OWNER, self::COLLABORATOR, self::INVITED);
-    }
-
-    protected function allLanguagePermissions()
-    {
-        return array(self::ADMIN_PERM, self::WRITE_PERM, self::READ_PERM, self::NONE_PERM);
+        return isset($permissions[$key]) ? $permissions[$key] : null;
     }
 
     protected function allLanguageCodes()
     {
-        return array('es','fr','en','dz',self::WILD_KEY);
+        $managed_locales = explode(",",$this->project->getManagedLocales());
+        $managed_locales[] = self::WILD_KEY;
+        
+        return $managed_locales;
     }
 
     public function addPermission($permission, $language = null)
@@ -178,12 +178,12 @@ class Permission
         $permissions = $this->getPermissions();
 
         if(null === $language){
-            if(!in_array($permission, $this->allGeneralPermissions())){
+            if(!in_array($permission, self::getAllowedGeneralPermissions())){
                 throw new \Exception(sprintf('addPermission: Permission %s not recognized', $permission));
             }
             $permissions[self::GENERAL_KEY] = $permission;
         }else{
-            if(!in_array($permission, $this->allLanguagePermissions())){
+            if(!in_array($permission, self::getAllowedLocalePermissions())){
                 throw new \Exception(sprintf('addPermission: Permission %s not recognized', $permission));
             }
             if(!in_array($language, $this->allLanguageCodes())){
@@ -225,9 +225,9 @@ class Permission
             return $this->checkPermission($permissions[$locale], $permission);
         }else{
             // else if there are general permissions (WILD_KEY) for all locales
-           if(isset($permissions[self::WILD_KEY])){
-               return $this->checkPermission($permissions[self::WILD_KEY], $permission);
-           }
+            if(isset($permissions[self::WILD_KEY])){
+                return $this->checkPermission($permissions[self::WILD_KEY], $permission);
+            }
         }
 
         return false;
@@ -256,6 +256,26 @@ class Permission
         }
     }
 
+
+    public static function getAllowedLocalePermissions()
+    {
+        return array(
+            self::NONE_PERM,
+            self::READ_PERM,
+            self::WRITE_PERM,
+            self::ADMIN_PERM,
+        );
+    }
+
+    public static function getAllowedGeneralPermissions()
+    {
+        return array(
+            self::OWNER,
+            self::ADMIN,
+            self::COLLABORATOR,
+            self::INVITED,
+        );
+    }
 
 
 

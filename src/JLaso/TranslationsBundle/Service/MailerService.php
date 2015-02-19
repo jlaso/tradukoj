@@ -15,7 +15,7 @@ class MailerService
     const SUPPORT_MAIL = 'jlaso@joseluislaso'; //'support@tradukoj.com';
 
     const CONTENT_TYPE = 'text/html';
-    const SELF_NAME    = 'Translations for Symfony2 projects By JLaso';
+    const SELF_NAME    = 'Tradukoj, translations for developers';
 
     protected $mailer;
     protected $templating;
@@ -88,6 +88,24 @@ class MailerService
             'subject'   => $subject,
             'urls'      => array(
                 'homePage' => $this->router->generate('home', array(), true)
+            )
+        );
+        $emailTo = $user->getEmail();
+
+        return $this->sendMail($subject, $emailTo, $template, $parameters);
+    }
+
+    public function sendInvitationMessage(User $user, User $userThatInvits, Project $project)
+    {
+        $subject    = 'Invitation for new user to ' . self::SELF_NAME;
+        $template   = $this->templateName('invitationUser.html.twig');
+        $parameters = array(
+            'user'      => $user,
+            'invites'   => $userThatInvits,
+            'subject'   => $subject,
+            'project'   => $project,
+            'urls'      => array(
+                'homePage' => $this->router->generate('home', array('invited' => $userThatInvits->getId(), 'project' => $project->getId()), true)
             )
         );
         $emailTo = $user->getEmail();

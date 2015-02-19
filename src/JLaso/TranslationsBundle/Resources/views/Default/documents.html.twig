@@ -1,31 +1,45 @@
-{% extends 'TranslationsBundle:Default:translations.html.twig' %}
+{% extends 'TranslationsBundle:Default:translationsBase.html.twig' %}
 
+{# TODO: cron periodico para releer si hay cambios por parte de otro usuario o de la api #}
 
-{# cron periodico para releer si hay cambios por parte de otro usuario o de la api #}
-
-{% block sidebar_interior %}
-<div class="well sidebar-nav">
-    <ul class="nav nav-list">
-        <li>
-            <h3>{{ "labelH3.bundles"|trans|raw }}</h3>
-        </li>
-        <li>
-            <div class="accordion" id="accordion_sidebar">
-                {% for bundle in bundles %}
-                <div class="accordion-group">
-                    <div class="accordion-heading">
-                        <a style="text-decoration: none;text-align: left"
-                           class="accordion-toggle btn {{ current==bundle ? 'btn-danger' : '' }}"
-                           href="{{ path('documents', {'projectId':project.id, 'bundle':bundle}) }}">
-                            <i class="icon-tasks {{ current==bundle ? 'icon-white' : '' }}"></i>
-                            <span> {{ bundle }}</span>
-                        </a>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </li>
+{% block sidebar %}
+    <ul class="navi">
+        <li class="nred current"><a href="">{{ project.name ~ ' (#' ~ project.id ~ ')' }}</a></li>
+        <li><h3>{{ "labelH3.documents"|trans|raw }}</h3></li>
+        {% for bundle in bundles %}
+            <li class="ngreen {{ current==bundle ? 'current' : '' }}">
+                <a href="{{ path('documents', {'projectId':project.id, 'bundle':bundle}) }}">
+                    <i class="icon-angle-right"></i>&nbsp;<span>{{ bundle }}</span>
+                </a>
+            </li>
+        {% endfor %}
     </ul>
-</div><!--/.well -->
-{% endblock sidebar_interior %}
+{% endblock sidebar %}
+
+
+{% block page_header %}
+    <!-- Page heading -->
+    <div class="page-head">
+        <!-- Page heading -->
+        <h2 class="pull-left">Translations by document
+            <!-- page meta -->
+            <span class="page-meta">These are the translations for <em>{{ project.name }}</em> project</span>
+        </h2>
+
+
+        <!-- Breadcrumb -->
+        <div class="bread-crumb pull-right">
+            <a href="{{ path('user_index') }}"><i class="icon-home"></i> Home</a>
+            <!-- Divider -->
+            <span class="divider">/</span>
+            <a href="{{ path('translations', {"projectId":project.id}) }}"><i class="icon-tasks"></i> Translations</a>
+            <span class="divider">/</span>
+            <a href="#" class="bread-current">Documents</a>
+        </div>
+
+        <div class="clearfix"></div>
+
+    </div>
+    <!-- Page heading ends -->
+{% endblock page_header %}
 

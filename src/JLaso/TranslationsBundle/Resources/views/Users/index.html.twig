@@ -1,0 +1,247 @@
+{% extends '::base.html.twig' %}
+
+{% set label = {"ADMIN":"label-success", "READ":"label-info", "WRITE":"label-warning", "NONE":""} %}
+{% set icon = {"ADMIN":"icon-wrench", "READ":"icon-eye-open", "WRITE":"icon-pencil", "NONE":"icon-ban-circle"} %}
+
+{% block sidebar %}
+{% endblock sidebar %}
+
+{% block content %}
+
+    <style>
+        ul.permissions {
+            list-style: none;
+        }
+
+        ul.permissions li {
+            float: left;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        #hover-perm {
+            display: none;
+            position: absolute;
+            overflow: hidden;
+            padding: 2px;
+            margin-left: -2px;
+            background-color: black;
+            width: 77px;
+        }
+
+        #hover-perm ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #hover-perm li {
+            display: block;
+            float: none;
+        }
+        .li-perm{
+            width: 65px;
+        }
+        .perm{
+            border: 2px solid transparent;
+            width: 77px;
+        }
+        .perm.hover{
+            border: 2px solid black;
+            padding: 0px;
+        }
+        .perm span.label{
+            width: 65px;
+        }
+    </style>
+
+    <!-- Page heading -->
+    <div class="page-head">
+        <!-- Page heading -->
+        <h2 class="pull-left">Users
+            <!-- page meta -->
+            <span class="page-meta">From here you can control all the users of your project</span>
+        </h2>
+
+
+        <!-- Breadcrumb -->
+        <div class="bread-crumb pull-right">
+            <a href="{{ path('user_index') }}"><i class="icon-home"></i> Home</a>
+            <!-- Divider -->
+            <span class="divider">/</span>
+            {#<a href="#" class="bread-current">Charts</a>#}
+        </div>
+
+        <div class="clearfix"></div>
+
+    </div>
+    <!-- Page heading ends -->
+
+    <!-- Matter -->
+
+<div class="matter">
+    <div class="container-fluid">
+
+
+        <div class="widget wblue">
+
+            <div class="widget-head">
+                <div class="pull-left"><i class="icon-tasks"></i>&nbsp;{{ project.name }}</div>
+                <div class="clearfix"></div>
+            </div>
+
+            <div class="widget-content">
+                <div class="padd">
+
+
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>email</th>
+                            <th>name</th>
+                            <th>from</th>
+                            <th>permissions</th>
+                            <th>actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for user in users %}
+                            <tr>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.name }}</td>
+                                <td>{{ user.createdAt|date('d/m/Y') }}</td>
+                                <td>
+
+                                    <ul class="permissions">
+                                        {% for locale in managedLocales %}
+                                            {% set perm = user.permissions[locale] %}
+                                            <li class="perm" locale="{{ locale }}" user="{{ user.id }}">
+                                                <a href="">
+                                                <span class="li-perm label {{ label[perm] }}" title="{{ perm }}">
+                                                    <img src="{{ asset('bundles/translations/img/flags/' ~ locale ~ '.png') }}"/> {{ locale }}
+                                                    &nbsp;&nbsp;
+                                                    <i class="icon {{ icon[perm] }}"></i>
+                                                </span>
+                                                </a>
+                                            </li>
+
+                                        {% endfor %}
+                                    </ul>
+
+                                </td>
+                                <td>
+                                    {% if user.email != app.user.email %}
+                                    <form action="{{ path("users_remove_user", {"projectId":project.id, "email": user.email}) }}" method="post">
+                                        <input type="submit" class="btn btn-primary btn-large remove-user" value="{{ "users.permissions.remove_user.button.remove"|trans|raw }}"/>
+                                    </form>
+                                    {% else %}
+                                        &nbsp;
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        <tr>
+                            <td colspan="4">
+                                <form action="{{ path("users_add_new_user", {"projectId":project.id}) }}" method="post">
+                                    {{ "users.permissions.add_user.label"|trans|raw }}:&nbsp;
+                                    <input type="text" name="email"/>
+                                    <input type="submit" class="btn btn-primary btn-large" value="{{ "users.permissions.add_user.button.add"|trans|raw }}"/>
+                                </form>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <div id="hover-perm">
+                        <ul>
+                            {% for perm in ['ADMIN','WRITE','READ','NONE'] %}
+                                <li class="li-perm set-perm label {{ label[perm] }}" data-role="{{ perm }}"><a href="#" class=""><i class="icon {{ icon[perm] }}"></i> {{ perm }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            {% endblock content %}
+
+            {% block javascripts %}
+            {{ parent() }}
+            <script type="text/javascript">
+                var hoverPerm = $('#hover-perm');
+                var timeout = null;
+                var mindiag = null;
+                var locale = null;
+                var user = null;
+                var current = null;
+                var labelClasses = {{ label|json_encode|raw }};
+                var iconClasses  = {{ icon|json_encode|raw }};
+
+                $(function () {
+
+                    $(".remove-user").click(function(e){
+                        if(!confirm("{{ "user.permissions.sure_to_remove"|trans|raw }}")){
+                            e.preventDefault();
+                            return false;
+                        }
+                    });
+                    //console.log("declaring hover for perm");
+                    $(".perm").hover(function () {
+                        $('.perm').removeClass('hover');
+                        $(this).addClass('hover');
+                        if (mindiag) {
+                            $(mindiag).remove();
+                        }
+                        clearTimeout(timeout);
+                        mindiag = $(hoverPerm).clone();
+                        $(this).append(mindiag);
+                        $(mindiag).fadeIn("slow");
+                        locale = $(this).attr("locale");
+                        user = $(this).attr("user");
+                        current = $(this);
+
+                        $(mindiag).find('.set-perm').click(function(){
+
+                            $(this).find('.icon').removeClass().addClass('icon icon-refresh animate-spin');
+                            var permission = $(this).attr("data-role");
+                            $.ajax({
+
+                                url: "{{ path("change_user_permission", {"projectId":project.id}) }}",
+                                type: "post",
+                                data: {
+                                    user: user,
+                                    locale: locale,
+                                    permission: permission
+                                },
+                                success: function(data){
+                                    console.log(data);
+                                    if(data.result){
+                                        // change the permission visually
+                                        $(current).find('.label').removeClass().addClass('label '+labelClasses[data.permission]);
+                                        $(current).find('.icon').removeClass().addClass('icon '+iconClasses[data.permission]);
+                                        $(mindiag).remove();
+                                    }else{
+                                        alert('error <br /> ' + data.reason);
+                                    }
+                                },
+                                error: function(info){
+                                    console.log(info);
+                                }
+
+                            });
+
+                        });
+
+                    }, function () {
+                        $(this).removeClass('hover');
+                        timeout = setTimeout(function () {
+                            $(mindiag).slideUp("slow", function () {
+                                $(mindiag).remove();
+                            });
+                        }, 250)
+                    });
+                });
+            </script>
+{% endblock javascripts %}

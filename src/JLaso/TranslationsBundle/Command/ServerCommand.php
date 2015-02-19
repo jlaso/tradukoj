@@ -85,7 +85,7 @@ class ServerCommand extends ContainerAwareCommand
                 echo "socket_accept() falló: razón: " . socket_strerror(socket_last_error($sock)) . "\n";
                 break;
             }
-            /* Enviar instrucciones. */
+            /* Send instructions */
             $msg = "Welcome to TranslationsApiBundle v1.0." . PHP_EOL;
             socket_write($this->msgsock, $msg, strlen($msg));
 
@@ -98,12 +98,16 @@ class ServerCommand extends ContainerAwareCommand
                     continue;
                 }
 
+                var_dump($buf, json_decode($buf, true));
+
+
                 $this->received += strlen($buf);
                 $size = $this->prettySize($this->received);
                 echo "v " , $size, "  ";
 
                 try{
                     $read     = json_decode($buf, true);
+                    var_dump($read); die;
                     $command  = isset($read['command']) ? $read['command'] : '';
                     $bundle   = isset($read['bundle']) ? $read['bundle'] : '';
                     $key      = isset($read['key']) ? $read['key'] : '';
@@ -228,6 +232,7 @@ class ServerCommand extends ContainerAwareCommand
 
     protected function send($buffer)
     {
+        $debug = substr($buffer,0,60);
         $buffer = lzf_compress($buffer);
 
         $this->sended += strlen($buffer);
@@ -235,7 +240,7 @@ class ServerCommand extends ContainerAwareCommand
         echo '^ ' ,$size, "    ";
 
         $size = $this->prettySize($this->sended + $this->received);
-        echo ', Total:', $size;
+        echo ', Total:', $size, ' ', $debug;
 
         echo str_repeat(chr(8), 80);
 
@@ -650,3 +655,4 @@ class ServerCommand extends ContainerAwareCommand
  *
  *
  */
+

@@ -1,13 +1,13 @@
 {
-    "name": "Translations for symfony2 projects",
+    "name": "Translations for developers",
     "type": "project",
-    "description": "Translation framework for symfony2 projects",
+    "description": "Translation for developers",
     "autoload": {
         "psr-0": { "": "src/" }
     },
     "require": {
         "php": ">=5.3.3",
-        "symfony/symfony": "*",
+        "symfony/symfony": "2.5.0",
         "symfony/yaml": "*",
 
         "doctrine/orm": "*",
@@ -39,7 +39,10 @@
 
         "incenteev/composer-parameter-handler": "~2.0",
 
-        "jlaso/translations-apibundle": "dev-master"
+        "jlaso/translations-apibundle": "dev-master",
+
+        "liuggio/excelbundle": "~2.0"
+
     },
     "config": {
         "bin-dir": "bin/"

@@ -104,7 +104,7 @@ class Translation
         $this->imageMaps            = null;
         $this->catalog              = null;
         $this->deleted              = false;
-        $this->bundle               = null;
+        $this->bundle               = '';
     }
 
     /**
@@ -139,6 +139,9 @@ class Translation
         $this->updatedAt = $updatedAt;
     }
 
+    /**
+     * @return \MongoTimestamp
+     */
     public function getUpdatedAt()
     {
         return $this->updatedAt;
@@ -237,7 +240,7 @@ class Translation
      */
     public function getScreenshot()
     {
-        return $this->screenshot;
+        return $this->screenshot ? '/uploads/' . $this->getProjectId() . '/' . $this->screenshot : '';
     }
 
     /**

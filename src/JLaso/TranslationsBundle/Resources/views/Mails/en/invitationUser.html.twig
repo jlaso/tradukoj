@@ -1,0 +1,27 @@
+{% extends 'TranslationsBundle:Mails:layoutEmail.html.twig' %}
+
+{% block content %}
+
+    <h3 style="margin: 0;padding: 0;font-family: HelveticaNeue-Light, Helvetica Neue Light, Helvetica Neue, Helvetica, Arial, Lucida Grande, sans-serif;line-height: 1.1;margin-bottom: 15px;color: #000;font-weight: 500;font-size: 27px">
+        Hi, {{ user.email }}</h3>
+    <p class="lead"
+       style="margin: 0;padding: 0;font-family: Helvetica Neue, Helvetica, Helvetica, Arial, sans-serif;margin-bottom: 10px;font-weight: normal;font-size: 17px;line-height: 1.6">
+        The user {{ invites.name|default(invites.email) }} wants that you join to translations by JLaso for symfony2
+        projects, in order to help in translation of project {{ project.name }}.
+    </p>
+    <p style="margin: 0;padding: 0;font-family: Helvetica Neue, Helvetica, Helvetica, Arial, sans-serif;margin-bottom: 10px;font-weight: normal;font-size: 14px;line-height: 1.6">
+        Please, revise our terms and conditions before.
+    </p>
+    <!-- Callout Panel -->
+    <p class="callout"
+       style="margin: 0;padding: 15px;font-family: Helvetica Neue, Helvetica, Helvetica, Arial, sans-serif;background-color: #ECF8FF;margin-bottom: 15px;font-weight: normal;font-size: 14px;line-height: 1.6">
+        Now, you can join us <a
+
+                href="{{ urls.home }}"
+
+                style="margin: 0;padding: 0;font-family: Helvetica Neue, Helvetica, Helvetica, Arial, sans-serif;color: #2BA6CB;font-weight: bold">Here
+        </a>
+    </p>
+    <!-- /Callout Panel -->
+
+{% endblock content %}
