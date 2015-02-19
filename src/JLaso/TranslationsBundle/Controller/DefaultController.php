@@ -96,25 +96,7 @@ class DefaultController extends BaseController
     public function regenerateProjectInfoAction($projectId)
     {
         $this->init();
-        /** @var ProjectInfo $projectInfo */
-        $projectInfo = $this->dm->getRepository("TranslationsBundle:ProjectInfo")->getProjectInfo($projectId);
-        if(!$projectInfo){
-            $projectInfo = new ProjectInfo();
-            $projectInfo->setProjectId($projectId);
-        }
-        $projectInfo->setBundles(array());
-        $projectInfo->setCatalogs(array());
-
-        $translations = $this->getTranslationRepository()->findBy(array("projectId"=>intval($projectId)));
-        //ldd($projectId, $translations);
-        foreach($translations as $translation){
-            $bundle = $translation->getBundle();
-            $projectInfo->addBundle($bundle);
-            $catalog = $translation->getCatalog();
-            $projectInfo->addCatalog($catalog);
-        }
-        $this->dm->persist($projectInfo);
-        $this->dm->flush();
+        $projectInfo = $this->translationsManager->regenerateProjectInfo($projectId);
         ld($projectInfo->getBundles());
         die("done!");
     }

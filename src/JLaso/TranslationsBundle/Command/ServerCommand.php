@@ -567,6 +567,8 @@ class ServerCommand extends ContainerAwareCommand
         }
         $this->em->flush();
 
+        $this->translationsManager->regenerateProjectInfo($project->getId());
+
         return $this->resultOk($result);
     }
 

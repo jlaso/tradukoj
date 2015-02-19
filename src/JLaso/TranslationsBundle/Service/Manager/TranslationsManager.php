@@ -7,6 +7,7 @@ namespace JLaso\TranslationsBundle\Service\Manager;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
+use JLaso\TranslationsBundle\Document\ProjectInfo;
 use JLaso\TranslationsBundle\Document\Repository\ProjectInfoRepository;
 use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
@@ -307,6 +308,36 @@ class TranslationsManager
             'catalogData' => $catalogData,
         );
 
+    }
+
+    /**
+     * @param $projectId
+     * @return ProjectInfo
+     */
+    public function regenerateProjectInfo($projectId)
+    {
+        /** @var ProjectInfo $projectInfo */
+        $projectInfo = $this->getProjectInfoRepository()->getProjectInfo($projectId);
+        if(!$projectInfo){
+            $projectInfo = new ProjectInfo();
+            $projectInfo->setProjectId($projectId);
+        }
+        $projectInfo->setBundles(array());
+        $projectInfo->setCatalogs(array());
+
+        /** @var Translation[] $translations */
+        $translations = $this->getTranslationRepository()->findBy(array("projectId"=>intval($projectId)));
+
+        foreach($translations as $translation){
+            $bundle = $translation->getBundle();
+            $projectInfo->addBundle($bundle);
+            $catalog = $translation->getCatalog();
+            $projectInfo->addCatalog($catalog);
+        }
+        $this->dm->persist($projectInfo);
+        $this->dm->flush();
+
+        return $projectInfo;
     }
 
     /**
