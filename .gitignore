@@ -1,5 +1,6 @@
 _doc
 web/.htaccess
+/backup.php
 
 ._*
 
