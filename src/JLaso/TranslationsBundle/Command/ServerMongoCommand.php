@@ -17,6 +17,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use JLaso\TranslationsBundle\Document\File;
+use JLaso\TranslationsBundle\Document\Repository\ProjectInfoRepository;
 use JLaso\TranslationsBundle\Document\Repository\TranslatableDocumentRepository;
 use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
 use JLaso\TranslationsBundle\Document\TranslatableDocument;
@@ -28,10 +29,13 @@ use JLaso\TranslationsBundle\Service\Manager\TranslationsManager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 class ServerMongoCommand extends ContainerAwareCommand
 {
+    const VERSION = "1.4";
+
     /** Shutdowns the server */
     const CMD_SHUTDOWN            = 'shutdown';
 
@@ -79,6 +83,8 @@ class ServerMongoCommand extends ContainerAwareCommand
     protected $received = 0;
     protected $timeStart;
 
+    protected $lzfUse = true;
+
     /**
      * configure the command that starts the server
      */
@@ -88,7 +94,8 @@ class ServerMongoCommand extends ContainerAwareCommand
             ->setName('jlaso:translations:server-mongo-start')
             ->setDescription('Start the server')
             ->addArgument('address', InputArgument::REQUIRED, 'server address')
-            ->addArgument('port', InputArgument::REQUIRED, 'port number where start server');
+            ->addArgument('port', InputArgument::REQUIRED, 'port number where start server')
+            ->addOption('lzf', null, InputOption::VALUE_OPTIONAL, 'lzf option, default yes');
     }
 
     /**
@@ -121,7 +128,7 @@ class ServerMongoCommand extends ContainerAwareCommand
             }
             $buf = socket_read($this->msgsock, 15 + 1024, PHP_BINARY_READ);
             if($buf === false){
-                echo "socket_read() falló: razón: " . socket_strerror(socket_last_error($this->msgsock)) . "\n";
+                echo "socket_read() failed: reason: " . socket_strerror(socket_last_error($this->msgsock)) . "\n";
                 return -2;
             }
 
@@ -155,7 +162,15 @@ class ServerMongoCommand extends ContainerAwareCommand
         $size = $this->prettySize($this->received);
         echo "v " , $size, "  ";
 
-        $result = lzf_decompress($buffer);
+        if($compress){
+            if($this->lzfUse){
+                $result = lzf_decompress($buffer);
+            }else{
+                $result = gzuncompress($buffer);
+            }
+        }else{
+            $result = $buffer;
+        }
 
         if($this->debug){
             $aux = json_decode($result, true);
@@ -182,6 +197,10 @@ class ServerMongoCommand extends ContainerAwareCommand
         ob_implicit_flush();
         $this->timeStart = time();
 
+        if($input->getOption('lzf') && (strtolower($input->getOption('lzf')) == 'no')){
+            $this->lzfUse = false;
+        };
+
         $container                 = $this->getContainer();
         $this->em                  = $container->get('doctrine.orm.default_entity_manager');
         $this->dm                  = $container->get('doctrine.odm.mongodb.document_manager');
@@ -207,8 +226,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                 echo "socket_accept() error: " . socket_strerror(socket_last_error($sock)) . "\n";
                 break;
             }
-            /* Enviar instrucciones. */
-            $this->send("Welcome to TranslationsApiBundle v1.3 (mongo-sockets)");
+            $this->send("Welcome to Tradukoj (" . self::VERSION . ") lzf: " . ($this->lzfUse ? "yes":"no"));
 
             do {
                 $buf = $this->readSocket();
@@ -386,7 +404,7 @@ class ServerMongoCommand extends ContainerAwareCommand
 
     protected function getCatalogIndex($projectId)
     {
-        $catalogs = $this->getTranslationRepository()->getCatalogs($projectId);
+        $catalogs = $this->getProjectInfoRepository()->getCatalogs($projectId);
 
         return $this->resultOk(array('catalogs' => $catalogs));
     }
@@ -488,7 +506,11 @@ class ServerMongoCommand extends ContainerAwareCommand
     protected function sendMessage($msg, $compress = true)
     {
         if($compress){
-            $msg = lzf_compress($msg);
+            if($this->lzfUse){
+                $msg = lzf_compress($msg);
+            }else{
+                $msg = gzcompress($msg, 9);
+            }
         }else{
             $msg .= PHP_EOL;
         }
@@ -847,6 +869,14 @@ class ServerMongoCommand extends ContainerAwareCommand
     protected function getTranslationRepository()
     {
         return $this->dm->getRepository('TranslationsBundle:Translation');
+    }
+
+    /**
+     * @return ProjectInfoRepository
+     */
+    protected function getProjectInfoRepository()
+    {
+        return $this->dm->getRepository('TranslationsBundle:ProjectInfo');
     }
 
     /**

@@ -136,6 +136,18 @@ class RestController extends Controller
     }
 
     /**
+     * Crea un socket de comunicacion sin usar compresion lzf
+     *
+     * @Route("/create-socket-no-lzf/{projectId}")
+     * @Method("POST")
+     * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
+     */
+    public function createSocketNoLzfAction(Request $request, Project $project)
+    {
+        return $this->createSocket($request, $project, false);
+    }
+
+    /**
      * Crea un socket de comunicacion
      *
      * @Route("/create-socket/{projectId}")
@@ -143,6 +155,11 @@ class RestController extends Controller
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
     public function createSocketAction(Request $request, Project $project)
+    {
+        return $this->createSocket($request, $project);
+    }
+
+    protected function createSocket(Request $request, Project $project, $lzf = true)
     {
         //@TODO: Ver si es una brecha el ir probando con diferentes projects y saturar al servidor, sería mejor no utilizar ParamConverter y
         // no permitir más de x peticiones por segundo de la misma IP
@@ -183,6 +200,7 @@ class RestController extends Controller
                     'jlaso:translations:server-mongo-start',
                     $host,
                     $port,
+                    "--lzf=" . ($lzf ? "yes" : "no")
                 );
 
                 if(function_exists('pcntl_exec')){

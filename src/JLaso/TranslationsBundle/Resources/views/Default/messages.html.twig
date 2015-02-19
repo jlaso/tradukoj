@@ -24,11 +24,26 @@
                         <label for="key-name">Proceed with caution</label>
                         <input type="text" class="span5" value="{{ translation.key }}" name="key-name"/>
 
+                        <div class="control-group">
+                            <label class="control-label" for="select01">Bundle</label>
+                            <div class="controls">
+                                <select name="bundle" id="change_key_bundle">
+                                    {% for b in bundles %}
+                                        {% if b != '' %}
+                                            <option value="{{ b }}" {% if b==translation.bundle %}selected="selected"{% endif %}>
+                                                {{ b }}
+                                            </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
 
                     </div>
 
                     <div class="modal-footer">
-                        <button class="btn btn-primary" id="change-key-save" data-role="{{ translation.catalog }}">{{ "translations.dialog.button.save"|trans|raw }}</button>
+                        <button class="btn btn-primary" id="change-key-save" data-bundle="{{ translation.bundle }}"
+                                data-role="{{ translation.catalog }}">{{ "translations.dialog.button.save"|trans|raw }}</button>
                         <button class="btn" data-dismiss="modal" aria-hidden="true">{{ "translations.dialog.button.close"|trans|raw }}</button>
                     </div>
 
@@ -111,7 +126,7 @@
                                                 <textarea class="{#wysiwyg#}" style="min-height:90px; width:95%;" dir="{{ languages[locale].dir }}">{{ info.message|raw }}</textarea>
                                             {% else %}
                                                 <span dir="{{ languages[locale].dir }}">
-                                                    {{- info.message -}}
+                                                    {{- info.message|raw -}}
                                                 </span>
                                             {% endif %}
                                         </td>

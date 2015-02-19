@@ -1,0 +1,139 @@
+{% extends '::base.html.twig' %}
+
+{% block stylesheets %}
+    <style type="text/css">
+        {#        body {
+                    padding-top: 70px;
+                    padding-bottom: 40px;
+                    background-image: url("{{ asset('bundles/translations/resource/img/bg.png') }}");
+                }
+
+                .sidebar-nav {
+                    padding: 9px 0;
+                }
+
+        #}
+        .parameters{
+            font-family: Consolas, Monaco, Lucida Console, monospace;
+            border: 1px solid #ccc;
+            margin: 4px;
+            padding: 4px;
+        }
+    </style>
+{% endblock stylesheets %}
+
+{% block sidebar %}
+    <ul class="navi">
+        <li>
+            <h3>{{ "labelH3.export_to_excel"|trans|raw }}</h3>
+        </li>
+        <li class="current">
+            <i class="icon-tasks"></i> <span>{{ project.name }}</span>
+        </li>
+    </ul>
+{% endblock sidebar %}
+
+{% block breadcrum %}
+{% endblock breadcrum %}
+
+
+{% block content %}
+<!-- Page heading -->
+<div class="page-head">
+    <!-- Page heading -->
+    <h2 class="pull-left">Export to excel
+        <!-- page meta -->
+        <span class="page-meta">a tool to export your translations out of tradukoj</span>
+    </h2>
+
+
+    <!-- Breadcrumb -->
+    <div class="bread-crumb pull-right">
+        <a href="{{ path('user_index') }}"><i class="icon-home"></i> Home</a>
+        <!-- Divider -->
+        <span class="divider">/</span>
+        {#<a href="#" class="bread-current">Charts</a>#}
+    </div>
+
+    <div class="clearfix"></div>
+
+</div>
+<!-- Page heading ends -->
+
+
+
+<!-- Matter -->
+
+<div class="matter">
+    <div class="container-fluid">
+
+        <!-- Login form -->
+        <form class="form-horizontal" action="" novalidate method="post" {{ form_enctype(form) }}>
+
+            <div class="error">{{ error is not null ? error.message : '' }}</div>
+
+            <div class="control-group">
+                <div class="error red">{{ form_errors(form.locale) }}</div>
+                <label class="control-label" for="_locale">
+                    <i class="icon-flag"></i> Locale
+                </label>
+
+                <div class="controls">
+                    {{ form_widget(form.locale) }}
+                </div>
+            </div>
+
+
+            <div class="control-group">
+                <div class="error red">{{ form_errors(form.bundle_file) }}</div>
+                <label class="control-label" for="_locale">
+                    <i class="icon-cog"></i> Include info about bundleName and fileName
+                </label>
+
+                <div class="controls">
+                    {{ form_widget(form.bundle_file) }}
+                </div>
+            </div>
+
+
+            <div class="control-group">
+                <div class="error red">{{ form_errors(form.compress_html_labels) }}</div>
+                <label class="control-label" for="_locale">
+                    <i class="icon-cog"></i> Compress html labels
+                </label>
+
+                <div class="controls">
+                    {{ form_widget(form.compress_html_labels) }}
+                </div>
+            </div>
+
+
+            <div class="control-group">
+                <div class="error red">{{ form_errors(form.compress_variables) }}</div>
+                <label class="control-label" for="_locale">
+                    <i class="icon-cog"></i> Compress variables
+                </label>
+
+                <div class="controls">
+                    {{ form_widget(form.compress_variables) }}
+                </div>
+            </div>
+
+            <div class="control-group">
+                <div class="controls" style="margin-left:0 !important;">
+                    {{ form_rest(form) }}
+                    <button type="submit" class="btn btn-danger">{{ "profile.button.generate"|trans|raw }}</button>
+                    <button type="reset" class="btn">Reset</button>
+                </div>
+            </div>
+
+        </form>
+
+
+
+    </div>
+{% endblock content %}
+
+
+{% block javascripts %}
+{% endblock javascripts %}
