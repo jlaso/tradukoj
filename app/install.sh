@@ -21,6 +21,9 @@ HOME=$(pwd) sh -c 'composer install --no-interaction'
 # session pdo storage have to created by hand
 mysql -u root -p'root' tradukoj < app/sessionpdo.sql
 
+# fill language table with all languages
+mysql -u root -p'root' tradukoj < app/languages.sql
+
 # creating user in mongo and create schema
 echo 'db.addUser("tradukoj","tradukoj");' | mongo tradukoj
 /usr/bin/env php app/console --no-interaction doctrine:mongodb:schema:create
