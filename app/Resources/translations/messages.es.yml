@@ -1,0 +1,53 @@
+home:
+    welcome: 'WELCOME TO TRADUKOJ'
+label:
+    actions: Acciones
+    language: Idioma
+    project_new: 'Nuevo proyecto<br>'
+labelH3:
+    documents: Documentos
+    export_to_excel: 'Exportar a excel'
+    projects: Proyectos
+login:
+    login_button: Login
+    login_with_github: 'con Github<br>'
+    placeholder:
+        email: Email
+        password: Contraseña
+menu:
+    bundles: Bundles
+    catalogs: Catálogos
+    documents: Documentos
+    users: Usuarios
+profile:
+    menu: Perfil
+register:
+    placeholder:
+        email: email
+translations:
+    new_key_dialog:
+        button:
+            close: Close
+            save: Guardar
+        error:
+            key_already_exists: 'La clave ya existe'
+        help: 'La nueva clave que crees aparecerá inmediatamente para que puedas poner los distintos mensajes en los idiomas.<br>'
+        key: 'Nueva clave<br>'
+        select_one: 'Elige una<br>'
+        title: 'Crear nueva clave<br>'
+    user_index: 'Área de usuario<br>'
+user:
+    permissions:
+        sure_to_remove: '¿Estás seguro de querer quitar el usuario del proyecto?'
+        user_already_exists: 'El usuario ya existe en el proyecto, puedes asignar los permisos.'
+        user_invited: ''
+user_area:
+    subtitle: 'Aquí puedes controlar todos tus proyectos.'
+    title: 'Área de usuario'
+users:
+    permissions:
+        add_user:
+            label: 'Usuario par añadir'
+        remove_user:
+            button:
+                remove: Quitar

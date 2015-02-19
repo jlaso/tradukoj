@@ -1,0 +1,52 @@
+home:
+    welcome: 'WELCOME TO TRADUKOJ'
+label:
+    actions: Действия
+    language: Език
+    project_new: 'Нов проект<br>'
+labelH3:
+    documents: Документи
+    export_to_excel: ''
+    projects: Проекти
+login:
+    login_button: 'Вход'
+    login_with_github: 'Логин чрез Github'
+    placeholder:
+        email: Е-мейл
+        password: Парола
+menu:
+    bundles: Бъндали
+    catalogs: Каталози
+    documents: Документи
+    users: Потребители
+profile:
+    menu: Профил
+register:
+    placeholder:
+        email: Е-мейл
+translations:
+    new_key_dialog:
+        button:
+            close: Затвори
+            save: Запази
+        error:
+            key_already_exists: ''
+        key: 'Нов ключ<br>'
+        select_one: Избери<br>
+        title: 'Създай нов ключ<br>'
+    user_index: 'Контролен панел'
+user:
+    permissions:
+        sure_to_remove: ''
+        user_already_exists: ''
+        user_invited: ''
+user_area:
+    subtitle: ''
+    title: ''
+users:
+    permissions:
+        add_user:
+            label: ''
+        remove_user:
+            button:
+                remove: ''
