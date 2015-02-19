@@ -988,7 +988,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                 $translation->setCatalog($catalog);
                 $translation->setKey($key);
                 $translation->setProjectId($project->getId());
-                $translation->setBundle();
+                $translation->setBundle($bundle);
 
                 $translations = array();
 
@@ -1023,7 +1023,8 @@ class ServerMongoCommand extends ContainerAwareCommand
 
         $this->dm->flush();
 
-        // normalize ?
+        // normalize
+        $this->translationsManager->regenerateProjectInfo($project->getId());
 
         return $this->resultOk($result);
     }
