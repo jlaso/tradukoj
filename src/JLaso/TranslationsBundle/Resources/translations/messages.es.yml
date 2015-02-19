@@ -1,0 +1,114 @@
+'General status': ''
+'Translations status': ''
+Users: ''
+button:
+    approve: ''
+    disapprove: ''
+    edit: ''
+    save: ''
+catalogs: ''
+error:
+    acl:
+        not_enough_permissions_to_manage_this_project: ''
+errors:
+    error_getting_tree: ''
+general:
+    button:
+        edit: ''
+        save: ''
+        select: ''
+        select_from_gallery: ''
+label:
+    actions: ''
+    comment: ''
+    language: ''
+    message: ''
+    project_new: ''
+labelH3:
+    bundles: ''
+    documents: ''
+    projects: ''
+login:
+    login_button: ''
+    login_with_github: ''
+    not_a_member_yet: ''
+    placeholder:
+        email: ''
+        password: ''
+    register: ''
+    title: ''
+message:
+    inexistent_locale_to_approve: ''
+    translation_not_found: ''
+    without_permissions_to_approve: ''
+new_project:
+    placeholder:
+        api_secret: ''
+    register_button: ''
+    title: ''
+profile:
+    button:
+        save: ''
+    change_avatar:
+        button:
+            close: ''
+            upload_my_own: ''
+    choose_avatar:
+        0: ''
+        title: ''
+    placeholder:
+        name: ''
+        surname: ''
+        username: ''
+    title: ''
+register:
+    cancel: ''
+    placeholder:
+        terms: ''
+    privacy_policy: ''
+    register_button: ''
+    title: ''
+show_only: ''
+status: ''
+translation:
+    hint:
+        screenshot_to_help: ''
+translations:
+    button:
+        close: ''
+    change_key_dialog:
+        error:
+            not_enough_parameters: ''
+    dialog:
+        button:
+            close: ''
+            save: ''
+        change_key:
+            title: ''
+    new_key_dialog:
+        button:
+            close: ''
+            save: ''
+        error:
+            bundle_blank: ''
+            key_blank: ''
+            not_enough_parameters: ''
+        help: ''
+        key: ''
+        select_one: ''
+        title: ''
+    translation_logs:
+        title: ''
+upload_screenshot: ''
+user:
+    permissions:
+        sure_to_remove: ''
+users:
+    permissions:
+        add_user:
+            button:
+                add: ''
+            label: ''
+        remove_user:
+            button:
+                remove: ''
