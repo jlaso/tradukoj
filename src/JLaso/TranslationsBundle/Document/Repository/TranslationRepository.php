@@ -8,35 +8,35 @@ use JLaso\TranslationsBundle\Document\Translation;
 
 class TranslationRepository extends DocumentRepository
 {
-    public function getCatalogs($projectId)
-    {
-        $dm = $this->getDocumentManager();
-
-        /** @var Translation[] $result */
-        $result = $dm->getRepository('TranslationsBundle:Translation')->findBy(array('projectId'=>$projectId));
-
-        $catalogs = array();
-        foreach($result as $item){
-            $catalogs[$item->getCatalog()] = null;
-        }
-
-        return array_keys($catalogs);
-    }
-
-    public function getBundles($projectId)
-    {
-        $dm = $this->getDocumentManager();
-
-        /** @var Translation[] $result */
-        $result = $dm->getRepository('TranslationsBundle:Translation')->findBy(array('projectId'=>$projectId));
-
-        $bundles = array();
-        foreach($result as $item){
-            $bundles[$item->getBundle()] = null;
-        }
-
-        return array_keys($bundles);
-    }
+//    public function getCatalogs($projectId)
+//    {
+//        $dm = $this->getDocumentManager();
+//
+//        /** @var Translation[] $result */
+//        $result = $dm->getRepository('TranslationsBundle:Translation')->findBy(array('projectId'=>$projectId));
+//
+//        $catalogs = array();
+//        foreach($result as $item){
+//            $catalogs[$item->getCatalog()] = null;
+//        }
+//
+//        return array_keys($catalogs);
+//    }
+//
+//    public function getBundles($projectId)
+//    {
+//        $dm = $this->getDocumentManager();
+//
+//        /** @var Translation[] $result */
+//        $result = $dm->getRepository('TranslationsBundle:Translation')->findBy(array('projectId'=>$projectId));
+//
+//        $bundles = array();
+//        foreach($result as $item){
+//            $bundles[$item->getBundle()] = null;
+//        }
+//
+//        return array_keys($bundles);
+//    }
 
     public function getKeys($projectId, $catalog, $onlyLanguage = '', $approvedFilter = 'all')
     {
@@ -136,9 +136,52 @@ class TranslationRepository extends DocumentRepository
 
             }
         }
-        ksort($keys, SORT_STRING);  // ideally SORT_NATURAL ^ SORT_FLAG_CASE  but current server don't support this flags
+        ksort($keys, SORT_STRING);  // ideally SORT_NATURAL ^ SORT_FLAG_CASE  but current server doesn't support this flags
 
         return $keys;
+    }
+
+
+    public function getKeysByLanguage($projectId, $locales)
+    {
+        $dm = $this->getDocumentManager();
+
+        /** @var Translation[] $result */
+        $result = $dm->getRepository('TranslationsBundle:Translation')
+            ->findBy(array(
+                    'projectId' => $projectId,
+                )
+                , array('key'));
+
+        $temp = array();
+
+        foreach($locales as $locale=>$info){
+
+            $temp[$locale] = array(
+                'approved' => 0,
+                'pending' => 0,
+                'info' => array( 'name' => $info['name'], 'locale' => $locale ),
+                'keys' => 0,
+            );
+
+        }
+
+        foreach($result as $item){
+            $translations = $item->getTranslations();
+
+            foreach($locales as $locale=>$info){
+
+                if($translations[$locale]['message']){
+                    if($translations[$locale]['approved']){
+                        $temp[$locale]['approved']++;
+                    }else{
+                        $temp[$locale]['pending']++;
+                    }
+                }
+            }
+        }
+
+        return $temp;
     }
 
     public function searchKeys($projectId, $search)

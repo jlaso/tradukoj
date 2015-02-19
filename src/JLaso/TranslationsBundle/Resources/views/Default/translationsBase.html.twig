@@ -916,9 +916,11 @@
                 e.preventDefault();
                 var keyNew = $('input[name="key-name"]').val();
                 var keyOld = $("#current-key").html();
+                var bundleOld = $(this).attr("data-bundle");
                 var catalog = $(this).attr("data-role");
+                var bundle = $("#change_key_bundle :selected").val();
                 console.log(keyOld + ' to ' +keyNew);
-                if(keyNew && (keyNew!=keyOld)){
+                if(bundle && keyNew && ((keyNew!=keyOld) || (bundleOld!=bundle))){
                     $.ajax({
                         url: "{{ path('translations_change_key', {"projectId":project.id}) }}",
                         type: "post",
@@ -926,7 +928,8 @@
                             keyOld: keyOld,
                             keyNew: keyNew,
                             current: "{{ current }}",
-                            catalog: catalog
+                            catalog: catalog,
+                            bundle: bundle
                         },
                         success: function(data){
                             if(data.result){
@@ -944,6 +947,8 @@
                             console.log(text);
                         }
                     })
+                }else{
+                    $("#change-key").modal("hide");
                 }
             });
 

@@ -4,7 +4,7 @@ namespace JLaso\TranslationsBundle\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 use Doctrine\Bundle\MongoDBBundle\Validator\Constraints\Unique as MongoDBUnique;
-use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
+//use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -13,6 +13,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * @MongoDBUnique(fields="projectId,catalog,key")
  * @MongoDB\Document(repositoryClass="JLaso\TranslationsBundle\Document\Repository\TranslationRepository")
+ * HasLifecycleCallbacks
  */
 class Translation
 {
