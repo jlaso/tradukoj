@@ -2,6 +2,8 @@
 
 cd /vagrant
 
+sudo chmod -R 777 /tmp
+
 echo "Copying the conf of cli to apache\n"
 cp /etc/php5/cli/php.ini /etc/php5/apache2/php.ini
 echo "Restarting apache\n"

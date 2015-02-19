@@ -260,7 +260,7 @@ class SecurityController extends BaseController
                 try{
                     $send = $mailer->sendWelcomeMessage($user);
                 }catch(\Exception $e){
-
+                    $send = "Error sending welcome mail";
                 }
                 if(is_string($send)){
                     $this->addNoticeFlash($send);
