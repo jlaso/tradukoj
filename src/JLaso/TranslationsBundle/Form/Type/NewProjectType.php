@@ -15,14 +15,13 @@ class NewProjectType extends AbstractType
             ->add('project', null, array(
                     'attr' => array(
                         'placeholder' => 'new_project.placeholder.project',
-                    )
+                    ),
                 ))
-
 
             ->add('name', null, array(
                     'attr' => array(
                         'placeholder' => 'new_project.placeholder.name',
-                    )
+                    ),
                 ))
 
             ->add('api_secret', null, array(
@@ -30,12 +29,12 @@ class NewProjectType extends AbstractType
                     'constraints' => new NotBlank(),
                     'attr' => array(
                         'placeholder' => 'new_project.placeholder.api_secret',
-                    )
+                    ),
                 ))
             ->add('managed_locales', null, array(
                     'attr' => array(
                         'placeholder' => 'new_project.placeholder.managed_locales',
-                    )
+                    ),
                 ))
         ;
     }
@@ -43,7 +42,7 @@ class NewProjectType extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
-                'data_class' => 'JLaso\TranslationsBundle\Entity\Project'
+                'data_class' => 'JLaso\TranslationsBundle\Entity\Project',
             ));
     }
 

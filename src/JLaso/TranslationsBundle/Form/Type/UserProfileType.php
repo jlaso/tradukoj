@@ -16,10 +16,9 @@ class UserProfileType extends AbstractType
                     'attr'        => array(
                         'placeholder' => 'profile.placeholder.email',
                     ),
-                    'required'    => true,                    
+                    'required'    => true,
                     'constraints' => new NotBlank(),
                 ))
-
 
             ->add('password', 'repeated', array(
                     'label'   => '',
@@ -39,7 +38,7 @@ class UserProfileType extends AbstractType
                         'attr' => array(
                             'placeholder' => 'profile.placeholder.repeat_password',
                         ),
-                        'label' => ''
+                        'label' => '',
                     ),
                 ))
 
@@ -65,7 +64,7 @@ class UserProfileType extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
-                'data_class' => 'JLaso\TranslationsBundle\Entity\User'
+                'data_class' => 'JLaso\TranslationsBundle\Entity\User',
             ));
     }
 

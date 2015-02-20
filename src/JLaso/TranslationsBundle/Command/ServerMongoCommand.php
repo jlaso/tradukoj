@@ -12,7 +12,6 @@ namespace JLaso\TranslationsBundle\Command;
  *
  *
  */
-
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -122,59 +121,59 @@ class ServerMongoCommand extends ContainerAwareCommand
     protected function readSocket($compress = true)
     {
         $buffer = '';
-        do{
-            if((time() - $this->timeStart) > 100){
+        do {
+            if ((time() - $this->timeStart) > 100) {
                 exit -1;
             }
             $buf = socket_read($this->msgsock, 15 + 1024, PHP_BINARY_READ);
-            if($buf === false){
-                echo "socket_read() failed: reason: " . socket_strerror(socket_last_error($this->msgsock)) . "\n";
+            if ($buf === false) {
+                echo "socket_read() failed: reason: ".socket_strerror(socket_last_error($this->msgsock))."\n";
+
                 return -2;
             }
 
-            if(!trim($buf)){
+            if (!trim($buf)) {
                 return '';
             }
 
-            if(substr_count($buf, ":") < 3){
+            if (substr_count($buf, ":") < 3) {
                 var_dump($buf);
                 die('error in format');
             }
             list($size, $block, $blocks)  = explode(":", $buf);
             $aux = substr($buf, 15);
 
-            if($this->debug){
+            if ($this->debug) {
                 echo sprintf("%d/%d blocks (start of block %s)\n", $block, $blocks, substr($aux, 0, 10));
             }
 
-            if($size == strlen($aux)){
+            if ($size == strlen($aux)) {
                 $this->send(self::ACK);
-            }else{
+            } else {
                 $this->send(self::NO_ACK);
                 die(sprintf('error in size (block %d of %d): informed %d vs %d read', $block, $blocks, $size, strlen($aux)));
             }
 
             $buffer .= $aux;
-
-        }while($block < $blocks);
+        } while ($block < $blocks);
 
         $this->received += strlen($buffer);
         $size = $this->prettySize($this->received);
         echo "v " , $size, "  ";
 
-        if($compress){
-            if($this->lzfUse){
+        if ($compress) {
+            if ($this->lzfUse) {
                 $result = lzf_decompress($buffer);
-            }else{
+            } else {
                 $result = gzuncompress($buffer);
             }
-        }else{
+        } else {
             $result = $buffer;
         }
 
-        if($this->debug){
+        if ($this->debug) {
             $aux = json_decode($result, true);
-            if(isset($aux['data'])){
+            if (isset($aux['data'])) {
                 //var_dump($aux);
                 echo sprintf("received %d keys\n", count($aux['data']));
             }
@@ -197,7 +196,7 @@ class ServerMongoCommand extends ContainerAwareCommand
         ob_implicit_flush();
         $this->timeStart = time();
 
-        if($input->getOption('lzf') && (strtolower($input->getOption('lzf')) == 'no')){
+        if ($input->getOption('lzf') && (strtolower($input->getOption('lzf')) == 'no')) {
             $this->lzfUse = false;
         };
 
@@ -210,29 +209,29 @@ class ServerMongoCommand extends ContainerAwareCommand
         $port    = $input->getArgument('port');
 
         if (($sock = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) === false) {
-            echo "socket_create() error: " . socket_strerror(socket_last_error()) . "\n";
+            echo "socket_create() error: ".socket_strerror(socket_last_error())."\n";
         }
 
         if (socket_bind($sock, $address, $port) === false) {
-            echo "socket_bind() error: " . socket_strerror(socket_last_error($sock)) . "\n";
+            echo "socket_bind() error: ".socket_strerror(socket_last_error($sock))."\n";
         }
 
         if (socket_listen($sock, 5) === false) {
-            echo "socket_listen() error: " . socket_strerror(socket_last_error($sock)) . "\n";
+            echo "socket_listen() error: ".socket_strerror(socket_last_error($sock))."\n";
         }
 
         do {
             if (($this->msgsock = socket_accept($sock)) === false) {
-                echo "socket_accept() error: " . socket_strerror(socket_last_error($sock)) . "\n";
+                echo "socket_accept() error: ".socket_strerror(socket_last_error($sock))."\n";
                 break;
             }
-            $this->send("Welcome to Tradukoj (" . self::VERSION . ") lzf: " . ($this->lzfUse ? "yes":"no"));
+            $this->send("Welcome to Tradukoj (".self::VERSION.") lzf: ".($this->lzfUse ? "yes" : "no"));
 
             do {
                 $buf = $this->readSocket();
 
-                if($buf){
-                    try{
+                if ($buf) {
+                    try {
                         $read     = json_decode($buf, true);
                         /**
                          * fixed or not data that comes with the data received
@@ -247,11 +246,11 @@ class ServerMongoCommand extends ContainerAwareCommand
                         $comment  = isset($read['comment']) ? $read['comment'] : '';
                         $lastModification = isset($read['last_modification']) ? new \DateTime($read['last_modification']) : null;
 
-                        if($this->showCommand){
+                        if ($this->showCommand) {
                             $output->writeln($command);
                         }
 
-                        switch($command){
+                        switch ($command) {
 
                             case self::CMD_PROJECTS:
                                 $projects = $this->getProjectIndex();
@@ -259,25 +258,25 @@ class ServerMongoCommand extends ContainerAwareCommand
                                 break;
 
                             case self::CMD_CATALOG_INDEX:
-                                if($this->validateRequest($buf)){
+                                if ($this->validateRequest($buf)) {
                                     $this->getCatalogIndex($this->project->getId());
                                 };
                                 break;
 
                             case self::CMD_TRANSDOC_INDEX:
-                                if($this->validateRequest($buf)){
+                                if ($this->validateRequest($buf)) {
                                     $this->getCatalogIndex($this->project->getId());
                                 };
                                 break;
 
                             case self::CMD_TRANSDOC_SYNC:
-                                if($this->validateRequest($buf)){
+                                if ($this->validateRequest($buf)) {
                                     $this->transDocSync($this->project->getId(), $bundle, $key, $locale, $fileName, $message, $lastModification);
                                 };
                                 break;
 
                             case self::CMD_TRANSDOC_GET:
-                                if($this->validateRequest($buf)){
+                                if ($this->validateRequest($buf)) {
                                     $this->getCatalogIndex($this->project->getId());
                                 };
                                 break;
@@ -346,14 +345,14 @@ class ServerMongoCommand extends ContainerAwareCommand
 //                                break;
 
                             case self::CMD_UPLOAD_KEYS:
-                                if($this->validateRequest($buf)){
+                                if ($this->validateRequest($buf)) {
                                     $data = isset($read['data']) ? $read['data'] : null;
                                     $this->receiveKeys($this->project, $catalog, $data);
                                 }
                                 break;
 
                             case self::CMD_DOWNLOAD_KEYS:
-                                if($this->validateRequest($buf)){
+                                if ($this->validateRequest($buf)) {
                                     $data = isset($read['data']) ? $read['data'] : null;
                                     $this->sendKeys($this->project, $catalog);
                                 }
@@ -370,19 +369,16 @@ class ServerMongoCommand extends ContainerAwareCommand
                                 $this->exception(sprintf('command \'%s\' unknow', $command));
                                 break;
                         }
-                    }catch(\Exception $e){
-                        $msg = $e->getCode() . ': ' . $e->getMessage() . ' in line ' . $e->getLine() . ' of file ' . $e->getFile();
+                    } catch (\Exception $e) {
+                        $msg = $e->getCode().': '.$e->getMessage().' in line '.$e->getLine().' of file '.$e->getFile();
                         $this->exception($msg);
-                        if($e->getCode() == 0){
-                            die('error grave: ' . $msg);
+                        if ($e->getCode() == 0) {
+                            die('error grave: '.$msg);
                         }
                     }
                 }
-
             } while (true);
-
         } while (true);
-
     }
 
     protected function getProjectIndex()
@@ -390,7 +386,7 @@ class ServerMongoCommand extends ContainerAwareCommand
         /** @var Project[] $projects */
         $projects = $this->getProjectRepository()->findAll();
         $result = array();
-        foreach($projects as $project){
+        foreach ($projects as $project) {
             $result[] = array(
                 'id'         => $project->getId(),
                 'name'       => $project->getName(),
@@ -416,11 +412,10 @@ class ServerMongoCommand extends ContainerAwareCommand
 
         $index = array();
 
-        foreach($documents as $document){
-
+        foreach ($documents as $document) {
             $files = $document->getFiles();
 
-            foreach($files as $file){
+            foreach ($files as $file) {
                 $index[] = array(
                     'bundle'    => $document->getBundle(),
                     'key'       => $document->getKey(),
@@ -429,7 +424,6 @@ class ServerMongoCommand extends ContainerAwareCommand
                     'updatedAt' => $file->getUpdatedAt()->format('c'),
                 );
             }
-
         }
 
         return $this->resultOk(array('documents' => $index));
@@ -448,7 +442,7 @@ class ServerMongoCommand extends ContainerAwareCommand
             )
         );
 
-        if(!$document){
+        if (!$document) {
             $document = new TranslatableDocument();
             $document->setProjectId($projectId);
             $document->setBundle($bundle);
@@ -459,25 +453,23 @@ class ServerMongoCommand extends ContainerAwareCommand
 
         $found = false;
 
-        if($files){
-            foreach($files as $file){
-
-                if($file->getLocale() == $locale){
+        if ($files) {
+            foreach ($files as $file) {
+                if ($file->getLocale() == $locale) {
                     $found = true;
                     break;
                 }
-
             }
-        }else{
+        } else {
             $files = new ArrayCollection();
         }
 
         $updatedAt = $lastModification->getTimestamp();
-        if($found){
-            if($file->getUpdatedAt() < $updatedAt){
+        if ($found) {
+            if ($file->getUpdatedAt() < $updatedAt) {
                 $file->setMessage($message);
                 $file->setUpdatedAt($updatedAt);
-            }else{
+            } else {
                 return $this->resultOk(
                     array(
                         'updated'   => false,
@@ -486,7 +478,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                     )
                 );
             }
-        }else{
+        } else {
             $file = new File();
             $file->setMessage($message);
             $file->setUpdatedAt($updatedAt);
@@ -505,40 +497,39 @@ class ServerMongoCommand extends ContainerAwareCommand
 
     protected function sendMessage($msg, $compress = true)
     {
-        if($compress){
-            if($this->lzfUse){
+        if ($compress) {
+            if ($this->lzfUse) {
                 $msg = lzf_compress($msg);
-            }else{
+            } else {
                 $msg = gzcompress($msg, 9);
             }
-        }else{
+        } else {
             $msg .= PHP_EOL;
         }
 
         $len = strlen($msg);
-        if($this->debug){
-            print "sending {$len} chars" . PHP_EOL;
+        if ($this->debug) {
+            print "sending {$len} chars".PHP_EOL;
         }
 
         $blocks = ceil($len / self::BLOCK_SIZE);
-        for($i=0; $i<$blocks; $i++){
-
+        for ($i = 0; $i<$blocks; $i++) {
             $block = substr($msg, $i * self::BLOCK_SIZE,
                 ($i == $blocks-1) ? $len - ($i-1) * self::BLOCK_SIZE : self::BLOCK_SIZE);
             $prefix = sprintf("%06d:%03d:%03d:", strlen($block), $i+1, $blocks);
-            $aux =  $prefix . $block;
-            if($this->debug){
+            $aux =  $prefix.$block;
+            if ($this->debug) {
                 print sprintf("sending block %d from %d, prefix = %s\n", $i+1, $blocks, $prefix);
             }
 
-            if(false === socket_write($this->msgsock, $aux, strlen($aux))){
+            if (false === socket_write($this->msgsock, $aux, strlen($aux))) {
                 die('error');
             };
 
-            do{
+            do {
                 $read = socket_read($this->msgsock, 10, PHP_NORMAL_READ);
                 //print $read;
-            }while(strpos($read, self::ACK) !== 0);
+            } while (strpos($read, self::ACK) !== 0);
         }
         $this->sended += strlen($msg);
         $size = $this->prettySize($this->sended);
@@ -555,8 +546,8 @@ class ServerMongoCommand extends ContainerAwareCommand
     protected function resultOk($data = array())
     {
         $data['result'] = true;
-        $result = json_encode($data) . PHP_EOL;
-        if($this->debug){
+        $result = json_encode($data).PHP_EOL;
+        if ($this->debug) {
             print $result;
         }
 
@@ -569,8 +560,8 @@ class ServerMongoCommand extends ContainerAwareCommand
                 'result' => false,
                 'reason' => $reason,
             )
-        ) . PHP_EOL;
-        if($this->showExceptions){
+        ).PHP_EOL;
+        if ($this->showExceptions) {
             print $result;
         }
 
@@ -584,18 +575,18 @@ class ServerMongoCommand extends ContainerAwareCommand
         $gb = $mb * 1024;
 
         $result = "";
-        if($size > $gb){
-            $result .= intval($size/$gb) . 'Gb ';
+        if ($size > $gb) {
+            $result .= intval($size/$gb).'Gb ';
             $size -= $gb * intval($size/$gb);
         }
 
-        if($size > $mb){
-            $result .= intval($size/$mb, 3) . 'Mb ';
+        if ($size > $mb) {
+            $result .= intval($size/$mb, 3).'Mb ';
             $size -= $mb * intval($size/$mb);
         }
 
-        if($size > $kb){
-            $result .= intval($size/$kb) . 'Kb ';
+        if ($size > $kb) {
+            $result .= intval($size/$kb).'Kb ';
             $size -= $kb * intval($size/$kb);
         }
 
@@ -614,7 +605,7 @@ class ServerMongoCommand extends ContainerAwareCommand
         $this->project = null;
         $data          = json_decode($buffer, true);
         $projectId     = isset($data['project_id']) ? $data['project_id'] : 0;
-        if(!$projectId){
+        if (!$projectId) {
             $this->exception('invalid credentials');
 
             return false;
@@ -622,14 +613,13 @@ class ServerMongoCommand extends ContainerAwareCommand
         $key           = $data['auth.key'];
         $secret        = $data['auth.secret'];
         $this->project = $this->getProjectRepository()->find($projectId);
-        if(!$this->project){
+        if (!$this->project) {
             $this->exception('invalid project');
 
             return false;
         }
 
         return ($key == $this->project->getApiKey()) && ($secret == $this->project->getApiSecret());
-
     }
 
     /**
@@ -648,7 +638,7 @@ class ServerMongoCommand extends ContainerAwareCommand
             )
         );
 
-        if(!$keyRecord){
+        if (!$keyRecord) {
             return $this->exception('No key found in this bundle');
         }
         /** @var Message $message */
@@ -657,7 +647,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                 'language' => $language,
             )
         );
-        if(!$message){
+        if (!$message) {
             return $this->exception('No message found in this key/language');
         }
 
@@ -675,7 +665,7 @@ class ServerMongoCommand extends ContainerAwareCommand
      */
     public function getTranslations(Project $project, $bundle, $key, $catalog)
     {
-        if(!$project || !$bundle || !$key || !$catalog){
+        if (!$project || !$bundle || !$key || !$catalog) {
             return $this->exception('missing parameters');
         }
         /** @var Key $keyRecord */
@@ -687,11 +677,11 @@ class ServerMongoCommand extends ContainerAwareCommand
             )
         );
 
-        if(!$keyRecord){
+        if (!$keyRecord) {
             return $this->exception('No key found in this bundle');
         }
         $messages = array();
-        foreach($keyRecord->getMessages() as $message){
+        foreach ($keyRecord->getMessages() as $message) {
             $messages[$message->getLanguage()] = array(
                 'message'           => $message->getMessage(),
                 'last_modification' => $message->getUpdatedAt()->format('U'),
@@ -706,7 +696,7 @@ class ServerMongoCommand extends ContainerAwareCommand
      */
     protected function getComment(Project $project, $bundle, $key, $catalog)
     {
-        if(!$project || !$bundle || !$key || !$catalog){
+        if (!$project || !$bundle || !$key || !$catalog) {
             return $this->exception('missing parameters');
         }
         /** @var Key $keyRecord */
@@ -718,7 +708,7 @@ class ServerMongoCommand extends ContainerAwareCommand
             )
         );
 
-        if(!$keyRecord){
+        if (!$keyRecord) {
             return $this->exception('No key found in this bundle');
         }
 
@@ -730,12 +720,11 @@ class ServerMongoCommand extends ContainerAwareCommand
         );
     }
 
-
     /**
      */
     public function updateMessageIfNewest(Project $project, $bundle, $key, $language, $catalog, $lastModification, $message)
     {
-        if(!$bundle || !$language || !$key || !$lastModification || !$message){
+        if (!$bundle || !$language || !$key || !$lastModification || !$message) {
             return $this->exception('Validation exceptions, missing parameters');
         }
         /** @var Key $keyRecord */
@@ -747,7 +736,7 @@ class ServerMongoCommand extends ContainerAwareCommand
             )
         );
 
-        if(!$keyRecord){
+        if (!$keyRecord) {
             $keyRecord = new Key();
             $keyRecord->setProject($project);
             $keyRecord->setKey($key);
@@ -762,12 +751,12 @@ class ServerMongoCommand extends ContainerAwareCommand
                 'language' => $language,
             )
         );
-        if(!$messageRecord){
+        if (!$messageRecord) {
             $messageRecord = new Message();
             $messageRecord->setKey($keyRecord);
             $messageRecord->setLanguage($language);
-        }else{
-            if($messageRecord->getUpdatedAt() >= $lastModification){
+        } else {
+            if ($messageRecord->getUpdatedAt() >= $lastModification) {
                 return $this->resultOk(array(
                         'updated'   => false,
                         'message'   => $messageRecord->getMessage(),
@@ -793,7 +782,7 @@ class ServerMongoCommand extends ContainerAwareCommand
      */
     public function updateCommentIfNewest(Project $project, $bundle, $key, $catalog, $lastModification, $comment)
     {
-        if(!$bundle || !$lastModification || !$comment || !$key){
+        if (!$bundle || !$lastModification || !$comment || !$key) {
             return $this->exception('Validation exceptions, missing parameters');
         }
         $keyRecord = $this->getKeyRepository()->findOneBy(array(
@@ -803,13 +792,13 @@ class ServerMongoCommand extends ContainerAwareCommand
                 'catalog'  => $catalog,
             )
         );
-        if(!$keyRecord instanceof Key){
+        if (!$keyRecord instanceof Key) {
             $keyRecord = new Key();
             $keyRecord->setBundle($bundle);
             $keyRecord->setKey($key);
             $keyRecord->setCatalog($catalog);
-        }else{
-            if($keyRecord->getUpdatedAt() >= $lastModification){
+        } else {
+            if ($keyRecord->getUpdatedAt() >= $lastModification) {
                 return $this->resultOk(array(
                         'updated'   => false,
                         'message'   => $keyRecord->getComment(),
@@ -834,27 +823,26 @@ class ServerMongoCommand extends ContainerAwareCommand
 
     protected function blockSync(Project $project, $catalog, $language, $bundle, $data)
     {
-        if(!$bundle || !$data || !$language || !$bundle || !$catalog){
+        if (!$bundle || !$data || !$language || !$bundle || !$catalog) {
             return $this->exception('Validation exceptions, missing parameters');
         }
         $result = array();
 
         /** @var Message[] $localMessages */
         $localMessages = $this->translationsManager->getMessagesForBundleCatalogAndLocale($project, $bundle, $catalog, $language);
-        foreach($localMessages as $message){
-
+        foreach ($localMessages as $message) {
             $key = $message->getKey();
             $remoteMessage = isset($data[$key]) ? $data[$key] : null;
 
-            if($remoteMessage){
+            if ($remoteMessage) {
                 $remoteDate = new \DateTime($remoteMessage['updatedAt']);
-                if($message->getUpdatedAt() < $remoteDate){
+                if ($message->getUpdatedAt() < $remoteDate) {
                     $message->setMessage($remoteMessage['message']);
                     $message->setUpdatedAt($remoteDate);
                     $this->em->persist($message);
                 }
             }
-            if($message->getApproved()){
+            if ($message->getApproved()) {
                 $result[] = $message->asArray();
             }
         }
@@ -900,7 +888,7 @@ class ServerMongoCommand extends ContainerAwareCommand
      */
     protected function receiveKeys(Project $project, $catalog, $data)
     {
-        if(!$project || !$catalog|| !$data){
+        if (!$project || !$catalog || !$data) {
             return $this->exception('Validation exceptions, missing parameters');
         }
         $result = array();
@@ -913,55 +901,48 @@ class ServerMongoCommand extends ContainerAwareCommand
             )
         );
 
-        if($this->debug){
+        if ($this->debug) {
             echo sprintf("found %d in translations\n", count($messages));
         }
 
-        foreach($messages as $message){
-
+        foreach ($messages as $message) {
             $key = $message->getKey();
             $bundle = '';
             $translations = $message->getTranslations();
             $dirty = false;
 
-            if(count($translations)){
-
-                foreach($translations as $locale=>$translation){
-
-                    if(isset($data[$key][$locale])){
-
+            if (count($translations)) {
+                foreach ($translations as $locale => $translation) {
+                    if (isset($data[$key][$locale])) {
                         $current = $data[$key][$locale];
                         $updatedAt = new \DateTime($current['updatedAt']);
 
-                        if($message->getUpdatedAt()->sec < intval($updatedAt->format("U"))){
-
+                        if ($message->getUpdatedAt()->sec < intval($updatedAt->format("U"))) {
                             $result[$key][$locale]              = $current['updatedAt'];
                             $translations[$locale]['message']   = $current['message'];
                             $translations[$locale]['updatedAt'] = $updatedAt;
-                            if(isset($current['approved'])){
+                            if (isset($current['approved'])) {
                                 $translations[$locale]['approved'] = $current['approved'];
                             }
                             $dirty = true;
-
                         }
 
                         $translations[$locale]['fileName']  = $current['fileName'];
 
-                        if(!$bundle){
-                            if($current['bundle']){
+                        if (!$bundle) {
+                            if ($current['bundle']) {
                                 $bundle = $current['bundle'];
-                            }else{
+                            } else {
                                 preg_match('/\/(?<bundle>\w+Bundle)\//i', $current['fileName'], $matches);
-                                if(isset($matches['bundle'])){
+                                if (isset($matches['bundle'])) {
                                     $bundle = $matches['bundle'];
                                 }
                             }
                         }
                         unset($data[$key][$locale]);
-
                     }
                 }
-                if($dirty){
+                if ($dirty) {
                     $message->setBundle($bundle);
                     $message->setTranslations($translations);
 
@@ -970,15 +951,13 @@ class ServerMongoCommand extends ContainerAwareCommand
             }
         }
 
-        if($this->debug){
+        if ($this->debug) {
             echo sprintf("found %d keys in data\n", count($data));
         }
 
-        foreach($data as $key=>$dataLocale){
-
-            if(count($dataLocale)){
-
-                if($this->debug){
+        foreach ($data as $key => $dataLocale) {
+            if (count($dataLocale)) {
+                if ($this->debug) {
                     echo sprintf("processing key %s\n", $key);
                 }
 
@@ -992,8 +971,7 @@ class ServerMongoCommand extends ContainerAwareCommand
 
                 $translations = array();
 
-                foreach($dataLocale as $locale=>$message){
-
+                foreach ($dataLocale as $locale => $message) {
                     $translations[$locale] = array(
                         'message'   => $message['message'],
                         'updatedAt' => new \DateTime($message['updatedAt']),
@@ -1001,12 +979,12 @@ class ServerMongoCommand extends ContainerAwareCommand
                         'fileName'  => $message['fileName'],
                     );
 
-                    if(!$bundle){
-                        if($message['bundle']){
+                    if (!$bundle) {
+                        if ($message['bundle']) {
                             $bundle = $message['bundle'];
-                        }else{
+                        } else {
                             preg_match('/\/(?<bundle>\w+Bundle)\//i', $current['fileName'], $matches);
-                            if(isset($matches['bundle'])){
+                            if (isset($matches['bundle'])) {
                                 $bundle = $matches['bundle'];
                             }
                         }
@@ -1016,9 +994,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                 $translation->setBundle($bundle);
                 $translation->setTranslations($translations);
                 $this->dm->persist($translation);
-
             }
-
         }
 
         $this->dm->flush();
@@ -1040,7 +1016,7 @@ class ServerMongoCommand extends ContainerAwareCommand
      */
     protected function sendKeys(Project $project, $catalog)
     {
-        if(!$project || !$catalog){
+        if (!$project || !$catalog) {
             return $this->exception("Validation exceptions, missing parameters project={$project->getId()}, catalog=$catalog");
         }
 
@@ -1054,13 +1030,13 @@ class ServerMongoCommand extends ContainerAwareCommand
             array('key' => 'ASC')
         );
 
-        if($this->debug){
+        if ($this->debug) {
             echo sprintf("found %d in translations\n", count($messages));
         }
 
         $data    = array();
         $bundles = array();
-        foreach($messages as $message){
+        foreach ($messages as $message) {
             $key           = $message->getKey();
             $data[$key]    = $message->getTranslations();
             $bundles[$key] = $message->getBundle();
@@ -1081,6 +1057,4 @@ class ServerMongoCommand extends ContainerAwareCommand
     {
         return $this->em->getRepository('TranslationsBundle:Project');
     }
-
-
 }

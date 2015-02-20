@@ -4,9 +4,6 @@ namespace JLaso\TranslationsBundle\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 use Doctrine\Bundle\MongoDBBundle\Validator\Constraints\Unique as MongoDBUnique;
-use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
-use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * TranslatableDocument
@@ -221,11 +218,8 @@ class TranslatableDocument
         return $this->updatedAt;
     }
 
-
-
     public function getHash()
     {
         return base64_encode(sha1($this->getId()));
     }
-
 }

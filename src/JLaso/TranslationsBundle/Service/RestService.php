@@ -2,7 +2,6 @@
 /**
  * @author jlaso@joseluislaso.es
  */
-
 namespace JLaso\TranslationsBundle\Service;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -13,9 +12,9 @@ class RestService
 //    /** @var  Request */
 //    protected $request;
 
-    function __construct(/*Request $request*/)
+    public function __construct(/*Request $request*/)
     {
-//        $this->request = $request;
+        //        $this->request = $request;
     }
 
     /**
@@ -46,7 +45,7 @@ class RestService
     }
 
     /**
-     * @param array  $data
+     * @param array $data
      *
      * @return mixed
      */
@@ -61,5 +60,4 @@ class RestService
             )
         );
     }
-
 }

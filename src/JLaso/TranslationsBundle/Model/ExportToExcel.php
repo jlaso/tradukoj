@@ -5,9 +5,7 @@
  * Date: 10/01/14
  * Time: 19:48
  */
-
 namespace JLaso\TranslationsBundle\Model;
-
 
 use JLaso\TranslationsBundle\Entity\Project;
 
@@ -33,7 +31,7 @@ class ExportToExcel
      */
     protected $locales;
 
-    function __construct(Project $project, $locale = "")
+    public function __construct(Project $project, $locale = "")
     {
         $this->project     = $project;
         $this->locales     = $project->getManagedLocales();
@@ -104,7 +102,4 @@ class ExportToExcel
     {
         return $this->compress_variables;
     }
-
-
-
-} 
+}

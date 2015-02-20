@@ -2,10 +2,8 @@
 /**
  * @author jlaso@joseluislaso.es
  */
-
 namespace JLaso\TranslationsBundle\Service\Manager;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use JLaso\TranslationsBundle\Document\ProjectInfo;
 use JLaso\TranslationsBundle\Document\Repository\ProjectInfoRepository;
@@ -19,8 +17,6 @@ use Doctrine\ODM\MongoDB\DocumentManager;
 use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
 use JLaso\TranslationsBundle\Entity\Repository\TranslationLogRepository;
 
-
-
 class TranslationsManager
 {
 
@@ -29,7 +25,7 @@ class TranslationsManager
     /** @var  DocumentManager */
     protected $dm;
 
-    function __construct(EntityManagerInterface $em, DocumentManager $dm)
+    public function __construct(EntityManagerInterface $em, DocumentManager $dm)
     {
         $this->em = $em;
         $this->dm = $dm;
@@ -47,7 +43,7 @@ class TranslationsManager
     {
         $node = $keyedArray; //str_replace('.', '-', $keyedArray);
         $keys = explode('.', $keyedArray);
-        for($i=count($keys); $i>0; $i--){
+        for ($i = count($keys); $i>0; $i--) {
             $k = $keys[$i-1];
             $node = array( $k => $node);
         }
@@ -65,7 +61,7 @@ class TranslationsManager
     public function userHasProject(User $user, Project $project)
     {
         $permission = $this->getPermissionForUserAndProject($user, $project);
-        if($permission instanceof Permission){
+        if ($permission instanceof Permission) {
             return $permission->getPermissions();
         }
 
@@ -92,7 +88,7 @@ class TranslationsManager
      */
     public function getTranslation(Project $project, $criteria, $key)
     {
-        if(strpos($criteria, "Bundle") !== false){
+        if (strpos($criteria, "Bundle") !== false) {
             $bundle = $criteria;
             $translation = $this->getTranslationRepository()->findOneBy(array(
                     'projectId' => intval($project->getId()),
@@ -100,14 +96,14 @@ class TranslationsManager
                     'key'       => trim($key),
                 )
             );
-        }else{
+        } else {
             $catalog = $criteria;
             $translation = $this->getTranslationRepository()->getTranslation($project->getId(), $catalog, $key);
         }
-        if(!$translation){
-            return null;
+        if (!$translation) {
+            return;
         }
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
 
         return $this->normalizeTranslation($translation, $managedLocales);
     }
@@ -125,15 +121,15 @@ class TranslationsManager
     {
         $transArray = $translation->getTranslations();
         // normalize the translation array
-        foreach($managedLocales as $locale){
-            if(!isset($transArray[$locale])){
+        foreach ($managedLocales as $locale) {
+            if (!isset($transArray[$locale])) {
                 $transArray[$locale] = Translation::genTranslationItem('');
             }
         }
         // deletes message if locale do not exists yet in managed locales
-        if($deletesIfNotExistsLocaleInManaged){
-            foreach($transArray as $locale=>$data){
-                if(!in_array($locale, $managedLocales)){
+        if ($deletesIfNotExistsLocaleInManaged) {
+            foreach ($transArray as $locale => $data) {
+                if (!in_array($locale, $managedLocales)) {
                     unset($transArray[$locale]);
                 }
             }
@@ -177,15 +173,15 @@ class TranslationsManager
     public function putTranslation(Project $project, $criteria, $key, $locale, $message)
     {
         // first get the record
-        if(strpos($criteria, "Bundle") != false){
+        if (strpos($criteria, "Bundle") != false) {
             $translation = $this->getTranslationRepository()->getTranslationByBundle($project->getId(), $criteria, $key);
-        }else{
+        } else {
             $translation = $this->getTranslationRepository()->getTranslation($project->getId(), $criteria, $key);
         }
-        if(!$translation){
-            return null;
+        if (!$translation) {
+            return;
         }
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
         $translation = $this->normalizeTranslation($translation, $managedLocales);
         // now normalize (creates items for managed locales that not exists)
         $transArray = $translation->getTranslations();
@@ -202,13 +198,13 @@ class TranslationsManager
     public function putComment(Project $project, $criteria, $key, $comment)
     {
         // first get the record
-        if(strpos($criteria, "Bundle") != false){
+        if (strpos($criteria, "Bundle") != false) {
             $translation = $this->getTranslationRepository()->getTranslationByBundle($project->getId(), $criteria, $key);
-        }else{
+        } else {
             $translation = $this->getTranslationRepository()->getTranslation($project->getId(), $criteria, $key);
         }
-        if(!$translation){
-            return null;
+        if (!$translation) {
+            return;
         }
         $translation->setComment($comment);
         // last, return
@@ -225,7 +221,7 @@ class TranslationsManager
     {
         $projects = array();
         $permissions = $user->getPermissions();
-        foreach($permissions as $permission){
+        foreach ($permissions as $permission) {
             $projects[] = $permission->getProject();
         }
 
@@ -239,7 +235,7 @@ class TranslationsManager
      */
     public function keyToHtmlId($key)
     {
-        return str_replace('.','-',$key);
+        return str_replace('.', '-', $key);
     }
 
     /**
@@ -267,7 +263,6 @@ class TranslationsManager
 
     public function getStatistics(Project $project)
     {
-
         $bundleData  = array();
         $catalogData = array();
         $bundles     = array();
@@ -275,7 +270,7 @@ class TranslationsManager
 
         /** @var Translation[] $translations */
         $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId()));
-        foreach($translations as $translation){
+        foreach ($translations as $translation) {
             $key = $translation->getKey();
             $transArray = $translation->getTranslations();
             $bundle = $translation->getBundle();
@@ -283,21 +278,18 @@ class TranslationsManager
             $bundles[$bundle] = true;
             $catalogs[$catalog] = true;
 
-            foreach($transArray as $locale=>$data){
-
+            foreach ($transArray as $locale => $data) {
                 $message = $data['message'];
                 $numWords = count(preg_split('~[^\p{L}\p{N}\']+~u', $message));
-                if(!isset($bundleData[$bundle][$locale])){
+                if (!isset($bundleData[$bundle][$locale])) {
                     $bundleData[$bundle][$locale] = 0;
                 }
                 $bundleData[$bundle][$locale] += $numWords;
-                if(!isset($catalogData[$catalog][$locale])){
+                if (!isset($catalogData[$catalog][$locale])) {
                     $catalogData[$catalog][$locale] = 0;
                 }
                 $catalogData[$catalog][$locale] += $numWords;
-
             }
-
         }
 
         return array(
@@ -307,7 +299,6 @@ class TranslationsManager
             'bundleData'  => $bundleData,
             'catalogData' => $catalogData,
         );
-
     }
 
     /**
@@ -318,7 +309,7 @@ class TranslationsManager
     {
         /** @var ProjectInfo $projectInfo */
         $projectInfo = $this->getProjectInfoRepository()->getProjectInfo($projectId);
-        if(!$projectInfo){
+        if (!$projectInfo) {
             $projectInfo = new ProjectInfo();
             $projectInfo->setProjectId($projectId);
         }
@@ -326,9 +317,9 @@ class TranslationsManager
         $projectInfo->setCatalogs(array());
 
         /** @var Translation[] $translations */
-        $translations = $this->getTranslationRepository()->findBy(array("projectId"=>intval($projectId)));
+        $translations = $this->getTranslationRepository()->findBy(array("projectId" => intval($projectId)));
 
-        foreach($translations as $translation){
+        foreach ($translations as $translation) {
             $bundle = $translation->getBundle();
             $projectInfo->addBundle($bundle);
             $catalog = $translation->getCatalog();
@@ -371,6 +362,4 @@ class TranslationsManager
     {
         return $this->dm->getRepository('TranslationsBundle:ProjectInfo');
     }
-
-
 }

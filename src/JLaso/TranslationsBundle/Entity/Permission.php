@@ -1,7 +1,6 @@
 <?php
 namespace JLaso\TranslationsBundle\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -93,7 +92,7 @@ class Permission
     /**
      * Set createdAt
      *
-     * @param  \DateTime $createdAt
+     * @param \DateTime $createdAt
      */
     public function setCreatedAt($createdAt = null)
     {
@@ -158,7 +157,7 @@ class Permission
     public function getPermissions($key = null)
     {
         $permissions = json_decode($this->permissions, true);
-        if(null===$key){
+        if (null === $key) {
             return $permissions;
         }
 
@@ -167,9 +166,9 @@ class Permission
 
     protected function allLanguageCodes()
     {
-        $managed_locales = explode(",",$this->project->getManagedLocales());
+        $managed_locales = explode(",", $this->project->getManagedLocales());
         $managed_locales[] = self::WILD_KEY;
-        
+
         return $managed_locales;
     }
 
@@ -177,22 +176,21 @@ class Permission
     {
         $permissions = $this->getPermissions();
 
-        if(null === $language){
-            if(!in_array($permission, self::getAllowedGeneralPermissions())){
+        if (null === $language) {
+            if (!in_array($permission, self::getAllowedGeneralPermissions())) {
                 throw new \Exception(sprintf('addPermission: Permission %s not recognized', $permission));
             }
             $permissions[self::GENERAL_KEY] = $permission;
-        }else{
-            if(!in_array($permission, self::getAllowedLocalePermissions())){
+        } else {
+            if (!in_array($permission, self::getAllowedLocalePermissions())) {
                 throw new \Exception(sprintf('addPermission: Permission %s not recognized', $permission));
             }
-            if(!in_array($language, $this->allLanguageCodes())){
+            if (!in_array($language, $this->allLanguageCodes())) {
                 throw new \Exception(sprintf('addPermission: Language %s not recognized', $language));
             }
             $permissions[self::LOCALE_KEY][$language] = $permission;
         }
         $this->setPermissions($permissions);
-
     }
 
     public function isOwner()
@@ -221,11 +219,11 @@ class Permission
         $permissions = $this->getPermissions();
         $permissions = $permissions[self::LOCALE_KEY];
         // see if the locale has specific permissions
-        if(isset($permissions[$locale])){
+        if (isset($permissions[$locale])) {
             return $this->checkPermission($permissions[$locale], $permission);
-        }else{
+        } else {
             // else if there are general permissions (WILD_KEY) for all locales
-            if(isset($permissions[self::WILD_KEY])){
+            if (isset($permissions[self::WILD_KEY])) {
                 return $this->checkPermission($permissions[self::WILD_KEY], $permission);
             }
         }
@@ -235,7 +233,7 @@ class Permission
 
     public static function checkPermission($currentPermission, $permissionInquiried)
     {
-        switch(true){
+        switch (true) {
             case $currentPermission == self::ADMIN_PERM:
                 return true;
                 break;
@@ -252,10 +250,9 @@ class Permission
                 return false;
                 break;
             default:
-                throw new \Exception('checkPermission: Permission ' . $currentPermission . ' not recognized');
+                throw new \Exception('checkPermission: Permission '.$currentPermission.' not recognized');
         }
     }
-
 
     public static function getAllowedLocalePermissions()
     {
@@ -276,7 +273,4 @@ class Permission
             self::INVITED,
         );
     }
-
-
-
 }

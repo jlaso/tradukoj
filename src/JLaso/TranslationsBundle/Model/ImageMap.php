@@ -5,9 +5,7 @@
  * Date: 10/01/14
  * Time: 19:49
  */
-
 namespace JLaso\TranslationsBundle\Model;
-
 
 class ImageMap
 {
@@ -17,7 +15,7 @@ class ImageMap
     protected $w;
     protected $h;
 
-    function __construct($x = 0, $y = 0, $w = 0, $h = 0)
+    public function __construct($x = 0, $y = 0, $w = 0, $h = 0)
     {
         $this->h = $h;
         $this->w = $w;
@@ -104,6 +102,4 @@ class ImageMap
     {
         return $this->y;
     }
-
-
-} 
+}

@@ -3,25 +3,16 @@
 /**
  * @author Joseluis Laso <jlaso@joseluislaso.es>
  */
-
 namespace JLaso\TranslationsBundle\Command;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ORM\EntityManager;
 use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
 use JLaso\TranslationsBundle\Document\Translation;
 use JLaso\TranslationsBundle\Entity\Project;
 use JLaso\TranslationsBundle\Entity\Repository\ProjectRepository;
-use JLaso\TranslationsBundle\Entity\User;
-use JLaso\TranslationsBundle\Service\MailerService;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Helper\DialogHelper;
-use Symfony\Component\Console\Helper\HelperSet;
-use Symfony\Component\Console\Helper\TableHelper;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -68,13 +59,13 @@ class MoveKeysBetweenBundlesCommand extends ContainerAwareCommand
         /** @var TranslationRepository $translationsRepository */
         $translationsRepository = $dm->getRepository('TranslationsBundle:Translation');
 
-        if(intval($project)){
+        if (intval($project)) {
             $project = $projectRepository->find($project);
-        }else{
+        } else {
             $project = $projectRepository->findOneBy(array('name' => trim(strtolower($project))));
         }
         /** @var Project $project */
-        if(!$project){
+        if (!$project) {
             throw new \Exception('Project not found');
         }
         /** @var Translation[] $translations */
@@ -86,11 +77,8 @@ class MoveKeysBetweenBundlesCommand extends ContainerAwareCommand
         );
 
         $toMove = array();
-        foreach($translations as $translation){
-
-
-            if(preg_match('/'.$criteria.'/i', $translation->getKey() , $match)){
-
+        foreach ($translations as $translation) {
+            if (preg_match('/'.$criteria.'/i', $translation->getKey(), $match)) {
                 $output->writeln(
                     sprintf(
                         "\tFound key (%s) in catalog <comment>%s</comment>, bundle %s",
@@ -101,16 +89,12 @@ class MoveKeysBetweenBundlesCommand extends ContainerAwareCommand
                 );
 
                 $toMove[] = $translation;
-
             }
-
         }
 
-        if(!count($toMove)){
-
+        if (!count($toMove)) {
             $output->writeln("\n\t<info>There are no keys with this criteria/bundle!</info>");
             exit;
-
         }
 
         /** @var DialogHelper $dialog */
@@ -120,21 +104,13 @@ class MoveKeysBetweenBundlesCommand extends ContainerAwareCommand
             "<question>Confirm that you want to move the previous keys to bundle {$dest} ?</question>",
             false
         )) {
-
-            foreach($toMove as $translation){
-
+            foreach ($toMove as $translation) {
                 $translation->setBundle($dest);
                 $dm->persist($translation);
-
             }
 
             $dm->flush();
             $output->writeln(" done!");
-
         }
-
     }
-
-
-
 }

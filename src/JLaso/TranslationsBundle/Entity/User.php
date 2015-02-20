@@ -80,7 +80,7 @@ class User implements UserInterface, EquatableInterface
      * Random string sent to the user email address in order to verify it
      *
      * @ORM\Column(name="confirmation_token", type="string", length=255, nullable=true)
-     * 
+     *
      * @var string
      */
     protected $confirmationToken;
@@ -154,7 +154,7 @@ class User implements UserInterface, EquatableInterface
 
     public function prettyRole()
     {
-        switch(true){
+        switch (true) {
             case(in_array('ROLE_ADMIN', $this->getRoles())):
                 return 'ADMIN';
                 break;
@@ -262,7 +262,7 @@ class User implements UserInterface, EquatableInterface
 
     public function serialize()
     {
-       return serialize($this->getId());
+        return serialize($this->getId());
     }
 
     public function unserialize($data)
@@ -385,19 +385,18 @@ class User implements UserInterface, EquatableInterface
 
     public function getEditPassword()
     {
-         return $this->editPassword;
+        return $this->editPassword;
     }
 
     public function setEditPassword($password)
     {
-
-         $this->editPassword = $password;
+        $this->editPassword = $password;
     }
 
     /**
      * Set salt
      *
-     * @param string $salt
+     * @param  string $salt
      * @return User
      */
     public function setSalt($salt)
@@ -476,7 +475,7 @@ class User implements UserInterface, EquatableInterface
      */
     public function getPermission()
     {
-        if(count($this->permissions)){
+        if (count($this->permissions)) {
             $aux = $this->permissions[0];
 
             return $aux->getPermissions();
@@ -500,6 +499,4 @@ class User implements UserInterface, EquatableInterface
     {
         return $this->avatarUrl;
     }
-
-
 }
