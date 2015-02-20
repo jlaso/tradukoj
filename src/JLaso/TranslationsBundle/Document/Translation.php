@@ -5,8 +5,6 @@ namespace JLaso\TranslationsBundle\Document;
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 use Doctrine\Bundle\MongoDBBundle\Validator\Constraints\Unique as MongoDBUnique;
 //use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
-use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Translation
@@ -241,7 +239,7 @@ class Translation
      */
     public function getScreenshot()
     {
-        return $this->screenshot ? '/uploads/' . $this->getProjectId() . '/' . $this->screenshot : '';
+        return $this->screenshot ? '/uploads/'.$this->getProjectId().'/'.$this->screenshot : '';
     }
 
     /**
@@ -249,7 +247,7 @@ class Translation
      */
     public function setTranslations($translations)
     {
-//        foreach($translations as $locale=>$translation){
+        //        foreach($translations as $locale=>$translation){
 //            $translation['message'] = isset($translation['message']) ? utf8_encode($translation['message']) : '';
 //        }
         $this->translations = $translations;
@@ -315,5 +313,4 @@ class Translation
     {
         return base64_encode(sha1($this->getId()));
     }
-
 }

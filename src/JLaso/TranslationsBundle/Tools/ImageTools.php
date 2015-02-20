@@ -3,7 +3,6 @@
 
 namespace JLaso\TranslationsBundle\Tools;
 
-
 class ImageTools
 {
 
@@ -24,37 +23,40 @@ class ImageTools
     //const CROP           = 7;
     const EXACT_SIZE     = 8;
 
-    public static function resizeImage($origin,$w,$h,$_options=array()){
-
+    public static function resizeImage($origin, $w, $h, $_options = array())
+    {
         $options = array_merge(array(
                 'resize'        => self::PROPORTIONAL,
                 'destination'   => $origin,
                 'action'        => self::MOVE_ORIG_DEST, // or COPY_ORIG_DEST
                 //'inputFormat'   => self::AS_EXTENSION,
                 'outputFormat'  => self::SAME_AS_ORIGIN,
-            ),$_options);
+            ), $_options);
 
-        if (!file_exists($origin)) return false;
+        if (!file_exists($origin)) {
+            return false;
+        }
 
         // read file
         $image_info = getimagesize($origin);
         $image_type = $image_info[2];
-        if($image_info[0]>self::UPLOAD_MAX_WIDTH || $image_info[1]>self::UPLOAD_MAX_HEIGHT)
+        if ($image_info[0]>self::UPLOAD_MAX_WIDTH || $image_info[1]>self::UPLOAD_MAX_HEIGHT) {
             return "Exceeded maximum dimensions (".self::UPLOAD_MAX_WIDTH."x".self::UPLOAD_MAX_HEIGHT.")";
-        if( $image_type == IMAGETYPE_JPEG ) {
+        }
+        if ($image_type == IMAGETYPE_JPEG) {
             $image  = imagecreatefromjpeg($origin);
-            $extOrig= 'jpg';
-        }elseif( $image_type == IMAGETYPE_GIF ) {
+            $extOrig = 'jpg';
+        } elseif ($image_type == IMAGETYPE_GIF) {
             $image  = imagecreatefromgif($origin);
-            $extOrig= 'gif';
-        }elseif( $image_type == IMAGETYPE_PNG ) {
+            $extOrig = 'gif';
+        } elseif ($image_type == IMAGETYPE_PNG) {
             $image  = imagecreatefrompng($origin);
-            $extOrig= 'png';
+            $extOrig = 'png';
         }
 
         // destination file extension calculation
-        $extDest = $options['outputFormat']===self::SAME_AS_ORIGIN ?
-            $extOrig:
+        $extDest = $options['outputFormat'] === self::SAME_AS_ORIGIN ?
+            $extOrig :
             ImageTools::getExtension($options['destination']);
 
         // redimensionar
@@ -65,14 +67,14 @@ class ImageTools
         switch ($resizeMode) {
             case self::TO_HEIGHT:
                 $ratio = $h / $himg;
-                $height= $h;
+                $height = $h;
                 $width = $wimg * $ratio;
                 break;
 
             case self::TO_WIDTH:
                 $ratio = $w / $wimg;
                 $width = $w;
-                $height= $himg * $ratio;
+                $height = $himg * $ratio;
                 break;
 
             case self::EXACT_SIZE:
@@ -98,21 +100,21 @@ class ImageTools
         imagedestroy($image);
 
         $destination = $options['destination'];
-        if( $extDest == 'jpg' || $extDest == 'jpeg') {
+        if ($extDest == 'jpg' || $extDest == 'jpeg') {
             imagejpeg($new_image, $destination);
-        }elseif( $extDest == 'gif' ) {
-            imagegif( $new_image, $destination);
-        }elseif( $extDest == 'png' ) {
-            imagepng( $new_image, $destination);
+        } elseif ($extDest == 'gif') {
+            imagegif($new_image, $destination);
+        } elseif ($extDest == 'png') {
+            imagepng($new_image, $destination);
         }
 
-        chmod($destination,0777);
+        chmod($destination, 0777);
 
-        if($options['action']==self::MOVE_ORIG_DEST){
+        if ($options['action'] == self::MOVE_ORIG_DEST) {
             @unlink($origin);
         }
         imagedestroy($new_image);
+
         return true;
     }
-
 }

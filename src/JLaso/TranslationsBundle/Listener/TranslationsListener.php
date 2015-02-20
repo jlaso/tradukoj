@@ -3,10 +3,8 @@
 namespace JLaso\TranslationsBundle\Listener;
 
 use Doctrine\ODM\MongoDB\Event\LifecycleEventArgs;
-use Doctrine\ODM\MongoDB\Event\PreFlushEventArgs;
 use JLaso\TranslationsBundle\Document\ProjectInfo;
 use JLaso\TranslationsBundle\Document\Translation;
-
 
 class TranslationsListener
 {
@@ -28,11 +26,11 @@ class TranslationsListener
             /** @var Translation $document */
             $projectId   = $document->getProjectId();
             $projectInfo = $dm->getRepository('TranslationsBundle:ProjectInfo')->getProjectInfo($projectId);
-            if(!$projectInfo){
+            if (!$projectInfo) {
                 $projectInfo = new ProjectInfo();
                 $projectInfo->setProjectId($projectId);
             }
-            if(isset($this->cache["id"]) && ($this->cache["id"]==$document->getId())){
+            if (isset($this->cache["id"]) && ($this->cache["id"] == $document->getId())) {
                 $projectInfo->subBundle($this->cache['bundle']);
                 $projectInfo->subCatalog($this->cache['catalog']);
             }
@@ -40,6 +38,7 @@ class TranslationsListener
             $projectInfo->addCatalog($document->getCatalog());
             $dm->persist($projectInfo);
             $dm->flush();
+
             return;
         }
     }
@@ -59,6 +58,7 @@ class TranslationsListener
             $projectInfo->addCatalog($document->getCatalog());
             $dm->persist($projectInfo);
             $dm->flush();
+
             return;
         }
     }
@@ -78,6 +78,7 @@ class TranslationsListener
             $projectInfo->subCatalog($document->getCatalog());
             $dm->persist($projectInfo);
             $dm->flush();
+
             return;
         }
     }
@@ -95,12 +96,10 @@ class TranslationsListener
                 'bundle'  => $document->getBundle(),
                 'catalog' => $document->getCatalog(),
             );
+
             return;
         }
 
         // if document ...
-
     }
-
 }
-

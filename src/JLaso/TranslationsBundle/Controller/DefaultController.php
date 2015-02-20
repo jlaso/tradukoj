@@ -3,7 +3,6 @@
 namespace JLaso\TranslationsBundle\Controller;
 
 use Doctrine\Common\Collections\ArrayCollection;
-
 use JLaso\TranslationsBundle\Document\ProjectInfo;
 use JLaso\TranslationsBundle\Document\Repository\ProjectInfoRepository;
 use JLaso\TranslationsBundle\Entity\Permission;
@@ -13,7 +12,6 @@ use JLaso\TranslationsBundle\Entity\TranslationLog;
 use JLaso\TranslationsBundle\Entity\Repository\TranslationLogRepository;
 use JLaso\TranslationsBundle\Entity\Repository\LanguageRepository;
 use JLaso\TranslationsBundle\Entity\User;
-
 use JLaso\TranslationsBundle\Exception\AclException;
 use JLaso\TranslationsBundle\Form\Type\ExportToExcelType;
 use JLaso\TranslationsBundle\Form\Type\NewProjectType;
@@ -21,7 +19,6 @@ use JLaso\TranslationsBundle\Model\ExportToExcel;
 use JLaso\TranslationsBundle\Service\MailerService;
 use JLaso\TranslationsBundle\Service\Manager\TranslationsManager;
 use JLaso\TranslationsBundle\Service\RestService;
-
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
@@ -31,10 +28,8 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-
 use Doctrine\ORM\EntityManager;
 use Doctrine\ODM\MongoDB\DocumentManager;
-
 use JLaso\TranslationsBundle\Document\File;
 use JLaso\TranslationsBundle\Document\TranslatableDocument;
 use JLaso\TranslationsBundle\Document\Repository\TranslatableDocumentRepository;
@@ -79,7 +74,7 @@ class DefaultController extends BaseController
         $this->restService         = $this->container->get('jlaso.rest_service');
         /** @var DocumentManager $dm */
         $this->dm                  = $this->container->get('doctrine.odm.mongodb.document_manager');
-        $this->root                = realpath($this->get('kernel')->getRootDir() . "/..");
+        $this->root                = realpath($this->get('kernel')->getRootDir()."/..");
     }
 
     /**
@@ -122,12 +117,12 @@ class DefaultController extends BaseController
         $keysInfo  = array();
         $stats     = array();
 
-        foreach($projects as $prj){
+        foreach ($projects as $prj) {
             $prjId = $prj->getId();
-            if(($projectId) && ($projectId == $prjId)){
+            if (($projectId) && ($projectId == $prjId)) {
                 $project = $prj;
             }
-            $managedLocales = explode(',',$prj->getManagedLocales());
+            $managedLocales = explode(',', $prj->getManagedLocales());
             $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
 //var_dump($languages); die;
             $langInfo[$prjId] = $this->getTranslationRepository()->getKeysByLanguage($prjId, $languages);
@@ -169,10 +164,10 @@ class DefaultController extends BaseController
     {
         $data = str_replace(
             array(
-                '”','‘','’','´','“','€',"\r","\n",
-            ),array(
-                '"',"'","'","'",'"','&euro;','','',
-            ),$data);
+                '”', '‘', '’', '´', '“', '€', "\r", "\n",
+            ), array(
+                '"', "'", "'", "'", '"', '&euro;', '', '',
+            ), $data);
 
         return str_replace('"', '""', $data);
     }
@@ -188,7 +183,7 @@ class DefaultController extends BaseController
         //$permission = $this->translationsManager->userHasProject($this->user, $project);
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permission instanceof Permission){
+        if (!$permission instanceof Permission) {
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
@@ -196,11 +191,10 @@ class DefaultController extends BaseController
         $exportToExcel = new ExportToExcel($project);
         $form = $this->createForm(new ExportToExcelType($locales), $exportToExcel);
 
-        if($request->isMethod('POST')){
+        if ($request->isMethod('POST')) {
             $form->bind($request);
 
             if ($form->isValid()) {
-
                 $language = $locales[$exportToExcel->getLocale()];
                 $tmpFile = tempnam('/tmp', 'excel');
                 /** @var DocumentManager $dm */
@@ -228,12 +222,11 @@ class DefaultController extends BaseController
                 /**
                  * MAIN SHEET
                  */
-
                 $mainSheet = $excel->setActiveSheetIndex(0);
                 $mainSheet
                     ->setTitle($language)
                     ->setCellValue('A1', "key (don't translate)")
-                    ->setCellValue('B1', $language . " (don't translate)")
+                    ->setCellValue('B1', $language." (don't translate)")
                     ->setCellValue('C1', 'New language (here the translation)');
 
                 $mainSheet->getColumnDimension("A")->setAutoSize(true);
@@ -251,23 +244,21 @@ class DefaultController extends BaseController
                         //'catalog'   => $catalog,
                         'deleted'   => false,
                     ),
-                    array('key'=>'ASC')
+                    array('key' => 'ASC')
                 );
 
                 $i = 2;
                 $labels = array();
                 $index = 1;
 
-                foreach($translations as $translation){
-                    foreach($translation->getTranslations() as $locale=>$key){
-
-                        if($locale == $language){
-
+                foreach ($translations as $translation) {
+                    foreach ($translation->getTranslations() as $locale => $key) {
+                        if ($locale == $language) {
                             $message = $key['message'];
-                            if($exportToExcel->getCompressHtmlLabels()){
-                                if(preg_match_all("|(</?[^<]*>)|i", $message, $matches)){
-                                    foreach($matches[1] as $match){
-                                        if($match && !isset($labels[$match])){
+                            if ($exportToExcel->getCompressHtmlLabels()) {
+                                if (preg_match_all("|(</?[^<]*>)|i", $message, $matches)) {
+                                    foreach ($matches[1] as $match) {
+                                        if ($match && !isset($labels[$match])) {
                                             $labels[$match] = sprintf("[%d]", $index++);
                                         }
                                         $subst = $labels[$match];
@@ -275,12 +266,12 @@ class DefaultController extends BaseController
                                     }
                                 }
                             }
-                            if($exportToExcel->getCompressVariables()){
-                                if(preg_match_all("|(\%([^%]*)\%)|i", $message, $matches, PREG_SET_ORDER)){
-                                    foreach($matches as $match){
+                            if ($exportToExcel->getCompressVariables()) {
+                                if (preg_match_all("|(\%([^%]*)\%)|i", $message, $matches, PREG_SET_ORDER)) {
+                                    foreach ($matches as $match) {
                                         $varName = $match[2];
                                         $textVar = $match[1];
-                                        if($textVar && !isset($labels[$textVar])){
+                                        if ($textVar && !isset($labels[$textVar])) {
                                             $labels[$textVar] = sprintf("(%d)", $index++);
                                         }
                                         $subst = $labels[$textVar];
@@ -297,14 +288,12 @@ class DefaultController extends BaseController
 
                             $i++;
                         }
-
                     }
                 }
 
                 /**
                  * KEY SHEET
                  */
-
                 $excel->addSheet($newSheet);
 
                 $keySheet = $excel->setActiveSheetIndex(1);
@@ -314,16 +303,16 @@ class DefaultController extends BaseController
                 $keySheet->getColumnDimension("B")->setAutoSize(true);
 
                 $i = 1;
-                foreach($labels as $label=>$num){
+                foreach ($labels as $label => $num) {
                     $num0 = $num;
-                    if(preg_match("|^\((.*?)\)$|",$num,$match)){
+                    if (preg_match("|^\((.*?)\)$|", $num, $match)) {
                         $col = "A";
                         $num = $match[1];
-                    }else{
-                        if(preg_match("|^\[(.*?)\]$|",$num,$match)){
+                    } else {
+                        if (preg_match("|^\[(.*?)\]$|", $num, $match)) {
                             $col = "B";
                             $num = $match[1];
-                        }else{
+                        } else {
                             die("error de interpretacion $num");
                         }
                     }
@@ -342,8 +331,7 @@ class DefaultController extends BaseController
                 /**
                  * BUNDLE & FILE SHEETS
                  */
-
-                if($exportToExcel->getBundleFile()){
+                if ($exportToExcel->getBundleFile()) {
 
                     // Info about bundles and filenames by keys
                     $newSheet2->setTitle("bundle");
@@ -360,8 +348,7 @@ class DefaultController extends BaseController
 
                     $i = 1;
                     $localeCol = array();
-                    foreach($locales as $locale)
-                    {
+                    foreach ($locales as $locale) {
                         $localeCol[$locale] = count($localeCol) + 1;
                         $col = $this->column($localeCol[$locale]);
                         $bundleSheet
@@ -373,10 +360,8 @@ class DefaultController extends BaseController
                     }
                     $i++;
 
-                    foreach($translations as $translation){
-
-                        foreach($translation->getTranslations() as $locale=>$key){
-
+                    foreach ($translations as $translation) {
+                        foreach ($translation->getTranslations() as $locale => $key) {
                             $colName = $this->column($localeCol[$locale]);
 
                             $bundleSheet
@@ -385,12 +370,11 @@ class DefaultController extends BaseController
 
                             $fileSheet
                                 ->setCellValue("A{$i}", $translation->getKey())
-                                ->setCellValue("{$colName}{$i}", isset($key['fileName']) ? $key['fileName'] : '' );
+                                ->setCellValue("{$colName}{$i}", isset($key['fileName']) ? $key['fileName'] : '');
 
                             $col++;
                         }
                         $i++;
-
                     }
                 }
 
@@ -399,18 +383,17 @@ class DefaultController extends BaseController
 
                 header('Content-Description: File Transfer');
                 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-                header('Content-Disposition: attachment;filename="' . $tmpFile . '.xls"');
+                header('Content-Disposition: attachment;filename="'.$tmpFile.'.xls"');
                 header('Content-Transfer-Encoding: binary');
                 header('Expires: 0');
                 header('Cache-Control: must-revalidate');
                 header('Pragma: public');
-                header('Content-Length: ' . filesize($tmpFile));
+                header('Content-Length: '.filesize($tmpFile));
 
                 die(file_get_contents($tmpFile));
 
                 return $this->redirect($this->generateUrl('user_index'));
             }
-
         }
 
         return array(
@@ -425,12 +408,12 @@ class DefaultController extends BaseController
     protected function column($col)
     {
         $result = "";
-        while($col>26){
+        while ($col>26) {
             $remain = $col%26;
-            $result = $result . chr(65+$remain);
+            $result = $result.chr(65+$remain);
             $col = intval($col/26);
         };
-        $result = $result . chr(65+$col);
+        $result = $result.chr(65+$col);
 
         return $result;
     }
@@ -448,11 +431,10 @@ class DefaultController extends BaseController
         $project  = new Project();
         $form = $this->createForm(new NewProjectType(), $project);
 
-        if($request->isMethod('POST')){
+        if ($request->isMethod('POST')) {
             $form->bind($request);
 
             if ($form->isValid()) {
-
                 $permission = new Permission();
                 $permission->setUser($this->user);
                 $permission->setProject($project);
@@ -465,17 +447,16 @@ class DefaultController extends BaseController
 
                 /** @var MailerService $mailer */
                 $mailer = $this->get('jlaso.mailer_service');
-                try{
+                try {
                     $send   = $mailer->sendNewProjectMessage($project, $this->user);
-                }catch(\Exception $e){
-                    if($this->get('kernel')->getEnvironment()=='prod'){
-                         // ?
+                } catch (\Exception $e) {
+                    if ($this->get('kernel')->getEnvironment() == 'prod') {
+                        // ?
                     }
                 }
 
                 return $this->redirect($this->generateUrl('user_index'));
             }
-
         }
 
         return array(
@@ -490,13 +471,13 @@ class DefaultController extends BaseController
      * @Template()
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function translationsAction(Project $project, $catalog ='')
+    public function translationsAction(Project $project, $catalog = '')
     {
         $this->init();
         //$permission = $this->translationsManager->userHasProject($this->user, $project);
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permission instanceof Permission){
+        if (!$permission instanceof Permission) {
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
@@ -523,12 +504,11 @@ class DefaultController extends BaseController
         //$keys          = $keyRepository->findAllKeysForProjectBundleAndCatalog($project, $bundle, $catalog);
         $keys = $translationRepository->getKeys($project->getId(), $catalog);
         $keysAssoc = array();
-        foreach($keys as $key){
+        foreach ($keys as $key) {
             $keysAssoc = $this->translationsManager->iniToAssoc($key['key'], $keysAssoc);
         }
 
-
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
         $transData = array();
         /*
         foreach($keys as $key){
@@ -573,7 +553,6 @@ class DefaultController extends BaseController
         );
     }
 
-
     /**
      * @Route("/translations/{projectId}/{catalog}/new-key", name="translations_new_key")
      * @Template()
@@ -583,7 +562,7 @@ class DefaultController extends BaseController
     {
         $this->init();
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
-        if(!$permission instanceof Permission){
+        if (!$permission instanceof Permission) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => $this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'),
@@ -594,7 +573,7 @@ class DefaultController extends BaseController
         $bundle  = trim($request->get('bundle'));
         $keyName = trim($request->get('key'));
         $current = trim($request->get('current'));
-        if(!$bundle || !$keyName){
+        if (!$bundle || !$keyName) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => $this->translator->trans('translations.new_key_dialog.error.not_enough_parameters'),
@@ -609,14 +588,14 @@ class DefaultController extends BaseController
                 'key'       => $keyName,
             )
         );
-        if($key){
+        if ($key) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => $this->translator->trans('translations.new_key_dialog.error.key_already_exists', array('%key%' => $keyName)),
                 )
             );
         }
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
 
         $translation = new Translation();
         $translation->setProjectId($project->getId());
@@ -631,16 +610,16 @@ class DefaultController extends BaseController
 
         /** @var TranslationRepository $translationRepository */
         $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
-        if(strpos($current, "Bundle") !== false){
+        if (strpos($current, "Bundle") !== false) {
             $keys = $translationRepository->getKeysByBundle($project->getId(), $current);
-        }else{
+        } else {
             $keys = $translationRepository->getKeys($project->getId(), $current);
         }
         $tree      = $this->keysToPlainArray($keys);
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
         $bundles   = $this->getProjectInfoRepository()->getBundles($project->getId());
 
-        $html = $this->renderView("TranslationsBundle:Default:messages.html.twig",array(
+        $html = $this->renderView("TranslationsBundle:Default:messages.html.twig", array(
                 'translation'     => $translation,
                 'managed_locales' => $managedLocales,
                 'permissions'     => $permission->getPermissions(),
@@ -658,8 +637,6 @@ class DefaultController extends BaseController
         );
     }
 
-
-
     /**
      * @Route("/translations/{projectId}/{catalog}/remove-key/{key}", name="translations_remove_key")
      * @Template()
@@ -669,7 +646,7 @@ class DefaultController extends BaseController
     {
         $this->init();
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
-        if(!$permission instanceof Permission){
+        if (!$permission instanceof Permission) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => $this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'),
@@ -686,17 +663,16 @@ class DefaultController extends BaseController
                 'key'       => $key,
             )
         );
-        if($translation){
+        if ($translation) {
             $this->translationsManager->saveLog($translation->getId(), '', $key, TranslationLog::REMOVE_KEY, $this->user, TranslationLog::TRANSLATIONS_GROUP);
             $this->dm->remove($translation);
             $this->dm->flush();
-        }else{
+        } else {
             $this->addNoticeFlash('translations.remove_key.error.key_dont_exists', array('%key%' => $keyName));
         }
 
         return $this->redirect($this->generateUrl('translations', array('projectId' => $project->getId(), 'catalog' => $catalog)));
     }
-
 
     protected function isABundle($string)
     {
@@ -712,7 +688,7 @@ class DefaultController extends BaseController
     {
         $this->init();
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
-        if(!$permission instanceof Permission){
+        if (!$permission instanceof Permission) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => $this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'),
@@ -724,7 +700,7 @@ class DefaultController extends BaseController
         $keyOld  = trim($request->get('keyOld'));
         $bundle  = trim($request->get('bundle'));
         $current = trim($request->get('current'));
-        if(!$catalog || !$current || !$keyNew || !$keyOld || !$bundle){
+        if (!$catalog || !$current || !$keyNew || !$keyOld || !$bundle) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => $this->translator->trans('translations.change_key_dialog.error.not_enough_parameters'),
@@ -738,14 +714,14 @@ class DefaultController extends BaseController
                 'key'       => $keyNew,
             )
         );
-        if($key && ($keyNew!=$keyOld)){
+        if ($key && ($keyNew != $keyOld)) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => $this->translator->trans('translations.change_key_dialog.error.key_already_exists', array('%key%' => $keyNew)),
                 )
             );
         }
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
 
         $translation = $translationRepository->findOneBy(array(
                 'projectId' => $project->getId(),
@@ -753,7 +729,7 @@ class DefaultController extends BaseController
                 'key'       => $keyOld,
             )
         );
-        if(!$translation){
+        if (!$translation) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => $this->translator->trans('translations.change_key_dialog.error.key_dont_exists', array('%key%' => $keyOld)),
@@ -766,20 +742,20 @@ class DefaultController extends BaseController
         $this->dm->persist($translation);
         $this->dm->flush($translation);
 
-        $this->translationsManager->saveLog($translation->getId(), '', $keyOld . " => " . $keyNew, TranslationLog::CHANGE_KEY, $this->user, TranslationLog::TRANSLATIONS_GROUP);
+        $this->translationsManager->saveLog($translation->getId(), '', $keyOld." => ".$keyNew, TranslationLog::CHANGE_KEY, $this->user, TranslationLog::TRANSLATIONS_GROUP);
 
         /** @var TranslationRepository $translationRepository */
         $translationRepository = $this->dm->getRepository('TranslationsBundle:Translation');
-        if($this->isABundle($current)){
+        if ($this->isABundle($current)) {
             $keys = $translationRepository->getKeysByBundle($project->getId(), $current);
-        }else{
+        } else {
             $keys = $translationRepository->getKeys($project->getId(), $current);
         }
         $tree      = $this->keysToPlainArray($keys);
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
         $bundles   = $this->getProjectInfoRepository()->getBundles($project->getId());
 
-        $html = $this->renderView("TranslationsBundle:Default:messages.html.twig",array(
+        $html = $this->renderView("TranslationsBundle:Default:messages.html.twig", array(
                 'translation'     => $translation,
                 'managed_locales' => $managedLocales,
                 'permissions'     => $permission->getPermissions(),
@@ -802,12 +778,12 @@ class DefaultController extends BaseController
      * @Template()
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function documentsAction(Project $project, $bundle ='', $key = '')
+    public function documentsAction(Project $project, $bundle = '', $key = '')
     {
         $this->init();
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permission instanceof Permission){
+        if (!$permission instanceof Permission) {
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
@@ -817,22 +793,21 @@ class DefaultController extends BaseController
         $keysAssoc = array();
 
         /** @var TranslatableDocument[] $documents */
-        if($bundle){
+        if ($bundle) {
             $documents = $transDocRepository->findAll(
                 array(
                     'projectId' => $project->getId(),
-                    'bundle'    => $bundle
+                    'bundle'    => $bundle,
                 )
             );
-            foreach($documents as $document){
+            foreach ($documents as $document) {
                 $keysAssoc = $this->translationsManager->iniToAssoc($document->getKey(), $keysAssoc);
             }
-        }else{
+        } else {
             $documents = null;
         }
 
-
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
 
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
         $projects  = $this->translationsManager->getProjectsForUser($this->user);
@@ -882,12 +857,12 @@ class DefaultController extends BaseController
      * @Template()
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function bundlesAction(Project $project, $bundle ='')
+    public function bundlesAction(Project $project, $bundle = '')
     {
         $this->init();
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permission instanceof Permission){
+        if (!$permission instanceof Permission) {
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
@@ -896,11 +871,11 @@ class DefaultController extends BaseController
         $bundles               = $this->getProjectInfoRepository()->getBundles($project->getId());
         $keys                  = $translationRepository->getKeysByBundle($project->getId(), $bundle);
         $keysAssoc             = array();
-        foreach($keys as $key){
+        foreach ($keys as $key) {
             $keysAssoc = $this->translationsManager->iniToAssoc($key['key'], $keysAssoc);
         }
 
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
         $transData = array();
         $languages = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
         $projects  = $this->translationsManager->getProjectsForUser($this->user);
@@ -928,16 +903,16 @@ class DefaultController extends BaseController
     {
         /**
          * [
-        { "id" : "ajson1", "parent" : "#", "text" : "Simple root node" },
-        { "id" : "ajson2", "parent" : "#", "text" : "Root node 2" },
-        { "id" : "ajson3", "parent" : "ajson2", "text" : "Child 1" },
-        { "id" : "ajson4", "parent" : "ajson2", "text" : "Child 2" },
-        ]
+         { "id" : "ajson1", "parent" : "#", "text" : "Simple root node" },
+         { "id" : "ajson2", "parent" : "#", "text" : "Root node 2" },
+         { "id" : "ajson3", "parent" : "ajson2", "text" : "Child 1" },
+         { "id" : "ajson4", "parent" : "ajson2", "text" : "Child 2" },
+         ]
          */
         $this->init();
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permission instanceof Permission){
+        if (!$permission instanceof Permission) {
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
@@ -949,7 +924,7 @@ class DefaultController extends BaseController
             )
         );
         $keys = array();
-        foreach($documents as $item){
+        foreach ($documents as $item) {
             $keys[] = array(
                 'key' => $item->getKey(),
                 'id'  => $item->getId(),
@@ -960,7 +935,6 @@ class DefaultController extends BaseController
         return $this->printResult($keysAssoc);
     }
 
-
     /**
      * @Route("/logs-{projectId}-{catalog}.json", name="translation_logs.json")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
@@ -970,7 +944,7 @@ class DefaultController extends BaseController
         $this->init();
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permission instanceof Permission){
+        if (!$permission instanceof Permission) {
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
@@ -978,7 +952,7 @@ class DefaultController extends BaseController
         $result = array();
         $users = array();
 
-        if($key){
+        if ($key) {
             /** @var TranslationRepository $repository */
             $repository = $this->dm->getRepository('TranslationsBundle:Translation');
             $translation = $repository->findOneBy(array(
@@ -987,14 +961,14 @@ class DefaultController extends BaseController
                     'key'       => $key,
                 )
             );
-            if($translation){
+            if ($translation) {
                 /** @var TranslationLogRepository $logRepository */
                 $logRepository = $this->em->getRepository('TranslationsBundle:TranslationLog');
                 /** @var TranslationLog[] $logs */
-                $logs = $logRepository->findBy(array('translationId'=>$translation->getId()), array('createdAt'=>'DESC'));
-                foreach($logs as $log){
+                $logs = $logRepository->findBy(array('translationId' => $translation->getId()), array('createdAt' => 'DESC'));
+                foreach ($logs as $log) {
                     $user = $log->getUser();
-                    if($user && !isset($users[$user->getId()])){
+                    if ($user && !isset($users[$user->getId()])) {
                         $users[$user->getId()] = $user->getName() ?: $user->getEmail();
                     }
                     $result[] = array(
@@ -1019,12 +993,12 @@ class DefaultController extends BaseController
     public function treeJsonAction(Request $request, Project $project, $criteria)
     {
         /**
-          * [
-                { "id" : "ajson1", "parent" : "#", "text" : "Simple root node" },
-                { "id" : "ajson2", "parent" : "#", "text" : "Root node 2" },
-                { "id" : "ajson3", "parent" : "ajson2", "text" : "Child 1" },
-                { "id" : "ajson4", "parent" : "ajson2", "text" : "Child 2" },
-            ]
+         * [
+         { "id" : "ajson1", "parent" : "#", "text" : "Simple root node" },
+         { "id" : "ajson2", "parent" : "#", "text" : "Root node 2" },
+         { "id" : "ajson3", "parent" : "ajson2", "text" : "Child 1" },
+         { "id" : "ajson4", "parent" : "ajson2", "text" : "Child 2" },
+         ]
          */
         $this->init();
         // only show keys with blank message (pending) in this language, if any
@@ -1032,13 +1006,13 @@ class DefaultController extends BaseController
         $approvedFilter = trim($request->get('status'));
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permission instanceof Permission){
+        if (!$permission instanceof Permission) {
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
-        if(strpos($criteria, "Bundle") !== false){
+        if (strpos($criteria, "Bundle") !== false) {
             $keys = $this->getTranslationRepository()->getKeysByBundle($project->getId(), $criteria, $onlyLanguage, $approvedFilter);
-        }else{
+        } else {
             $keys = $this->getTranslationRepository()->getKeys($project->getId(), $criteria, $onlyLanguage, $approvedFilter);
         }
         $keysAssoc = $this->keysToPlainArray($keys);
@@ -1047,7 +1021,7 @@ class DefaultController extends BaseController
     }
 
     /**
-     * @param array  $keys
+     * @param array $keys
      *
      * @return array
      */
@@ -1056,7 +1030,7 @@ class DefaultController extends BaseController
         $trans = array();
 
         $keysAssoc = array();
-        foreach($keys as $key){
+        foreach ($keys as $key) {
             $this->keyed2Plain($key['key'], $keysAssoc, $trans);
         }
 
@@ -1068,7 +1042,7 @@ class DefaultController extends BaseController
         $keys = explode('.', $keyedArray);
         $id = $idAnt = '';
         $i = count($keys) - 1;
-        foreach($keys as $k){
+        foreach ($keys as $k) {
             $id   .= $k;
             $arrayAssoc[$id] = array(
                 'id'     => $id,
@@ -1096,7 +1070,7 @@ class DefaultController extends BaseController
         /** @var Project $project */
         $project   = $this->getProjectRepository()->find($projectId);
 
-        if(!$project){
+        if (!$project) {
             $this->printResult(array(
                     'result' => false,
                     'reason' => 'project '.$projectId.' not exists',
@@ -1112,7 +1086,7 @@ class DefaultController extends BaseController
         $languages      = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
         $bundles        = $this->getProjectInfoRepository()->getBundles($project->getId());
 
-        $html = $this->renderView("TranslationsBundle:Default:messages.html.twig",array(
+        $html = $this->renderView("TranslationsBundle:Default:messages.html.twig", array(
                 'translation'     => $translation,
                 'managed_locales' => $managedLocales,
                 'permissions'     => $permission->getPermissions(),
@@ -1141,7 +1115,7 @@ class DefaultController extends BaseController
         /** @var Project $project */
         $project   = $this->getProjectRepository()->find($projectId);
 
-        if(!$project){
+        if (!$project) {
             $this->printResult(array(
                     'result' => false,
                     'reason' => 'project '.$projectId.' not exists',
@@ -1149,7 +1123,7 @@ class DefaultController extends BaseController
             );
         };
 
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
 
         /** @var TranslatableDocumentRepository $translationRepository */
         $transDocRepository = $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
@@ -1167,7 +1141,7 @@ class DefaultController extends BaseController
         $languages  = $this->getLanguageRepository()->findAllLanguageIn($managedLocales, true);
         $bundles    = $this->getProjectInfoRepository()->getBundles($project->getId());
 
-        $html = $this->renderView("TranslationsBundle:Default:document-messages.html.twig",array(
+        $html = $this->renderView("TranslationsBundle:Default:document-messages.html.twig", array(
                 'translation'     => $translation,
                 'managed_locales' => $managedLocales,
                 'permissions'     => $permission->getPermissions(),
@@ -1195,14 +1169,14 @@ class DefaultController extends BaseController
         $catalog  = $request->get('catalog');
         //$bundle   = $request->get('bundle');
         $key      = $request->get('key');
-        $comment  = str_replace("\'","'",$request->get('comment'));
+        $comment  = str_replace("\'", "'", $request->get('comment'));
         //@TODO: comprobar que el usuario que esta logado tiene permiso para hacer esto
-        if(!$catalog || !$key || !$comment){
-            die('validation exception, request content = ' . $request->getContent());
+        if (!$catalog || !$key || !$comment) {
+            die('validation exception, request content = '.$request->getContent());
         }
 
         $translation = $this->translationsManager->putComment($project, $catalog, $key, $comment);
-        if(!$translation){
+        if (!$translation) {
             $this->printResult(array(
                     'result' => false,
                     'reason' => 'translation not found',
@@ -1279,15 +1253,15 @@ class DefaultController extends BaseController
 
         $translation = $this->getTranslationRepository()->find($translationId);
 
-        if(!$translation){
+        if (!$translation) {
             return $this->restService->exception(
                 $this->translator->trans('message.translation_not_found')
             );
         }
 
-        if($this->checkPermission($locale, Permission::ADMIN_PERM)){
+        if ($this->checkPermission($locale, Permission::ADMIN_PERM)) {
             $translations = $translation->getTranslations();
-            if(isset($translations[$locale])){
+            if (isset($translations[$locale])) {
                 $translations[$locale]['approved'] = true;
                 $translation->setTranslations($translations);
                 $this->dm->persist($translation);
@@ -1300,20 +1274,19 @@ class DefaultController extends BaseController
                         'locale'   => $locale,
                     )
                 );
-            }else{
+            } else {
                 $this->restService->exception(
                     $this->translator->trans('message.inexistent_locale_to_approve')
                 );
             }
-        }else{
+        } else {
             $this->restService->exception(
                 $this->translator->trans('message.without_permissions_to_approve')
             );
         }
-
     }
 
-     /**
+    /**
      * @Route("/disapprove-translation/{translationId}/{locale}", name="disapprove_translation")
      * @Method("POST")
      * @ ParamConverter("translation", class="TranslationsBundle:Translation", options={"id" = "translationId"})
@@ -1324,15 +1297,15 @@ class DefaultController extends BaseController
 
         $translation = $this->getTranslationRepository()->find($translationId);
 
-        if(!$translation){
+        if (!$translation) {
             return $this->restService->exception(
                 $this->translator->trans('message.translation_not_found')
             );
         }
 
-        if($this->checkPermission($locale, Permission::ADMIN_PERM)){
+        if ($this->checkPermission($locale, Permission::ADMIN_PERM)) {
             $translations = $translation->getTranslations();
-            if(isset($translations[$locale])){
+            if (isset($translations[$locale])) {
                 $translations[$locale]['approved'] = false;
                 $translation->setTranslations($translations);
                 $this->dm->persist($translation);
@@ -1345,22 +1318,17 @@ class DefaultController extends BaseController
                         'locale'   => $locale,
                     )
                 );
-            }else{
+            } else {
                 $this->restService->exception(
                     $this->translator->trans('message.inexistent_locale_to_approve')
                 );
             }
-        }else{
+        } else {
             $this->restService->exception(
                 $this->translator->trans('message.without_permissions_to_approve')
             );
         }
-
     }
-
-
-
-
 
     /**
      * @Route("/save-message/{projectId}", name="save_message")
@@ -1375,14 +1343,14 @@ class DefaultController extends BaseController
         $catalog  = $request->get('catalog');
         $locale   = $request->get('locale');
         $key      = $request->get('key');
-        $message  = str_replace("\'","'",$request->get('message'));
+        $message  = str_replace("\'", "'", $request->get('message'));
         //@TODO: comprobar que el usuario que esta logado tiene permiso para hacer esto
-        if(!$catalog || !$locale || !$key || !$message){
-            die('validation exception, request content = ' . $request->getContent());
+        if (!$catalog || !$locale || !$key || !$message) {
+            die('validation exception, request content = '.$request->getContent());
         }
 
         $translation = $this->translationsManager->putTranslation($project, $catalog, $key, $locale, $message);
-        if(!$translation){
+        if (!$translation) {
             $this->printResult(array(
                     'result' => false,
                     'reason' => 'translation not found',
@@ -1401,8 +1369,6 @@ class DefaultController extends BaseController
         );
     }
 
-
-
     /**
      * @Route("/save-document/{projectId}", name="save_document")
      * @Method("POST")
@@ -1415,11 +1381,11 @@ class DefaultController extends BaseController
         $bundle   = $request->get('bundle');
         $locale   = $request->get('locale');
         $key      = $request->get('key');
-        $message  = str_replace("\'","'",$request->get('message'));
+        $message  = str_replace("\'", "'", $request->get('message'));
 
         //@TODO: comprobar que el usuario que esta logado tiene permiso para hacer esto
-        if(!$bundle || !$locale || !$key || !$message){
-            die('validation exception, request content = ' . $request->getContent());
+        if (!$bundle || !$locale || !$key || !$message) {
+            die('validation exception, request content = '.$request->getContent());
         }
 
         $transDocRepository = $this->getTranslatableDocumentRepository();
@@ -1431,7 +1397,7 @@ class DefaultController extends BaseController
                 'key'       => $key,
             )
         );
-        if(!$translation){
+        if (!$translation) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => 'document not found',
@@ -1441,13 +1407,13 @@ class DefaultController extends BaseController
         /** @var File[] $translations */
         $files = $translation->getFiles();
         $found = false;
-        foreach($files as $file){
-            if($file->getLocale() == $locale){
+        foreach ($files as $file) {
+            if ($file->getLocale() == $locale) {
                 $found = true;
                 break;
             }
         }
-        if(!$found){
+        if (!$found) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => 'locale not found',
@@ -1468,7 +1434,6 @@ class DefaultController extends BaseController
         );
     }
 
-
     /**
      * @Route("/normalize/{projectId}/{erase}", name="normalize")
      * @ Method("POST")
@@ -1484,7 +1449,7 @@ class DefaultController extends BaseController
         $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
         $permissions = $permissions->getPermissions();
 
-        if($permissions['general'] != Permission::OWNER){
+        if ($permissions['general'] != Permission::OWNER) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => 'not enough permissions to do this',
@@ -1492,51 +1457,48 @@ class DefaultController extends BaseController
             );
         }
 
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
 
         /** @var Translation[] $translations */
         $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId() ));
         $normalized = array();
 
-        foreach($translations as $translation){
-
+        foreach ($translations as $translation) {
             $bundle = "";
             $transArray = $translation->getTranslations();
-            foreach($managedLocales as $locale){
-                if(!isset($transArray[$locale])){
+            foreach ($managedLocales as $locale) {
+                if (!isset($transArray[$locale])) {
                     $transArray[$locale] = Translation::genTranslationItem('');
-                    $normalized[] = $translation->getKey() .  "[$locale]";
-                }else{
-                    if(!$bundle && isset($transArray[$locale]['fileName']) && $transArray[$locale]['fileName']){
-                        if(preg_match("@/(?<bundle>\w*?Bundle)/@", $transArray[$locale]['fileName'], $match)){
+                    $normalized[] = $translation->getKey()."[$locale]";
+                } else {
+                    if (!$bundle && isset($transArray[$locale]['fileName']) && $transArray[$locale]['fileName']) {
+                        if (preg_match("@/(?<bundle>\w*?Bundle)/@", $transArray[$locale]['fileName'], $match)) {
                             $bundle = $match['bundle'];
-                        }else{
-                            if(preg_match("@/app/@", $transArray[$locale]['fileName'])){
+                        } else {
+                            if (preg_match("@/app/@", $transArray[$locale]['fileName'])) {
                                 $bundle = "app*";
                             }
                         };
                     }
                 }
             }
-            if($bundle && !$translation->getBundle()){
-                $normalized[] = $translation->getKey() .  " -> " . $bundle;
+            if ($bundle && !$translation->getBundle()) {
+                $normalized[] = $translation->getKey()." -> ".$bundle;
                 $translation->setBundle($bundle);
             }
             $translation->setTranslations($transArray);
             $this->dm->persist($translation);
-
         }
 
         $this->dm->flush();
 
-        if($erase === 'erase-duplicates')
-        {
+        if ($erase === 'erase-duplicates') {
             // eliminar los documentos que no tengan translation en ingles (para borrar duplicados)
 
-            foreach($translations as $translation){
+            foreach ($translations as $translation) {
                 $transArray = $translation->getTranslations();
-                if(!$transArray['en']['message']){
-                    print 'erasing ... ' . $translation->getId() . '<br/>';
+                if (!$transArray['en']['message']) {
+                    print 'erasing ... '.$translation->getId().'<br/>';
                     $this->dm->remove($translation);
                 }
             }
@@ -1560,12 +1522,12 @@ class DefaultController extends BaseController
     {
         $this->init();
         $bundleName = preg_replace("/bundle$/i", "", $bundleName);
-        $bundleName = ucfirst(strtolower($bundleName)) . "Bundle";
+        $bundleName = ucfirst(strtolower($bundleName))."Bundle";
 
         $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
         $permissions = $permissions->getPermissions();
 
-        if($permissions['general'] != Permission::OWNER){
+        if ($permissions['general'] != Permission::OWNER) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => 'not enough permissions to do this',
@@ -1573,21 +1535,19 @@ class DefaultController extends BaseController
             );
         }
 
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
 
         /** @var Translation[] $translations */
-        $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId(), 'bundle'=>'' ));
+        $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId(), 'bundle' => '' ));
         $normalized = array();
 
-        foreach($translations as $translation){
-
+        foreach ($translations as $translation) {
             $key = $translation->getKey();
-            if(($keyStart=="*") || preg_match("/^{$keyStart}/", $key)){
+            if (($keyStart == "*") || preg_match("/^{$keyStart}/", $key)) {
                 $translation->setBundle($bundleName);
                 $this->dm->persist($translation);
                 $normalized[] = $key;
             }
-
         }
 
         $this->dm->flush();
@@ -1611,7 +1571,7 @@ class DefaultController extends BaseController
         $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
         $permissions = $permissions->getPermissions();
 
-        if($permissions['general'] != Permission::OWNER){
+        if ($permissions['general'] != Permission::OWNER) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => 'not enough permissions to do this',
@@ -1619,22 +1579,20 @@ class DefaultController extends BaseController
             );
         }
         $bundleOrig = preg_replace("/bundle$/i", "", $bundleOrig);
-        $bundleOrig = ucfirst(strtolower($bundleOrig)) . "Bundle";
+        $bundleOrig = ucfirst(strtolower($bundleOrig))."Bundle";
         $bundleDest = preg_replace("/bundle$/i", "", $bundleDest);
-        $bundleDest = ucfirst(strtolower($bundleDest)) . "Bundle";
+        $bundleDest = ucfirst(strtolower($bundleDest))."Bundle";
 
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
 
         /** @var Translation[] $translations */
-        $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId(), 'bundle'=>$bundleOrig ));
+        $translations = $this->getTranslationRepository()->findBy(array('projectId' => $project->getId(), 'bundle' => $bundleOrig ));
         $normalized = array();
 
-        foreach($translations as $translation){
-
+        foreach ($translations as $translation) {
             $translation->setBundle($bundleDest);
             $this->dm->persist($translation);
             $normalized[] = $key;
-
         }
 
         $this->dm->flush();
@@ -1660,7 +1618,7 @@ class DefaultController extends BaseController
 
         $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permissions){
+        if (!$permissions) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => 'not enough permissions to do this',
@@ -1668,7 +1626,7 @@ class DefaultController extends BaseController
             );
         }
 
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
 
         /** @var Translation[] $translations */
         $translations = $this->getTranslationRepository()->searchKeys($project->getId(), $search);
@@ -1707,7 +1665,7 @@ class DefaultController extends BaseController
 
         $permissions = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permissions){
+        if (!$permissions) {
             return $this->printResult(array(
                     'result' => false,
                     'reason' => 'not enough permissions to do this',
@@ -1719,7 +1677,6 @@ class DefaultController extends BaseController
 
         //var_dump($result); die;
         return $this->printResult($result);
-
     }
 
     /**
@@ -1734,7 +1691,7 @@ class DefaultController extends BaseController
         /** @var Translation $translation */
         $translation = $this->getTranslationRepository()->find($translationId);
 
-        if(!$translation){
+        if (!$translation) {
             throw $this->createNotFoundException();
         }
         $projectId = $translation->getProjectId();
@@ -1744,19 +1701,19 @@ class DefaultController extends BaseController
 
         // if permissions bla bla bla
 
-        $directory = $this->root . "/web/uploads/{$projectId}/";
+        $directory = $this->root."/web/uploads/{$projectId}/";
         $files = $request->files;
-        foreach($files as $uploadedFile){
+        foreach ($files as $uploadedFile) {
             break;  // I want only the first file, dont allow to upload more than one
         };
         /** @var UploadedFile $uploadedFile */
         $ext = $uploadedFile->getClientOriginalExtension();
         $baseName = uniqid();
-        $name = $baseName . '.' . $ext;
+        $name = $baseName.'.'.$ext;
         /** @var \Symfony\Component\HttpFoundation\File\File $file */
         $file = $uploadedFile->move($directory, $name);
-        $destFile = $baseName . '.jpg';
-        $name = $this->normalize($ext, $directory . $baseName, $directory . $destFile);
+        $destFile = $baseName.'.jpg';
+        $name = $this->normalize($ext, $directory.$baseName, $directory.$destFile);
 
         $translation->setScreenshot($destFile);
         $this->dm->persist($translation);
@@ -1765,11 +1722,10 @@ class DefaultController extends BaseController
         die('OK');
     }
 
-
     protected function normalize($ext, $file, $destImageFile, $width = null, $height = null, $quality = 90)
     {
-        $imageFile = $file . '.' . $ext;
-        switch($ext){
+        $imageFile = $file.'.'.$ext;
+        switch ($ext) {
             case 'png':
             case 'PNG':
                 $image    = imagecreatefrompng($imageFile);
@@ -1791,8 +1747,8 @@ class DefaultController extends BaseController
         }
         $w        = imagesx($image);
         $h        = imagesy($image);
-        $width    = $width ? : $w;
-        $height   = $height ? : $h;
+        $width    = $width ?: $w;
+        $height   = $height ?: $h;
         $newImage = imagecreatetruecolor($width, $height);
         unlink($imageFile);
         imagecopyresampled($newImage, $image, 0, 0, 0, 0, $width, $height, $w, $h);
@@ -1815,29 +1771,28 @@ class DefaultController extends BaseController
 
         //ldd($translation);
 
-        if(!$translation){
+        if (!$translation) {
             throw $this->createNotFoundException();
         }
 
-        if($request->isMethod('POST')){
-
+        if ($request->isMethod('POST')) {
             $selection = $request->get('selection');
             $translation->setImageMaps($selection);
             $this->dm->persist($translation);
             $this->dm->flush($translation);
+
             return $this->printResult(
                 array(
                     'result' => true,
                 )
             );
-
         }
 
         //if($this->checkPermission(Permission::GENERAL_KEY, Permission::ADMIN_PERM)){
 
         $project = $this->getProjectRepository()->find($translation->getProjectId());
 
-            return array(
+        return array(
                 'translation' => $translation,
                 'project'     => $project,
                 'action'      => '',
@@ -1847,9 +1802,7 @@ class DefaultController extends BaseController
         //}else{
             //return $this->createNotFoundException('message.not_eough_permissions');
         //}
-
     }
-
 
     /**
      * @Route("/select-screenshot/{translationId}", name="translation_select_screenshot")
@@ -1862,18 +1815,17 @@ class DefaultController extends BaseController
         /** @var Translation $translation */
         $translation = $this->getTranslationRepository()->find($translationId);
 
-        if(!$translation){
+        if (!$translation) {
             throw $this->createNotFoundException();
         }
 
-        if($request->isMethod('POST')){
-
+        if ($request->isMethod('POST')) {
             $file = $request->get('file');
-            if(!preg_match("/^\/uploads\/\d+\/(?<file>.*?)$/", $file, $match)){
+            if (!preg_match("/^\/uploads\/\d+\/(?<file>.*?)$/", $file, $match)) {
                 return $this->printResult(
                     array(
                         'result' => false,
-                        'message' => 'file not recognized ' . $file,
+                        'message' => 'file not recognized '.$file,
                     )
                 );
             };
@@ -1882,31 +1834,31 @@ class DefaultController extends BaseController
             $translation->setImageMaps(array());
             $this->dm->persist($translation);
             $this->dm->flush($translation);
+
             return $this->printResult(
                 array(
                     'result' => true,
                 )
             );
-
         }
 
         $projectId = $translation->getProjectId();
         $files = array();
         $finder = new Finder();
-        $finder->files()->in($this->root . "/web/uploads/{$projectId}")->name('*.jpg');
+        $finder->files()->in($this->root."/web/uploads/{$projectId}")->name('*.jpg');
 
-        foreach($finder as $file){
+        foreach ($finder as $file) {
             //$fileFull = $file->getRealpath();
             //$relativePath = $file->getRelativePath();
             //$fileName = $file->getRelativePathname();
-            $files[] = '/uploads/' . $projectId . '/' . $file->getRelativePathname();
+            $files[] = '/uploads/'.$projectId.'/'.$file->getRelativePathname();
         }
 
         //if($this->checkPermission(Permission::GENERAL_KEY, Permission::ADMIN_PERM)){
 
         $project = $this->getProjectRepository()->find($translation->getProjectId());
 
-            return array(
+        return array(
                 'translation' => $translation,
                 'project'     => $project,
                 'action'      => '',
@@ -1917,7 +1869,6 @@ class DefaultController extends BaseController
         //}else{
             //return $this->createNotFoundException('message.not_eough_permissions');
         //}
-
     }
 
     /**
@@ -1932,7 +1883,7 @@ class DefaultController extends BaseController
         $projectId   = $translation->getProjectId();
         $fileName    = $translation->getScreenshot();
 
-        $image = imagecreatefromjpeg($this->root . "/web" . $fileName);
+        $image = imagecreatefromjpeg($this->root."/web".$fileName);
 
         $pink  = imagecolorallocate($image, 255, 105, 180);
         $white = imagecolorallocate($image, 255, 255, 255);
@@ -1941,7 +1892,7 @@ class DefaultController extends BaseController
         $selection = $translation->getImageMaps();
         //var_dump($selection); die;
 
-        list($w,$h) = getimagesize($this->root . "/web" . $fileName);
+        list($w, $h) = getimagesize($this->root."/web".$fileName);
 
         $fx = $w/$selection['w'];
         $fy = $h/$selection['h'];
@@ -1950,10 +1901,10 @@ class DefaultController extends BaseController
         $y1 = $selection['y1'] * $fy;
         $y2 = $selection['y2'] * $fy;
 
-        for($i=1;$i<4;$i++){
+        for ($i = 1;$i<4;$i++) {
             imagerectangle($image, $x1-$i, $y1-$i, $x2+$i, $y2+$i, $white);
         }
-        for($i=0;$i<3;$i++){
+        for ($i = 0;$i<3;$i++) {
             imagerectangle($image, $x1+$i, $y1+$i, $x2-$i, $y2-$i, $pink);
         }
 
@@ -1967,10 +1918,7 @@ class DefaultController extends BaseController
         imagejpeg($image);
         imagedestroy($image);
         die;
-
     }
-
-
 
     public function searchMessagesAction(Request $request)
     {
@@ -1987,31 +1935,25 @@ class DefaultController extends BaseController
         /** @var TranslationRepository $translationsRepository */
         $translationsRepository = $dm->getRepository('TranslationsBundle:Translation');
 
-        if(intval($project)){
+        if (intval($project)) {
             $project = $projectRepository->find($project);
-        }else{
+        } else {
             $project = $projectRepository->findOneBy(array('name' => trim(strtolower($project))));
         }
         /** @var Project $project */
-        if(!$project){
+        if (!$project) {
             throw new \Exception('Project not found');
         }
         /** @var Translation[] $translations */
-        $translations = $translationsRepository->findBy(array('projectId'=>$project->getId()));
+        $translations = $translationsRepository->findBy(array('projectId' => $project->getId()));
 
         $output = array();
-        foreach($translations as $translation){
-
-            foreach($translation->getTranslations() as $locale=>$key){
-
-                if(preg_match('/'.$search.'/i', $key['message'], $match)){
-
+        foreach ($translations as $translation) {
+            foreach ($translation->getTranslations() as $locale => $key) {
+                if (preg_match('/'.$search.'/i', $key['message'], $match)) {
                     $output[] = sprintf("\tFound (%s) in <info>%s</info> in locale <comment>%s</comment>", $match[0], $translation->getKey(), $locale);
-
                 }
-
             }
-
         }
 
         return $this->resultOk($output);
@@ -2056,7 +1998,4 @@ class DefaultController extends BaseController
     {
         return $this->dm->getRepository('TranslationsBundle:TranslatableDocument');
     }
-
-
-
 }

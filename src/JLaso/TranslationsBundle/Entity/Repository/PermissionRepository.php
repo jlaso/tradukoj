@@ -40,7 +40,6 @@ class PermissionRepository extends EntityRepository
         return $this->findAllProjectsForUserQuery($user)->getResult();
     }
 
-
     /**
      * @param Project $project
      * @param User    $user
@@ -75,5 +74,4 @@ class PermissionRepository extends EntityRepository
     {
         return $this->findPermissionForProjectAndUserQuery($project, $user)->getOneOrNullResult();
     }
-
 }

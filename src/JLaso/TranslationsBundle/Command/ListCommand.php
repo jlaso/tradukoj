@@ -3,24 +3,15 @@
 /**
  * @author Joseluis Laso <jlaso@joseluislaso.es>
  */
-
 namespace JLaso\TranslationsBundle\Command;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\ODM\MongoDB\DocumentManager;
 use Doctrine\ORM\EntityManager;
 use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
 use JLaso\TranslationsBundle\Document\Translation;
 use JLaso\TranslationsBundle\Entity\Project;
 use JLaso\TranslationsBundle\Entity\Repository\ProjectRepository;
-use JLaso\TranslationsBundle\Entity\User;
-use JLaso\TranslationsBundle\Service\MailerService;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\DialogHelper;
-use Symfony\Component\Console\Helper\HelperSet;
-use Symfony\Component\Console\Helper\TableHelper;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -65,13 +56,13 @@ class ListCommand extends ContainerAwareCommand
         /** @var TranslationRepository $translationsRepository */
         $translationsRepository = $dm->getRepository('TranslationsBundle:Translation');
 
-        if(intval($project)){
+        if (intval($project)) {
             $project = $projectRepository->find($project);
-        }else{
+        } else {
             $project = $projectRepository->findOneBy(array('name' => trim(strtolower($project))));
         }
         /** @var Project $project */
-        if(!$project){
+        if (!$project) {
             throw new \Exception('Project not found');
         }
         /** @var Translation[] $translations */
@@ -81,20 +72,15 @@ class ListCommand extends ContainerAwareCommand
                 'catalog'   => $catalog,
                 'deleted'   => false,
             ),
-            array('key'=>'ASC')
+            array('key' => 'ASC')
         );
 
-        foreach($translations as $translation){
-
-            if(preg_match("/$search/i", $translation->getKey(), $match)){
-                    $output->writeln(sprintf("\tFound (%s) in [%s]<info>%s</info> in catalog <comment>%s</comment>", $match[0], $translation->getBundle(), $translation->getKey(), $translation->getCatalog()));
+        foreach ($translations as $translation) {
+            if (preg_match("/$search/i", $translation->getKey(), $match)) {
+                $output->writeln(sprintf("\tFound (%s) in [%s]<info>%s</info> in catalog <comment>%s</comment>", $match[0], $translation->getBundle(), $translation->getKey(), $translation->getCatalog()));
             }
-
         }
 
         $output->writeln(" done!");
     }
-
-
-
 }
