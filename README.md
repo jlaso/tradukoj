@@ -37,7 +37,15 @@ Please, note that vagrant and bindfs need to bee installed into the system
     
 if you get an error for vboxsf upping vagrant check this [link](http://stackoverflow.com/questions/22717428/vagrant-error-failed-to-mount-folders-in-linux-guest) 
 
-move to vagrant folder (```cd vagrant```) and start vagrant machine with ```vagrant up``, please get some coffee for the first time
+move to vagrant folder (```cd vagrant```) and start vagrant machine with ```vagrant up```, please get some coffee for the first time
+
+If you get some error in the last step: enter into the machine ```vagrant ssh``` and run the install.sh manually: 
+
+```/vagrant/app/install.sh```
+
+If all works fine you can enter in the browser with the URL (http://10.10.10.8)[http://10.10.10.8] 
+
+
 
 2) Checking your System Configuration
 -------------------------------------
