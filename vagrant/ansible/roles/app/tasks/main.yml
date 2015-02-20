@@ -1,2 +1,54 @@
 ---
-# application tasks to be customized and to run after the main provision
+
+- name: Install Composer Dependencies
+  sudo: false
+  composer: working_dir=/vagrant
+  
+#    - name: permissions on tmp
+#      shell: sudo chmod -R 777 /tmp
+
+#- name: Copying the conf of cli to apache
+#  shell: cp /etc/php5/cli/php.ini /etc/php5/apache2/php.ini
+#  sudo: yes
+
+#- name:  "Restarting apache"
+#  sudo: yes
+#  shell:  service apache2 restart
+
+#- copy: src=/vagrant/app/config/parameters.yml.dis dest=/vagrant/app/config/parameters.yml
+
+- name: Drop MYSQL database
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction doctrine:database:drop --force
+
+- name: Create MYSQL database
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction doctrine:database:create
+
+- name: Create MYSQL tables
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction doctrine:schema:create
+
+- name: session pdo storage have to created by hand
+  shell: mysql -u root -p'{{ mysql.root_password }}' tradukoj < /vagrant/app/sessionpdo.sql
+
+- name: fill language table with all languages
+  shell: mysql -u root -p'{{ mysql.root_password }}' tradukoj < /vagrant/app/languages.sql
+
+- name: Creating MONGO database
+  shell: echo 'db.addUser("tradukoj","tradukoj");' | mongo tradukoj
+
+- name: create MONGO tables
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction doctrine:mongodb:schema:create
+
+- name: Install Assets
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction assets:install /vagrant/web --symlink
+
+- name: Install Assetic
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction assetic:dump
+
+- name: "Creating first user and first project"
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction tradukoj:init:data
+
+- name: Dumping translations for the first project
+  shell: /usr/bin/env php /vagrant/app/console jlaso:translations:dump --force=yes
+
+- name: Loading translations for the first project to server (local)
+  shell: /usr/bin/env php /vagrant/app/console jlaso:translations:sync --upload-first=yes
