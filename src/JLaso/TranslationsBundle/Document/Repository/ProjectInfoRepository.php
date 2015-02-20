@@ -2,9 +2,7 @@
 
 namespace JLaso\TranslationsBundle\Document\Repository;
 
-use Doctrine\ODM\MongoDB;
 use Doctrine\ODM\MongoDB\DocumentRepository;
-use JLaso\TranslationsBundle\Document\Translation;
 
 class ProjectInfoRepository extends DocumentRepository
 {
@@ -12,9 +10,9 @@ class ProjectInfoRepository extends DocumentRepository
     {
         $dm = $this->getDocumentManager();
         /** @var ProjectInfo $result */
-        $result = $dm->getRepository('TranslationsBundle:ProjectInfo')->findOneBy(array('projectId'=>intval($projectId)));
+        $result = $dm->getRepository('TranslationsBundle:ProjectInfo')->findOneBy(array('projectId' => intval($projectId)));
         $result = $result ? $result->getCatalogs() : array();
-        if($sorted && is_array($result)){
+        if ($sorted && is_array($result)) {
             ksort($result);
         }
 
@@ -25,9 +23,9 @@ class ProjectInfoRepository extends DocumentRepository
     {
         $dm = $this->getDocumentManager();
         /** @var ProjectInfo $result */
-        $result = $dm->getRepository('TranslationsBundle:ProjectInfo')->findOneBy(array('projectId'=>intval($projectId)));
+        $result = $dm->getRepository('TranslationsBundle:ProjectInfo')->findOneBy(array('projectId' => intval($projectId)));
         $result = $result ? $result->getBundles() : array();
-        if($sorted && is_array($result)){
+        if ($sorted && is_array($result)) {
             ksort($result);
         }
 
@@ -38,7 +36,6 @@ class ProjectInfoRepository extends DocumentRepository
     {
         $dm = $this->getDocumentManager();
 
-        return $dm->getRepository('TranslationsBundle:ProjectInfo')->findOneBy(array('projectId'=>intval($projectId)));
+        return $dm->getRepository('TranslationsBundle:ProjectInfo')->findOneBy(array('projectId' => intval($projectId)));
     }
-
 }

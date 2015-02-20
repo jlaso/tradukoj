@@ -37,9 +37,9 @@ class PermissionExtension extends \Twig_Extension
     {
         $permission = null;
         $permissions = isset($permissionArray[Permission::LOCALE_KEY]) ? $permissionArray[Permission::LOCALE_KEY] : array();
-        if(isset($permissions[$locale])){
+        if (isset($permissions[$locale])) {
             $permission = $permissions[$locale];
-        }else{
+        } else {
             $permission = isset($permissions[Permission::WILD_KEY]) ? $permissions[Permission::WILD_KEY] : '';
         }
 

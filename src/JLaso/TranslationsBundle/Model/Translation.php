@@ -5,9 +5,7 @@
  * Date: 10/01/14
  * Time: 19:48
  */
-
 namespace JLaso\TranslationsBundle\Model;
-
 
 class Translation
 {
@@ -21,7 +19,7 @@ class Translation
      */
     protected $message;
     /**
-     * @var  \DateTime
+     * @var \DateTime
      */
     protected $updatedAt;
     /**
@@ -29,11 +27,11 @@ class Translation
      */
     protected $approved;
 
-    function __construct($locale = null, $message = null, $updatedAt = null, $approved = false)
+    public function __construct($locale = null, $message = null, $updatedAt = null, $approved = false)
     {
         $this->locale    = $locale;
         $this->message   = $message;
-        $this->updatedAt = $updatedAt ? : new \DateTime();
+        $this->updatedAt = $updatedAt ?: new \DateTime();
         $this->approved  = $approved;
     }
 
@@ -100,5 +98,4 @@ class Translation
     {
         return $this->updatedAt;
     }
-
-} 
+}

@@ -3,7 +3,6 @@
 namespace JLaso\TranslationsBundle\Entity\Repository;
 
 use Doctrine\ORM\EntityRepository;
-use Doctrine\ORM\Query;
 use JLaso\TranslationsBundle\Entity\Project;
 
 /**
@@ -25,5 +24,4 @@ class ProjectRepository extends EntityRepository
 
         return $queryBuilder->getQuery();
     }
-
 }

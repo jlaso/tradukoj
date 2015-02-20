@@ -20,13 +20,12 @@ class UserRegistrationType extends AbstractType
                     'constraints' => new NotBlank(),
                 ))
 
-
             ->add('password', 'repeated', array(
                     'label'   => '',
                     'type'    => 'password',
 //                    'invalid_message' => "account_settings.change_password.placeholder.password_mismatch",
                     'options' => array(
-                        'required' => true
+                        'required' => true,
                     ),
 
                     'first_options'  => array(
@@ -40,7 +39,7 @@ class UserRegistrationType extends AbstractType
                         'attr' => array(
                             'placeholder' => 'register.placeholder.repeat_password',
                         ),
-                        'label' => ''
+                        'label' => '',
                     ),
 
                     'constraints' => new NotBlank(),
@@ -58,7 +57,7 @@ class UserRegistrationType extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
-                'data_class' => 'JLaso\TranslationsBundle\Entity\User'
+                'data_class' => 'JLaso\TranslationsBundle\Entity\User',
             ));
     }
 

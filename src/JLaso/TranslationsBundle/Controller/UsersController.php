@@ -1,17 +1,10 @@
 <?php
 namespace JLaso\TranslationsBundle\Controller;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use JLaso\TranslationsBundle\Document\File;
-use JLaso\TranslationsBundle\Document\Repository\TranslatableDocumentRepository;
-use JLaso\TranslationsBundle\Document\TranslatableDocument;
 use JLaso\TranslationsBundle\Entity\Permission;
 use JLaso\TranslationsBundle\Entity\Project;
-use JLaso\TranslationsBundle\Entity\TranslationLog;
-use JLaso\TranslationsBundle\Entity\Repository\LanguageRepository;
-use JLaso\TranslationsBundle\Entity\Repository\TranslationLogRepository;
-use JLaso\TranslationsBundle\Entity\Repository\ProjectRepository;
 use JLaso\TranslationsBundle\Entity\Repository\UserRepository;
 use JLaso\TranslationsBundle\Entity\Repository\PermissionRepository;
 use JLaso\TranslationsBundle\Entity\User;
@@ -19,21 +12,14 @@ use JLaso\TranslationsBundle\Exception\AclException;
 use JLaso\TranslationsBundle\Form\Type\UserProfileType;
 use JLaso\TranslationsBundle\Service\MailerService;
 use JLaso\TranslationsBundle\Service\Manager\TranslationsManager;
-use JLaso\TranslationsBundle\Service\RestService;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\Request;
-use Doctrine\ODM\MongoDB\DocumentManager;
-use JLaso\TranslationsBundle\Document\Repository\TranslationRepository;
-use JLaso\TranslationsBundle\Document\Translation;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
 use JLaso\TranslationsBundle\Tools\ImageTools;
-
 
 /**
  * @Cache(maxage="0")
@@ -74,17 +60,17 @@ class UsersController extends BaseController
         /** @var Permission $permission */
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permission || ($permission->getPermissions(Permission::GENERAL_KEY) != Permission::OWNER) ){
+        if (!$permission || ($permission->getPermissions(Permission::GENERAL_KEY) != Permission::OWNER)) {
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
 
         /** @var Permission[] $permissions */
-        $permissions = $this->getPermissionRepository()->findBy(array('project'=>$project));
+        $permissions = $this->getPermissionRepository()->findBy(array('project' => $project));
 
         $usersData = array();
-        foreach($permissions as $perm){
+        foreach ($permissions as $perm) {
             $user = $perm->getUser();
             $usersData[] = array(
                 'id'          => $user->getId(),
@@ -120,17 +106,15 @@ class UsersController extends BaseController
         $oldPassword = $this->user->getPassword();
         $form = $this->createForm(new UserProfileType(), $this->user);
 
-        if($request->isMethod("POST")){
-
+        if ($request->isMethod("POST")) {
             $form->submit($request);
-            if($form->isValid()){
-
-                if($this->user->getPassword()){
+            if ($form->isValid()) {
+                if ($this->user->getPassword()) {
                     /** @var EncoderFactory $encoderFactory */
                     $encoderFactory = $this->container->get('security.encoder_factory');
                     $encoder = $encoderFactory->getEncoder($this->user);
                     $this->user->setPassword($encoder->encodePassword($this->user->getPassword(), $this->user->getSalt()));
-                }else{
+                } else {
                     $this->user->setPassword($oldPassword);
                 }
 
@@ -138,23 +122,22 @@ class UsersController extends BaseController
                 $this->em->flush($this->user);
 
                 $this->addSuccessFlash("messages.profile_saved_successfully");
-            }else{
+            } else {
                 $this->addNoticeFlash("messages.profile_not_valid_form");
             }
-
         }
 
         $finder = new Finder();
         $rootDir = dirname($this->get('kernel')->getRootDir());
-        $finder->files()->in($rootDir . '/web/' . self::AVATAR_LIB)->name('*.png');
+        $finder->files()->in($rootDir.'/web/'.self::AVATAR_LIB)->name('*.png');
 
         $avatarFiles = array();
-        foreach($finder->files() as $file){
+        foreach ($finder->files() as $file) {
             //$fullFileName = $file->getRealpath();
             $relativePath = $file->getRelativePath();
             $fileName = $file->getRelativePathname();
 
-            $avatarFiles[] = '/'.self::AVATAR_LIB.'/' . $fileName;
+            $avatarFiles[] = '/'.self::AVATAR_LIB.'/'.$fileName;
         }
 
         return array(
@@ -165,7 +148,6 @@ class UsersController extends BaseController
             'avatarFiles' => $avatarFiles,
         );
     }
-
 
     /**
      * @Route("/add-user/{projectId}", name="users_add_new_user")
@@ -180,38 +162,37 @@ class UsersController extends BaseController
         /** @var Permission $permission */
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permission || ($permission->getPermissions(Permission::GENERAL_KEY) != Permission::OWNER) ){
+        if (!$permission || ($permission->getPermissions(Permission::GENERAL_KEY) != Permission::OWNER)) {
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
         $email = $request->get('email');
-        $user = $this->getUserRepository()->findOneBy(array('email'=>$email));
-        if(!$user){
+        $user = $this->getUserRepository()->findOneBy(array('email' => $email));
+        if (!$user) {
             $user = new User();
             $user->setEmail($email);
 //            //$user->set
 
             /** @var MailerService $mailer */
             $mailer = $this->get('jlaso.mailer_service');
-            try{
+            try {
                 $send = $mailer->sendWelcomeMessage($user);
-            }catch(\Exception $e){
-
+            } catch (\Exception $e) {
             }
-            if(is_string($send)){
+            if (is_string($send)) {
                 $this->addNoticeFlash($send);
-            }else{
+            } else {
                 $this->addNoticeFlash('user.permissions.user_invited');
             }
-        }else{
-            $managedLocales = explode(',',$project->getManagedLocales());
+        } else {
+            $managedLocales = explode(',', $project->getManagedLocales());
 
             /** @var Permission[] $permissions */
-            $permissions = $this->getPermissionRepository()->findBy(array('project'=>$project));
+            $permissions = $this->getPermissionRepository()->findBy(array('project' => $project));
 
             $usersData = array();
             $alreadyExists = false;
-            foreach($permissions as $perm){
+            foreach ($permissions as $perm) {
                 $currentUser = $perm->getUser();
                 $usersData[] = array(
                     'id'          => $currentUser->getId(),
@@ -221,13 +202,13 @@ class UsersController extends BaseController
                     'active'      => $currentUser->getActive(),
                     'permissions' => $this->expandPermissions($managedLocales, $perm->getPermissions()),
                 );
-                if($currentUser->getEmail() == $email){
+                if ($currentUser->getEmail() == $email) {
                     $this->addNoticeFlash('user.permissions.user_already_exists');
                     $alreadyExists = true;
                 }
             }
 
-            if(!$alreadyExists){
+            if (!$alreadyExists) {
                 $permission = new Permission();
                 $permission->setUser($user);
                 $permission->setProject($project);
@@ -240,7 +221,7 @@ class UsersController extends BaseController
         }
 
         // ldd($usersData, $permission->getPermissions());
-        return $this->redirect($this->generateUrl('users_index', array('projectId'=>$project->getId())));
+        return $this->redirect($this->generateUrl('users_index', array('projectId' => $project->getId())));
 //        return array(
 //            'action'         => 'users',
 //            'project'        => $project,
@@ -263,24 +244,24 @@ class UsersController extends BaseController
         /** @var Permission $permission */
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permission || ($permission->getPermissions(Permission::GENERAL_KEY) != Permission::OWNER) ){
+        if (!$permission || ($permission->getPermissions(Permission::GENERAL_KEY) != Permission::OWNER)) {
             throw new AclException($this->translator->trans('error.acl.not_enough_permissions_to_manage_this_project'));
         }
 
-        $user = $this->getUserRepository()->findOneBy(array('email'=>$email));
-        if(!$user){
+        $user = $this->getUserRepository()->findOneBy(array('email' => $email));
+        if (!$user) {
             $this->addNoticeFlash("User doesn't exists yet in our system");
-        }else{
-            $managedLocales = explode(',',$project->getManagedLocales());
+        } else {
+            $managedLocales = explode(',', $project->getManagedLocales());
 
             /** @var Permission[] $permissions */
-            $permissions = $this->getPermissionRepository()->findBy(array('project'=>$project));
+            $permissions = $this->getPermissionRepository()->findBy(array('project' => $project));
 
             $usersData = array();
             $exists = false;
-            foreach($permissions as $perm){
+            foreach ($permissions as $perm) {
                 $currentUser = $perm->getUser();
-                if($currentUser->getEmail() != $email){/*
+                if ($currentUser->getEmail() != $email) {/*
                     $usersData[] = array(
                         'id'          => $currentUser->getId(),
                         'name'        => $currentUser->getName(),
@@ -289,19 +270,19 @@ class UsersController extends BaseController
                         'active'      => $currentUser->getActive(),
                         'permissions' => $this->expandPermissions($managedLocales, $perm->getPermissions()),
                     );*/
-                }else{
+                } else {
                     $exists = true;
                     $this->em->remove($perm);
                 }
             }
 
-            if($exists){
+            if ($exists) {
                 $this->em->flush();
             }
         }
 
         // ldd($usersData, $permission->getPermissions());
-        return $this->redirect($this->generateUrl('users_index', array('projectId'=>$project->getId())));
+        return $this->redirect($this->generateUrl('users_index', array('projectId' => $project->getId())));
 //        return array(
 //            'action'         => 'users',
 //            'project'        => $project,
@@ -314,14 +295,13 @@ class UsersController extends BaseController
     protected function expandPermissions($managedLocales, $permissionsArray)
     {
         $result = array();
-        foreach($managedLocales as $locale)
-        {
-            if(isset($permissionsArray[Permission::LOCALE_KEY][$locale])){
+        foreach ($managedLocales as $locale) {
+            if (isset($permissionsArray[Permission::LOCALE_KEY][$locale])) {
                 $result[$locale] = $permissionsArray[Permission::LOCALE_KEY][$locale];
-            }else{
-                if(isset($permissionsArray[Permission::LOCALE_KEY][Permission::WILD_KEY])){
+            } else {
+                if (isset($permissionsArray[Permission::LOCALE_KEY][Permission::WILD_KEY])) {
                     $result[$locale] = $permissionsArray[Permission::LOCALE_KEY][Permission::WILD_KEY];
-                }else{
+                } else {
                     $result[$locale] = Permission::NONE_PERM;
                 }
             }
@@ -342,30 +322,30 @@ class UsersController extends BaseController
         /** @var Permission $permission */
         $permission = $this->translationsManager->getPermissionForUserAndProject($this->user, $project);
 
-        if(!$permission || ($permission->getPermissions(Permission::GENERAL_KEY) != Permission::OWNER) ){
+        if (!$permission || ($permission->getPermissions(Permission::GENERAL_KEY) != Permission::OWNER)) {
             return $this->exception('error.acl.not_enough_permissions_to_manage_this_project');
         }
 
-        $managedLocales = explode(',',$project->getManagedLocales());
+        $managedLocales = explode(',', $project->getManagedLocales());
 
         $userId = $request->get('user');
         $locale = $request->get('locale');
-        if(!in_array($locale, $managedLocales)){
+        if (!in_array($locale, $managedLocales)) {
             return $this->exception(sprintf('the locale %s is not managed by this project', $locale));
         }
         $newPermission = $request->get('permission');
-        if(!in_array($newPermission, Permission::getAllowedLocalePermissions())){
+        if (!in_array($newPermission, Permission::getAllowedLocalePermissions())) {
             return $this->exception(sprintf('the permission %s is not recognized', $newPermission));
         }
 
         $user = $this->getUserRepository()->find($userId);
-        if(!$user){
+        if (!$user) {
             return $this->exception('error.permissions.no_user_found');
         }
 
         /** @var Permission $permission */
         $permission = $this->getPermissionRepository()->findPermissionForProjectAndUser($project, $user);
-        if(!$permission){
+        if (!$permission) {
             return $this->exception('error.permissions.no_permissions_for_this_user');
         }
 
@@ -380,8 +360,6 @@ class UsersController extends BaseController
             )
         );
     }
-
-
 
     /**
      * @Route("/user-change-avatar", name="user_change_avatar")
@@ -413,17 +391,17 @@ class UsersController extends BaseController
 
         $this->init();
 
-        $directory = dirname($this->get('kernel')->getRootDir()) . '/web/uploads';
+        $directory = dirname($this->get('kernel')->getRootDir()).'/web/uploads';
 
         $name = sprintf("avatar-%06d.png", $this->user->getId());
-        foreach($request->files as $file){
+        foreach ($request->files as $file) {
             $file->move($directory, $name);
             break;
         }
 
-        $avatar = "/uploads/" . $name;
+        $avatar = "/uploads/".$name;
 
-        ImageTools::resizeImage($directory . '/' . $name, 100, 100, array('action' => ImageTools::COPY_ORIG_DEST));
+        ImageTools::resizeImage($directory.'/'.$name, 100, 100, array('action' => ImageTools::COPY_ORIG_DEST));
 
         $this->user->setAvatarUrl($avatar);
         $this->em->persist($this->user);
@@ -431,7 +409,6 @@ class UsersController extends BaseController
 
         return $this->redirect($this->generateUrl('user_profile'));
     }
-
 
     /**
      * @return UserRepository
@@ -448,6 +425,4 @@ class UsersController extends BaseController
     {
         return $this->em->getRepository('TranslationsBundle:Permission');
     }
-
-
 }

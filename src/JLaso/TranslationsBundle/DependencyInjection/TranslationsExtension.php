@@ -20,10 +20,9 @@ class TranslationsExtension extends Extension
     public function load(array $configs, ContainerBuilder $container)
     {
         $config = array();
-        foreach($configs as $subConfig){
+        foreach ($configs as $subConfig) {
             $config = array_merge($config, $subConfig);
         }
-
 
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
@@ -40,8 +39,6 @@ class TranslationsExtension extends Extension
 
     public function getXsdValidationBasePath()
     {
-        return __DIR__ . '/../Resources/config/';
+        return __DIR__.'/../Resources/config/';
     }
-
-
 }

@@ -4,9 +4,6 @@ namespace JLaso\TranslationsBundle\Document;
 
 use Doctrine\ODM\MongoDB\Mapping\Annotations as MongoDB;
 use Doctrine\Bundle\MongoDBBundle\Validator\Constraints\Unique as MongoDBUnique;
-use Doctrine\ORM\Mapping\HasLifecycleCallbacks;
-use Doctrine\Common\Collections\ArrayCollection;
-use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * ProjectInfo
@@ -47,7 +44,6 @@ class ProjectInfo
      * @MongoDB\Timestamp
      */
     protected $updatedAt;
-
 
     public function __construct()
     {
@@ -132,10 +128,10 @@ class ProjectInfo
 
     public function addCatalog($catalog)
     {
-        if($catalog){
-            if(!isset($this->catalogs[$catalog])){
+        if ($catalog) {
+            if (!isset($this->catalogs[$catalog])) {
                 $this->catalogs[$catalog] = 1;
-            }else{
+            } else {
                 $this->catalogs[$catalog]++;
             }
         }
@@ -143,10 +139,10 @@ class ProjectInfo
 
     public function subCatalog($catalog)
     {
-        if($catalog){
-            if(isset($this->catalogs[$catalog])){
+        if ($catalog) {
+            if (isset($this->catalogs[$catalog])) {
                 $this->catalogs[$catalog]--;
-                if($this->catalogs[$catalog] == 0){
+                if ($this->catalogs[$catalog] == 0) {
                     unset($this->catalogs[$catalog]);
                 }
             }
@@ -171,10 +167,10 @@ class ProjectInfo
 
     public function addBundle($bundle)
     {
-        if($bundle){
-            if(!isset($this->bundles[$bundle])){
+        if ($bundle) {
+            if (!isset($this->bundles[$bundle])) {
                 $this->bundles[$bundle] = 1;
-            }else{
+            } else {
                 $this->bundles[$bundle]++;
             }
         }
@@ -182,10 +178,10 @@ class ProjectInfo
 
     public function subBundle($bundle)
     {
-        if($bundle){
-            if(isset($this->bundles[$bundle])){
+        if ($bundle) {
+            if (isset($this->bundles[$bundle])) {
                 $this->bundles[$bundle]--;
-                if($this->bundles[$bundle] == 0){
+                if ($this->bundles[$bundle] == 0) {
                     unset($this->bundles[$bundle]);
                 }
             }
@@ -196,5 +192,4 @@ class ProjectInfo
     {
         return base64_encode(sha1($this->getId()));
     }
-
 }

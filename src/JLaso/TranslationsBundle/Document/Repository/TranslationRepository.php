@@ -2,7 +2,6 @@
 
 namespace JLaso\TranslationsBundle\Document\Repository;
 
-use Doctrine\ODM\MongoDB;
 use Doctrine\ODM\MongoDB\DocumentRepository;
 use JLaso\TranslationsBundle\Document\Translation;
 
@@ -47,15 +46,14 @@ class TranslationRepository extends DocumentRepository
             ->findBy(array(
                     'projectId' => $projectId,
                     'catalog'   => $catalog,
-                )
-            , array('key'));
+                ), array('key'));
 
         $keys = array();
 
-        foreach($result as $item){
+        foreach ($result as $item) {
             $translations = $item->getTranslations();
 
-            switch(true){
+            switch (true) {
 
                 case(!$onlyLanguage):
                     $show = true;
@@ -76,14 +74,13 @@ class TranslationRepository extends DocumentRepository
 
             }
 
-            if($show){
+            if ($show) {
                 $key = $item->getKey();
                 $keys[$key] = array(
                     'key' => $key,
                     'id'  => $item->getId(),
                 );
             }
-
         }
         ksort($keys, SORT_STRING);  // ideally SORT_NATURAL ^ SORT_FLAG_CASE  but current server don't support this flags
 
@@ -99,14 +96,13 @@ class TranslationRepository extends DocumentRepository
             ->findBy(array(
                     'projectId' => $projectId,
                     'bundle'    => $bundle,
-                )
-            , array('key'));
+                ), array('key'));
 
         $keys = array();
-        foreach($result as $item){
+        foreach ($result as $item) {
             $translations = $item->getTranslations();
 
-            switch(true){
+            switch (true) {
 
                 case(!$onlyLanguage):
                     $show = true;
@@ -127,20 +123,18 @@ class TranslationRepository extends DocumentRepository
 
             }
 
-            if($show){
+            if ($show) {
                 $key = $item->getKey();
                 $keys[] = array(
                     'key' => $key,
                     'id'  => $item->getId(),
                 );
-
             }
         }
         ksort($keys, SORT_STRING);  // ideally SORT_NATURAL ^ SORT_FLAG_CASE  but current server doesn't support this flags
 
         return $keys;
     }
-
 
     public function getKeysByLanguage($projectId, $locales)
     {
@@ -150,31 +144,27 @@ class TranslationRepository extends DocumentRepository
         $result = $dm->getRepository('TranslationsBundle:Translation')
             ->findBy(array(
                     'projectId' => $projectId,
-                )
-                , array('key'));
+                ), array('key'));
 
         $temp = array();
 
-        foreach($locales as $locale=>$info){
-
+        foreach ($locales as $locale => $info) {
             $temp[$locale] = array(
                 'approved' => 0,
                 'pending' => 0,
                 'info' => array( 'name' => $info['name'], 'locale' => $locale ),
                 'keys' => 0,
             );
-
         }
 
-        foreach($result as $item){
+        foreach ($result as $item) {
             $translations = $item->getTranslations();
 
-            foreach($locales as $locale=>$info){
-
-                if($translations[$locale]['message']){
-                    if($translations[$locale]['approved']){
+            foreach ($locales as $locale => $info) {
+                if ($translations[$locale]['message']) {
+                    if ($translations[$locale]['approved']) {
                         $temp[$locale]['approved']++;
-                    }else{
+                    } else {
                         $temp[$locale]['pending']++;
                     }
                 }
@@ -197,7 +187,7 @@ class TranslationRepository extends DocumentRepository
             );
 
         $keys = array();
-        foreach($result as $item){
+        foreach ($result as $item) {
             $keys[] = array(
                 'key' => $item->getKey(),
                 'id'  => $item->getId(),
@@ -216,7 +206,7 @@ class TranslationRepository extends DocumentRepository
      */
     public function getTranslation($projectId, $catalog, $key)
     {
-//        /** @var Translation $result */
+        //        /** @var Translation $result */
 //        $query = $this
 //            ->createQueryBuilder('TranslationsBundle:Translation')
 //            //->field('projectId')->equals(intval($projectId))
@@ -255,5 +245,4 @@ class TranslationRepository extends DocumentRepository
 
         return $result; // ? $result->getTranslations() : array();
     }
-
 }

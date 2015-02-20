@@ -7,7 +7,6 @@ use JLaso\TranslationsBundle\Entity\User;
 use JLaso\TranslationsBundle\Form\Type\UserRegistrationType;
 use JLaso\TranslationsBundle\Service\MailerService;
 use JLaso\TranslationsBundle\Service\Manager\TranslationsManager;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,9 +16,7 @@ use Symfony\Component\Security\Core\SecurityContext;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Cache;
-
 
 /**
  * @Cache(maxage="0")
@@ -60,21 +57,21 @@ class SecurityController extends BaseController
         /** @var SecurityContext $securityContext */
         $securityContext = $this->get('security.context');
         $token = $securityContext->getToken();
-        if($token){
+        if ($token) {
             /** @var User $user */
             $user = $token->getUser();
-            if($user instanceof User){
-               // die('asd');
-                if ($this->get('security.context')->isGranted('IS_FULLY_AUTHENTICATED')){
-                    switch(true){
+            if ($user instanceof User) {
+                // die('asd');
+                if ($this->get('security.context')->isGranted('IS_FULLY_AUTHENTICATED')) {
+                    switch (true) {
                         case ($user->hasRole(User::ROLE_DEVELOPER)):
-                            return $this->redirect($this->generateUrl('user_index') . '#developer-area');
+                            return $this->redirect($this->generateUrl('user_index').'#developer-area');
                             break;
                         case ($user->hasRole(User::ROLE_TRANSLATOR)):
-                            return $this->redirect($this->generateUrl('user_index') . '#translator-area');
+                            return $this->redirect($this->generateUrl('user_index').'#translator-area');
                             break;
                         case ($user->hasRole(User::ROLE_ADMIN)):
-                            return $this->redirect($this->generateUrl('user_index') . '#admin-area');
+                            return $this->redirect($this->generateUrl('user_index').'#admin-area');
                             break;
                         default:
                             throw new \Exception('Unknow role for user');
@@ -107,7 +104,7 @@ class SecurityController extends BaseController
      */
     protected function getDataFromGitHub($access_token)
     {
-        $ch = curl_init('https://api.github.com/user?access_token=' . $access_token);
+        $ch = curl_init('https://api.github.com/user?access_token='.$access_token);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'tradukoj.com');
         $response = curl_exec($ch);
@@ -126,7 +123,7 @@ class SecurityController extends BaseController
         $request       = $this->getRequest();
         $client_secret = 'd945ef6df389f0fa5d95eb638fd74fccf623d218';
 
-        if($code = $request->get('code')){
+        if ($code = $request->get('code')) {
             $data = sprintf('client_id=%s&client_secret=%s&code=%s', self::CLIENT_ID, $client_secret, urlencode($code));
 
             $ch = curl_init('https://github.com/login/oauth/access_token');
@@ -138,57 +135,57 @@ class SecurityController extends BaseController
             curl_close($ch);
             //ld($response);
             sleep(1);
-            if(isset($out[1])){
+            if (isset($out[1])) {
                 $access_token = $out[1];
                 /**
                  * {
-                "login": "jlaso",
-                "id": 1332197,
-                "avatar_url": "https://gravatar.com/avatar/05294fb8badbde3c6999bae2c0024165?d=https%3A%2F%2Fidenticons.github.com%2Fce92b9ab89941caa47947924ac110d1f.png&r=x",
-                "gravatar_id": "05294fb8badbde3c6999bae2c0024165",
-                "url": "https://api.github.com/users/jlaso",
-                "html_url": "https://github.com/jlaso",
-                "followers_url": "https://api.github.com/users/jlaso/followers",
-                "following_url": "https://api.github.com/users/jlaso/following{/other_user}",
-                "gists_url": "https://api.github.com/users/jlaso/gists{/gist_id}",
-                "starred_url": "https://api.github.com/users/jlaso/starred{/owner}{/repo}",
-                "subscriptions_url": "https://api.github.com/users/jlaso/subscriptions",
-                "organizations_url": "https://api.github.com/users/jlaso/orgs",
-                "repos_url": "https://api.github.com/users/jlaso/repos",
-                "events_url": "https://api.github.com/users/jlaso/events{/privacy}",
-                "received_events_url": "https://api.github.com/users/jlaso/received_events",
-                "type": "User",
-                "site_admin": false,
-                "name": "Joseluis Laso",
-                "company": "Joseluislaso",
-                "blog": "http://www.joseluislaso.es",
-                "location": "Valencia",
-                "email": "wld1373@gmail.com",
-                "hireable": true,
-                "bio": "Web developper apasionate, with PHP, jQuery, jQuerymobile, Symfony, Doctrine, Slim, CSS3, HTML5 ...",
-                "public_repos": 57,
-                "public_gists": 2,
-                "followers": 2,
-                "following": 16,
-                "created_at": "2012-01-15T20:51:17Z",
-                "updated_at": "2014-01-24T13:24:19Z"
-                }
+                 "login": "jlaso",
+                 "id": 1332197,
+                 "avatar_url": "https://gravatar.com/avatar/05294fb8badbde3c6999bae2c0024165?d=https%3A%2F%2Fidenticons.github.com%2Fce92b9ab89941caa47947924ac110d1f.png&r=x",
+                 "gravatar_id": "05294fb8badbde3c6999bae2c0024165",
+                 "url": "https://api.github.com/users/jlaso",
+                 "html_url": "https://github.com/jlaso",
+                 "followers_url": "https://api.github.com/users/jlaso/followers",
+                 "following_url": "https://api.github.com/users/jlaso/following{/other_user}",
+                 "gists_url": "https://api.github.com/users/jlaso/gists{/gist_id}",
+                 "starred_url": "https://api.github.com/users/jlaso/starred{/owner}{/repo}",
+                 "subscriptions_url": "https://api.github.com/users/jlaso/subscriptions",
+                 "organizations_url": "https://api.github.com/users/jlaso/orgs",
+                 "repos_url": "https://api.github.com/users/jlaso/repos",
+                 "events_url": "https://api.github.com/users/jlaso/events{/privacy}",
+                 "received_events_url": "https://api.github.com/users/jlaso/received_events",
+                 "type": "User",
+                 "site_admin": false,
+                 "name": "Joseluis Laso",
+                 "company": "Joseluislaso",
+                 "blog": "http://www.joseluislaso.es",
+                 "location": "Valencia",
+                 "email": "wld1373@gmail.com",
+                 "hireable": true,
+                 "bio": "Web developper apasionate, with PHP, jQuery, jQuerymobile, Symfony, Doctrine, Slim, CSS3, HTML5 ...",
+                 "public_repos": 57,
+                 "public_gists": 2,
+                 "followers": 2,
+                 "following": 16,
+                 "created_at": "2012-01-15T20:51:17Z",
+                 "updated_at": "2014-01-24T13:24:19Z"
+                 }
                  */
                 $data         = $this->getDataFromGitHub($access_token);
-                if(!count($data)){
+                if (!count($data)) {
                     $this->addNoticeFlash('error.github_connect_not_possible');
                     $this->redirect($this->generateUrl('user_login'));
                 }
                 //ld($data); sleep(4);
-                try{
+                try {
                     $login        = $data['login'];
                     $avatar_url   = $data['avatar_url'];
                     $user         = $this->getUserRepository()->findOneBy(array('username' => $login));
-                    $email        = isset($data['email']) ? $data['email'] : $login . '-github@tradukoj.com';
-                    if(!$user instanceof User){
+                    $email        = isset($data['email']) ? $data['email'] : $login.'-github@tradukoj.com';
+                    if (!$user instanceof User) {
                         $user     = $this->getUserRepository()->findOneBy(array('email' => $email));
                     }
-                    if(!$user instanceof User){
+                    if (!$user instanceof User) {
                         $user = new User();
                         $user->setEmail($email);
                         $user->setName(isset($data['name']) ? $data['name'] : 'unknown');
@@ -204,20 +201,17 @@ class SecurityController extends BaseController
 
                     //return new Response('OK');
                     return $this->redirect($this->generateUrl('user_index'));
-
-                }catch(\Exception $e){
+                } catch (\Exception $e) {
                     print $e->getMessage();
                     var_dump($data);
                 }
-            }else{
+            } else {
                 var_dump($response);
-
             }
         }
 
         return new Response('OK');
     }
-
 
     /**
      * Register a new User entity.
@@ -230,7 +224,7 @@ class SecurityController extends BaseController
         $user  = new User();
         $form = $this->createForm(new UserRegistrationType(), $user);
 
-        if($request->isMethod('POST')){
+        if ($request->isMethod('POST')) {
             $form->submit($request);
 
             if ($form->isValid()) {
@@ -257,12 +251,12 @@ class SecurityController extends BaseController
 
                 /** @var MailerService $mailer */
                 $mailer = $this->get('jlaso.mailer_service');
-                try{
+                try {
                     $send = $mailer->sendWelcomeMessage($user);
-                }catch(\Exception $e){
+                } catch (\Exception $e) {
                     $send = "Error sending welcome mail";
                 }
-                if(is_string($send)){
+                if (is_string($send)) {
                     $this->addNoticeFlash($send);
                 }
 
@@ -270,12 +264,12 @@ class SecurityController extends BaseController
 
                 if (isset($session['_security.user_area.target_path'])) {
                     $url = $session['_security.user_area.target_path'];
+
                     return $this->redirect($url);
                 }
 
                 return $this->redirect($this->generateUrl('user_index'));
             }
-
         }
 
         return array(
@@ -302,5 +296,4 @@ class SecurityController extends BaseController
         $session = $this->get('session');
         $session->set('_security_'.$providerKey, serialize($token));
     }
-
 }

@@ -20,14 +20,14 @@ class BaseController extends Controller
 
         $this->translator = $container->get('translator');
 
-        if(method_exists($this, 'init')){
+        if (method_exists($this, 'init')) {
             $this->init();
         }
     }
 
     public function throwError($message, $params = null, $toAction = null, $paramsToAction = array())
     {
-        if(null == $params){
+        if (null == $params) {
             $params = array();
         }
         $message = $this->translator->trans($message, $params);
@@ -35,13 +35,13 @@ class BaseController extends Controller
         $session = $this->get('session');
         $session->getFlashBag()->getadd('error', $message);
 
-        if($toAction){
+        if ($toAction) {
             return $this->redirect($this->generateUrl($toAction, $paramsToAction));
-        }else{
+        } else {
             $currentUrl = $this->getRequest()->getUri();
+
             return $this->redirect($currentUrl);
         }
-
     }
 
     public function addNoticeFlash($message, $params = array())
@@ -89,7 +89,7 @@ class BaseController extends Controller
     }
 
     /**
-     * @param array  $data
+     * @param array $data
      *
      * @return mixed
      */
@@ -104,5 +104,4 @@ class BaseController extends Controller
             )
         );
     }
-
 }

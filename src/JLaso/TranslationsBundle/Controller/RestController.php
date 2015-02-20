@@ -13,7 +13,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Console\Output\NullOutput;
 use Symfony\Component\HttpFoundation\Request;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpKernel\Kernel;
@@ -45,12 +44,11 @@ class RestController extends Controller
         $content = $request->getContent();
         $params  = json_decode($content, true);
 
-        if( !isset($params['key'])  || !isset($params['secret']) ){
+        if (!isset($params['key'])  || !isset($params['secret'])) {
             return false;
         }
 
         return ($params['key'] == $project->getApiKey()) && ($params['secret'] == $project->getApiSecret());
-
     }
 
     /**
@@ -89,7 +87,7 @@ class RestController extends Controller
     }
 
     /**
-     * @param array  $data
+     * @param array $data
      *
      * @return mixed
      */
@@ -128,7 +126,7 @@ class RestController extends Controller
         //$bundles       = $keyRepository->findAllBundlesForProject($project);
         $keys          = $keyRepository->findAllKeysForProjectAndBundle($project, $bundle);
         $keysResult    = array();
-        foreach($keys as $key){
+        foreach ($keys as $key) {
             $keysResult[$key->getKey()] = $key->getKey();
         }
 
@@ -166,28 +164,26 @@ class RestController extends Controller
         $this->init();
         //ob_implicit_flush();
 
-        if($this->validateRequest($request, $project)){
+        if ($this->validateRequest($request, $project)) {
             $host = php_uname('n'); //
-            if(strpos($host, '.local') !== false){
+            if (strpos($host, '.local') !== false) {
                 $host = '127.0.0.1';
-            }else{
+            } else {
                 $host = gethostbyname($host);
             }
             $found = false;
             $errno = null;
             $errtxt = '';
-            for ($port = self::MIN_PORT; $port < self::MAX_PORT; $port++)
-            {
+            for ($port = self::MIN_PORT; $port < self::MAX_PORT; $port++) {
                 $connection = @fsockopen($host, $port, $errno, $errtxt, 500);
-                if (is_resource($connection))
-                {
+                if (is_resource($connection)) {
                     fclose($connection);
-                }else{
+                } else {
                     $found = true;
                     break;
                 }
             }
-            if($found){
+            if ($found) {
 
                 /*
                 $app = new Application($this->get('kernel'));
@@ -196,17 +192,17 @@ class RestController extends Controller
 
                 $srcDir = dirname($this->get('kernel')->getRootDir());
                 $cmd = array(
-                    $srcDir . '/app/console',
+                    $srcDir.'/app/console',
                     'jlaso:translations:server-mongo-start',
                     $host,
                     $port,
-                    "--lzf=" . ($lzf ? "yes" : "no")
+                    "--lzf=".($lzf ? "yes" : "no"),
                 );
 
-                if(function_exists('pcntl_exec')){
+                if (function_exists('pcntl_exec')) {
                     pcntl_exec('php', $cmd);
-                }else{
-                    $cmd = "php " . implode(" ",$cmd). " >/dev/null 2>/dev/null &";
+                } else {
+                    $cmd = "php ".implode(" ", $cmd)." >/dev/null 2>/dev/null &";
                     exec($cmd);
                 }
 
@@ -219,7 +215,6 @@ class RestController extends Controller
             }
 
             return $this->exception(sprintf('unable to start socket server on %s, port %d, %d:%s', $host, $port, $errno, $errtxt));
-
         }
 
         return $this->exception('unable to start socket: bad credentials');
@@ -234,14 +229,14 @@ class RestController extends Controller
      */
     public function getBundleIndex(Request $request, Project $project)
     {
-        try{
+        try {
             $this->init();
-            if(!$this->validateRequest($request, $project)){
+            if (!$this->validateRequest($request, $project)) {
                 return $this->exception('error_messages.invalid_credentials');
             };
             $keyRepository = $this->getKeyRepository();
             $bundles       = $keyRepository->findAllBundlesForProject($project);
-        }catch(\Exception $e){
+        } catch (\Exception $e) {
             return $this->exception($e->getMessage());
         }
 
@@ -269,7 +264,7 @@ class RestController extends Controller
             )
         );
 
-        if(!$keyRecord){
+        if (!$keyRecord) {
             return $this->exception('No key found in this bundle');
         }
         /** @var Message $message */
@@ -278,7 +273,7 @@ class RestController extends Controller
                 'language' => $language,
             )
         );
-        if(!$message){
+        if (!$message) {
             return $this->exception('No message found in this key/language');
         }
 
@@ -310,11 +305,11 @@ class RestController extends Controller
             )
         );
 
-        if(!$keyRecord){
+        if (!$keyRecord) {
             return $this->exception('No key found in this bundle');
         }
         $messages = array();
-        foreach($keyRecord->getMessages() as $message){
+        foreach ($keyRecord->getMessages() as $message) {
             $messages[$message->getLanguage()] = array(
                 'message'           => $message->getMessage(),
                 'last_modification' => $message->getUpdatedAt()->format('U'),
@@ -337,7 +332,7 @@ class RestController extends Controller
                      ->findAllMessagesOfProjectBundleCatalogAndLocale($project, $bundle, $catalog, $locale);
 
         $result = array();
-        foreach($data as $item){
+        foreach ($data as $item) {
             /*$result[$item->getKey()->getKey()] = array(
                 'message'    => $item->getMessage(),
                 'updated_at' => $item->getUpdatedAt()->format('c'),
@@ -368,8 +363,8 @@ class RestController extends Controller
                      ->findAllKeysForProjectBundleAndCatalog($project, $bundle, $catalog);
 
         $result = array();
-        foreach($data as $item){
-//            $result[$item->getKey()] = array(
+        foreach ($data as $item) {
+            //            $result[$item->getKey()] = array(
 //                'comment'    => $item->getComment(),
 //                'updated_at' => $item->getUpdatedAt()->format('c'),
 //            );
@@ -396,8 +391,7 @@ class RestController extends Controller
         $this->init();
         $requestContent = json_decode($request->getContent(), true);
         $messages       = $requestContent['messages'];
-        foreach($messages as $key=>$message)
-        {
+        foreach ($messages as $key => $message) {
             $this->insertOrUpdateMessage($project, $bundle, $catalog, $key, $locale, $message);
         }
 
@@ -414,8 +408,7 @@ class RestController extends Controller
         $this->init();
         $requestContent = json_decode($request->getContent(), true);
         $comments       = $requestContent['comments'];
-        foreach($comments as $key=>$comment)
-        {
+        foreach ($comments as $key => $comment) {
             $this->insertOrUpdateComment($project, $bundle, $catalog, $key, $comment);
         }
 
@@ -443,7 +436,7 @@ class RestController extends Controller
             )
         );
 
-        if(!$keyRecord){
+        if (!$keyRecord) {
             return $this->exception('No key found in this bundle');
         }
         /** @var Message $messageRecord */
@@ -452,7 +445,7 @@ class RestController extends Controller
                 'language' => $locale,
             )
         );
-        if(!$messageRecord){
+        if (!$messageRecord) {
             return $this->exception('No message found');
         }
 
@@ -486,7 +479,7 @@ class RestController extends Controller
             )
         );
 
-        if(!$keyRecord){
+        if (!$keyRecord) {
             $keyRecord = new Key();
             $keyRecord->setProject($project);
             $keyRecord->setBundle($bundleName);
@@ -501,7 +494,7 @@ class RestController extends Controller
                 'language' => $language,
             )
         );
-        if(!$message){
+        if (!$message) {
             $message = new Message();
             $message->setKey($keyRecord);
             $message->setLanguage($language);
@@ -534,7 +527,7 @@ class RestController extends Controller
                 'key'      => $key,
             )
         );
-        if(!$keyRecord){
+        if (!$keyRecord) {
             $keyRecord = new Key();
             $keyRecord->setProject($project);
             $keyRecord->setBundle($bundleName);
@@ -569,7 +562,7 @@ class RestController extends Controller
             )
         );
 
-        if(!$keyRecord){
+        if (!$keyRecord) {
             return $this->exception('No key found in this bundle');
         }
 
@@ -597,20 +590,19 @@ class RestController extends Controller
         return $this->resultOk();
     }
 
-
     /**
      * @Route("/update/message/if-newest/{projectId}/{bundle}/{key}/{language}/{catalog}")
      * @Method("POST")
      * @ParamConverter("project", class="TranslationsBundle:Project", options={"id" = "projectId"})
      */
-    public function updateMessageIfNewest( Request $request, $project, $bundle, $key, $language, $catalog = self::DEFAULT_CATALOG)
+    public function updateMessageIfNewest(Request $request, $project, $bundle, $key, $language, $catalog = self::DEFAULT_CATALOG)
     {
         $this->init();
         $key = urldecode($key);
         $param = json_decode($request->getContent(), true);
         $lastModification = new \DateTime($param['last_modification']);
         $message = $param['message'];
-        if(!$bundle || !$language || !$key || !$lastModification || !$message){
+        if (!$bundle || !$language || !$key || !$lastModification || !$message) {
             return $this->exception('Validation exceptions, missing parameters');
         }
         /** @var Key $keyRecord */
@@ -622,7 +614,7 @@ class RestController extends Controller
             )
         );
 
-        if(!$keyRecord){
+        if (!$keyRecord) {
             $keyRecord = new Key();
             $keyRecord->setProject($project);
             $keyRecord->setKey($key);
@@ -637,12 +629,12 @@ class RestController extends Controller
                 'language' => $language,
             )
         );
-        if(!$messageRecord){
+        if (!$messageRecord) {
             $messageRecord = new Message();
             $messageRecord->setKey($keyRecord);
             $messageRecord->setLanguage($language);
-        }else{
-            if($messageRecord->getUpdatedAt() >= $lastModification){
+        } else {
+            if ($messageRecord->getUpdatedAt() >= $lastModification) {
                 return $this->resultOk(array(
                         'updated'   => false,
                         'message'   => $messageRecord->getMessage(),
@@ -672,7 +664,7 @@ class RestController extends Controller
         $param = json_decode($request->getContent(), true);
         $lastModification = new \DateTime($param['last_modification']);
         $comment = $param['comment'];
-        if(!$bundle || !$lastModification || !$comment || !$key){
+        if (!$bundle || !$lastModification || !$comment || !$key) {
             return $this->exception('Validation exceptions, missing parameters');
         }
         $keyRecord = $this->getKeyRepository()->findOneBy(array(
@@ -682,13 +674,13 @@ class RestController extends Controller
                 'catalog'  => $catalog,
             )
         );
-        if(!$keyRecord instanceof Key){
+        if (!$keyRecord instanceof Key) {
             $keyRecord = new Key();
             $keyRecord->setBundle($bundle);
             $keyRecord->setKey($key);
             $keyRecord->setCatalog($catalog);
-        }else{
-            if($keyRecord->getUpdatedAt() >= $lastModification){
+        } else {
+            if ($keyRecord->getUpdatedAt() >= $lastModification) {
                 return $this->resultOk(array(
                         'updated'   => false,
                         'message'   => $keyRecord->getComment(),

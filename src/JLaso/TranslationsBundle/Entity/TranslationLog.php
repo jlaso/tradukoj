@@ -100,7 +100,6 @@ class TranslationLog
         );
     }
 
-
     //////////////////////
     // GETTER Y SETTERS //
     //////////////////////
@@ -153,7 +152,6 @@ class TranslationLog
     {
         return $this->actionType;
     }
-
 
     /**
      * @param User $user
@@ -234,7 +232,4 @@ class TranslationLog
     {
         return $this->group;
     }
-
-
-
 }

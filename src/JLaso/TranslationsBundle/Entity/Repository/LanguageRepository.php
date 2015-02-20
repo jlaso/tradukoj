@@ -5,7 +5,6 @@ namespace JLaso\TranslationsBundle\Entity\Repository;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use JLaso\TranslationsBundle\Entity\Language;
-use JLaso\TranslationsBundle\Entity\Project;
 
 /**
  * LanguageRepository
@@ -33,7 +32,7 @@ class LanguageRepository extends EntityRepository
 
     /**
      * @param array $locales
-     * @param bool $asAssoc
+     * @param bool  $asAssoc
      *
      * @return Language[]|array
      */
@@ -41,9 +40,9 @@ class LanguageRepository extends EntityRepository
     {
         /** @var Language[] $languages */
         $languages =  $this->findAllLanguageInQuery($locales)->getResult();
-        if($asAssoc){
+        if ($asAssoc) {
             $aux = array();
-            foreach($languages as $language){
+            foreach ($languages as $language) {
                 $aux[$language->getLocale()] = $language->asArray();
             }
             $languages = $aux;
@@ -51,5 +50,4 @@ class LanguageRepository extends EntityRepository
 
         return $languages;
     }
-
 }

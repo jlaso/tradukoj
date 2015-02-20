@@ -1,7 +1,6 @@
 <?php
 namespace JLaso\TranslationsBundle\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -62,7 +61,7 @@ class Language
 
     public function __toString()
     {
-        return $this->locale . ' ' . $this->name;
+        return $this->locale.' '.$this->name;
     }
 
     /**
@@ -78,7 +77,7 @@ class Language
     /**
      * Set createdAt
      *
-     * @param  \DateTime $createdAt
+     * @param \DateTime $createdAt
      */
     public function setCreatedAt($createdAt = null)
     {
@@ -156,6 +155,4 @@ class Language
             'locale'     => $this->locale,
         );
     }
-
-
 }

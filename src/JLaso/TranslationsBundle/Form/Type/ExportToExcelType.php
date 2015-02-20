@@ -12,7 +12,7 @@ class ExportToExcelType extends AbstractType
     /** @var  mixed */
     protected $locales;
 
-    function __construct($locales)
+    public function __construct($locales)
     {
         $this->locales = is_array($locales) ? $locales : preg_split("/,/", $locales);
     }
@@ -29,7 +29,7 @@ class ExportToExcelType extends AbstractType
                     'attr'        => array(
                         'placeholder' => 'export_to_excel.placeholder.locale',
                         'class'       => 'uniform',
-                    )
+                    ),
                 ))
 
             ->add('bundle_file', 'checkbox', array(
@@ -37,7 +37,7 @@ class ExportToExcelType extends AbstractType
                     'attr'        => array(
                         'placeholder' => 'export_to_excel.placeholder.bundle_file',
                         'class'       => 'uniform',
-                    )
+                    ),
                 ))
 
             ->add('compress_html_labels', 'checkbox', array(
@@ -45,7 +45,7 @@ class ExportToExcelType extends AbstractType
                     'attr'        => array(
                         'placeholder' => 'export_to_excel.placeholder.compress_html_labels',
                         'class'       => 'uniform',
-                    )
+                    ),
                 ))
 
             ->add('compress_variables', 'checkbox', array(
@@ -53,7 +53,7 @@ class ExportToExcelType extends AbstractType
                     'attr'        => array(
                         'placeholder' => 'export_to_excel.placeholder.compress_variables',
                         'class'       => 'uniform',
-                    )
+                    ),
                 ))
         ;
     }
@@ -61,7 +61,7 @@ class ExportToExcelType extends AbstractType
     public function setDefaultOptions(OptionsResolverInterface $resolver)
     {
         $resolver->setDefaults(array(
-                'data_class' => 'JLaso\TranslationsBundle\Model\ExportToExcel'
+                'data_class' => 'JLaso\TranslationsBundle\Model\ExportToExcel',
             ));
     }
 

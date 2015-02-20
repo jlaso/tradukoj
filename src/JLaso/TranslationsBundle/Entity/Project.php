@@ -108,7 +108,7 @@ class Project
     /**
      * Set createdAt
      *
-     * @param  \DateTime $createdAt
+     * @param \DateTime $createdAt
      */
     public function setCreatedAt($createdAt = null)
     {
@@ -252,5 +252,4 @@ class Project
     {
         return $this->permissions;
     }
-
 }
