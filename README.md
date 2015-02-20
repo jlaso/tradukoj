@@ -39,9 +39,7 @@ if you get an error for vboxsf upping vagrant check this [link](http://stackover
 
 move to vagrant folder (```cd vagrant```) and start vagrant machine with ```vagrant up```, please get some coffee for the first time
 
-If you get some error in the last step: enter into the machine ```vagrant ssh``` and run the install.sh manually: 
-
-```/vagrant/app/install.sh```
+If you get some error in the last step: enter into the machine ```vagrant ssh``` and run the install.sh manually: ```/vagrant/app/install.sh``` 
 
 If all works fine you can enter in the browser with the URL (http://10.10.10.8)[http://10.10.10.8] 
 
