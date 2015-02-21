@@ -5,6 +5,8 @@ In esperanto TRADUKOJ means translations (and is pronounced with the stress in t
 
 Please: follow @tradukoj in twitter to be updated!.
 
+The official site of tradukoj is [https://www.tradukoj.com][1].
+
 1) Installing
 -------------
 
@@ -12,7 +14,7 @@ When it comes to installing you have the following options.
 
 ### Use Composer create-project (*recommended*)
 
-As Symfony uses [Composer](2) to manage its dependencies, the recommended way
+As Symfony uses [Composer][2] to manage its dependencies, the recommended way
 to create a new project is to use it.
 
 If you don't have Composer yet, download it following the instructions on
