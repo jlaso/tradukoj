@@ -63,7 +63,17 @@ If you get any warnings or recommendations, fix them before moving on.
 3) Getting started with Tradukoj
 -------------------------------
 
-If the vagrant machine has been started successfully, you can start tradukoj with this url:
+If the vagrant machine has been started successfully, you have to upload the local translations to the server (yes, it's the same machine) whith this command:
+
+```
+cd /vagrant
+/usr/bin/env php  app/console jlaso:translations:sync --upload-first=yes
+```
+
+For an unknow reason this last step can not be launched by ansible (MemoryError).
+
+
+And then you can start tradukoj with this url:
 
 http://10.10.10.8
 

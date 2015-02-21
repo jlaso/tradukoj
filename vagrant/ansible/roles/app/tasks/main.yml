@@ -1,22 +1,13 @@
 ---
 - shell: cp /vagrant/app/config/parameters.yml.dist /vagrant/app/config/parameters.yml
 
+- name: restart apache to ensure unlimited memory in the API
+  shell: service apache2 restart
+  sudo: yes
+
 - name: Install Composer Dependencies
   sudo: false
   composer: working_dir=/vagrant
-  
-#    - name: permissions on tmp
-#      shell: sudo chmod -R 777 /tmp
-
-#- name: Copying the conf of cli to apache
-#  shell: cp /etc/php5/cli/php.ini /etc/php5/apache2/php.ini
-#  sudo: yes
-
-#- name:  "Restarting apache"
-#  sudo: yes
-#  shell:  service apache2 restart
-
-#- copy: src=/vagrant/app/config/parameters.yml.dis dest=/vagrant/app/config/parameters.yml
 
 - name: Drop MYSQL database
   shell: /usr/bin/env php /vagrant/app/console --no-interaction doctrine:database:drop --force
@@ -49,7 +40,16 @@
   shell: /usr/bin/env php /vagrant/app/console --no-interaction tradukoj:init:data
 
 - name: Dumping translations for the first project
-  shell: /usr/bin/env php /vagrant/app/console jlaso:translations:dump --force=yes
+  command: /usr/bin/env php app/console jlaso:translations:dump --force=yes
+  args:
+    chdir: /vagrant
 
-- name: Loading translations for the first project to server (local)
-  shell: /usr/bin/env php /vagrant/app/console jlaso:translations:sync --upload-first=yes
+#- name: Loading translations for the first project to server (local)
+#  command: /usr/bin/env php -d memory_limit=-1 app/console jlaso:translations:sync --upload-first=yes 
+#  args:
+#    chdir: /vagrant
+
+- name: Clearing cache
+  command: /usr/bin/env php app/console cache:clear
+  args:
+    chdir: /vagrant
