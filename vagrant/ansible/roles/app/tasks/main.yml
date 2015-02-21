@@ -1,4 +1,5 @@
 ---
+- copy: src=/vagrant/app/config/parameters.yml.dist dest=/vagrant/app/config/parameters.yml
 
 - name: Install Composer Dependencies
   sudo: false
