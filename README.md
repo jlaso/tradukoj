@@ -40,9 +40,6 @@ if you get an error for vboxsf upping vagrant check this [link](http://stackover
 move to vagrant folder (```cd vagrant```) and start vagrant machine with ```vagrant up```, please get some coffee for the first time
 
 
-If all works fine you can enter in the browser with the URL [http://10.10.10.8](http://10.10.10.8)
-
-
 
 2) Checking your System Configuration
 -------------------------------------
@@ -73,9 +70,7 @@ cd /vagrant
 For an unknow reason this last step can not be launched by ansible (MemoryError).
 
 
-And then you can start tradukoj with this url:
-
-http://10.10.10.8
+If all works fine you can enter in the browser with the URL [http://10.10.10.8](http://10.10.10.8)
 
 
 4) Collaboration
