@@ -12,7 +12,7 @@ When it comes to installing you have the following options.
 
 ### Use Composer create-project (*recommended*)
 
-As Symfony uses [Composer][2] to manage its dependencies, the recommended way
+As Symfony uses [Composer](2) to manage its dependencies, the recommended way
 to create a new project is to use it.
 
 If you don't have Composer yet, download it following the instructions on
@@ -105,4 +105,5 @@ References:
 Enjoy!
 
 [1]:  https://www.tradukoj.com
+[2]:  http://getcomposer.org
 
