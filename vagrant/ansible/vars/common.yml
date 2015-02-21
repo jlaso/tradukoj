@@ -1,7 +1,31 @@
 ---
-    php_ppa: php5-5.6
+    php_ppa: php5
+
     doc_root: /vagrant/web
-    sys_packages: ["vim","git","htop"]
-    dist: precise
-    php_packages: ["php5-cli","php-pear","php5-curl","php5-common","php5-intl","php5-mcrypt","php5-mysql","php5-xdebug"]
-    pecl_packages: ["lzf"]
+
+    apache_user: vagrant
+
+    sys_packages:
+        - vim
+        - git
+        - htop
+
+    dist: trusty
+
+    php_packages:
+        - php5
+        - php5-cli
+        - php5-common
+        - php-pear
+        - php5-curl
+        - php5-intl
+        - php5-mcrypt
+        - php5-mysql
+        - php5-xdebug
+
+    pecl_packages:
+        - lzf
+
+    php_ini:
+        - /etc/php5/apache2/php.ini
+        - /etc/php5/cli/php.ini

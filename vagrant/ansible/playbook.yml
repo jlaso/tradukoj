@@ -5,23 +5,18 @@
     web_server: apachephp
     servername: tradukoj.dev www.tradukoj.dev 10.10.10.8
     timezone: Europe/Madrid
+
   vars_files:
     - vars/mysql.yml
     - vars/common.yml
     - [ "vars/apachephp.yml", "vars/ws_defaults.yml" ]
+
   roles:
     - init
-    - php5-cli
     - apache
-    - php5
     - mysql
+    - php5
     - composer
-    - phpcommon
     - php-pecl
-    - app
     - mrcrilly.mongodb
-
-  tasks:
-    - name: post install script
-      command: sh /vagrant/app/install.sh
-
+    - app

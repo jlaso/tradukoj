@@ -1,2 +1,55 @@
 ---
-# application tasks to be customized and to run after the main provision
+- shell: cp /vagrant/app/config/parameters.yml.dist /vagrant/app/config/parameters.yml
+
+- name: restart apache to ensure unlimited memory in the API
+  shell: service apache2 restart
+  sudo: yes
+
+- name: Install Composer Dependencies
+  sudo: false
+  composer: working_dir=/vagrant
+
+- name: Drop MYSQL database
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction doctrine:database:drop --force
+
+- name: Create MYSQL database
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction doctrine:database:create
+
+- name: Create MYSQL tables
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction doctrine:schema:create
+
+- name: session pdo storage have to created by hand
+  shell: mysql -u root -p'{{ mysql.root_password }}' tradukoj < /vagrant/app/sessionpdo.sql
+
+- name: fill language table with all languages
+  shell: mysql -u root -p'{{ mysql.root_password }}' tradukoj < /vagrant/app/languages.sql
+
+- name: Creating MONGO database
+  shell: echo 'db.addUser("tradukoj","tradukoj");' | mongo tradukoj
+
+- name: create MONGO tables
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction doctrine:mongodb:schema:create
+
+- name: Install Assets
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction assets:install /vagrant/web --symlink
+
+- name: Install Assetic
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction assetic:dump
+
+- name: "Creating first user and first project"
+  shell: /usr/bin/env php /vagrant/app/console --no-interaction tradukoj:init:data
+
+- name: Dumping translations for the first project
+  command: /usr/bin/env php app/console jlaso:translations:dump --force=yes
+  args:
+    chdir: /vagrant
+
+#- name: Loading translations for the first project to server (local)
+#  command: /usr/bin/env php -d memory_limit=-1 app/console jlaso:translations:sync --upload-first=yes 
+#  args:
+#    chdir: /vagrant
+
+- name: Clearing cache
+  command: /usr/bin/env php app/console cache:clear
+  args:
+    chdir: /vagrant
