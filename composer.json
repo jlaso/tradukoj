@@ -41,6 +41,8 @@
 
         "jlaso/translations-apibundle": "dev-master",
 
+        "jlaso/session-storage-bundle": "*",
+
         "liuggio/excelbundle": "~2.0"
 
     },

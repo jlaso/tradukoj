@@ -27,6 +27,7 @@ class AppKernel extends Kernel
             // translations api bundle
             new JLaso\TranslationsApiBundle\TranslationsApiBundle(),
             new Liuggio\ExcelBundle\LiuggioExcelBundle(),
+            new JLaso\SessionStorageBundle\SessionStorageBundle(),
         );
 
         if (in_array($this->getEnvironment(), array('dev', 'test'))) {
