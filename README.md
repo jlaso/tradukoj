@@ -5,6 +5,8 @@ In esperanto TRADUKOJ means translations (and is pronounced with the stress in t
 
 Please: follow @tradukoj in twitter to be updated!.
 
+The official site of tradukoj is [https://www.tradukoj.com][1].
+
 1) Installing
 -------------
 
@@ -105,4 +107,5 @@ References:
 Enjoy!
 
 [1]:  https://www.tradukoj.com
+[2]:  http://getcomposer.org
 

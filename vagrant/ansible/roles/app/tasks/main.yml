@@ -18,9 +18,6 @@
 - name: Create MYSQL tables
   shell: /usr/bin/env php /vagrant/app/console --no-interaction doctrine:schema:create
 
-- name: session pdo storage have to created by hand
-  shell: mysql -u root -p'{{ mysql.root_password }}' tradukoj < /vagrant/app/sessionpdo.sql
-
 - name: fill language table with all languages
   shell: mysql -u root -p'{{ mysql.root_password }}' tradukoj < /vagrant/app/languages.sql
 
