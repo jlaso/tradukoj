@@ -69,7 +69,6 @@ services:
             - "%database_password%"
         calls:
             - [setAttribute, [3, 2]] # \PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION
-    #CREATE TABLE `session` (`session_id` varchar(255) NOT NULL,`session_value` text NOT NULL,`session_time` int(11) NOT NULL,PRIMARY KEY (`session_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
     session.handler.pdo:
         class:     Symfony\Component\HttpFoundation\Session\Storage\Handler\PdoSessionHandler
