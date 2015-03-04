@@ -2,7 +2,7 @@
 
 namespace JLaso\TranslationsBundle\Command;
 
-/**
+/*
  *
  *
  * {"command":"key index", "key":"1234", "secret":1234, "project_id":1, ...}
@@ -12,6 +12,7 @@ namespace JLaso\TranslationsBundle\Command;
  *
  *
  */
+
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ODM\MongoDB\DocumentManager;
@@ -85,7 +86,7 @@ class ServerMongoCommand extends ContainerAwareCommand
     protected $lzfUse = true;
 
     /**
-     * configure the command that starts the server
+     * configure the command that starts the server.
      */
     protected function configure()
     {
@@ -98,7 +99,7 @@ class ServerMongoCommand extends ContainerAwareCommand
     }
 
     /**
-     * Atomic send of a string trough the socket
+     * Atomic send of a string trough the socket.
      *
      * @param $msg
      *
@@ -112,7 +113,7 @@ class ServerMongoCommand extends ContainerAwareCommand
     }
 
     /**
-     * Reads the socket
+     * Reads the socket.
      *
      * @param bool $compress
      *
@@ -183,7 +184,7 @@ class ServerMongoCommand extends ContainerAwareCommand
     }
 
     /**
-     * Body of the command
+     * Body of the command.
      *
      * @param InputInterface  $input
      * @param OutputInterface $output
@@ -233,7 +234,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                 if ($buf) {
                     try {
                         $read     = json_decode($buf, true);
-                        /**
+                        /*
                          * fixed or not data that comes with the data received
                          */
                         $command  = isset($read['command']) ? $read['command'] : '';
@@ -366,7 +367,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                                 exit;
 
                             default:
-                                $this->exception(sprintf('command \'%s\' unknow', $command));
+                                $this->exception(sprintf('command \'%s\' unknown', $command));
                                 break;
                         }
                     } catch (\Exception $e) {
@@ -565,7 +566,7 @@ class ServerMongoCommand extends ContainerAwareCommand
             print $result;
         }
 
-        return $this->send($result);
+        return $this->sendMessage($result);
     }
 
     protected function prettySize($size)
@@ -623,7 +624,7 @@ class ServerMongoCommand extends ContainerAwareCommand
     }
 
     /**
-     * Devuelve los detalles de un mensaje en concreto
+     * Devuelve los detalles de un mensaje en concreto.
      */
     public function getTranslationDetails(Project $project, $bundle, $key, $language, $catalog = RestController::DEFAULT_CATALOG)
     {
@@ -660,8 +661,7 @@ class ServerMongoCommand extends ContainerAwareCommand
     }
 
     /**
-     * Devuelve los mensajes de una key
-     *
+     * Devuelve los mensajes de una key.
      */
     public function getTranslations(Project $project, $bundle, $key, $catalog)
     {
@@ -692,7 +692,7 @@ class ServerMongoCommand extends ContainerAwareCommand
     }
 
     /**
-     * Devuelve el comentario de una key
+     * Devuelve el comentario de una key.
      */
     protected function getComment(Project $project, $bundle, $key, $catalog)
     {
@@ -876,15 +876,13 @@ class ServerMongoCommand extends ContainerAwareCommand
     }
 
     /**
-     *
      * $data[key][locale]
      * {
      *   message,
      *   updatedAt,
      *   bundle,
      *   fileName,
-     * }
-     *
+     * }.
      */
     protected function receiveKeys(Project $project, $catalog, $data)
     {
@@ -1006,13 +1004,11 @@ class ServerMongoCommand extends ContainerAwareCommand
     }
 
     /**
-     *
      * $data[key][locale]
      * {
      *   message,
      *   updatedAt
-     * }
-     *
+     * }.
      */
     protected function sendKeys(Project $project, $catalog)
     {
