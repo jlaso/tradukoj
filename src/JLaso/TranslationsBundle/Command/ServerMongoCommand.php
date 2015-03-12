@@ -114,6 +114,7 @@ class ServerMongoCommand extends ContainerAwareCommand
      */
     protected function send($msg)
     {
+        $this->debug("-> send '%s'", $msg);
         $msg .= PHP_EOL;
 
         return socket_write($this->msgsock, $msg, strlen($msg));
@@ -133,7 +134,7 @@ class ServerMongoCommand extends ContainerAwareCommand
             if ((time() - $this->timeStart) > 100) {
                 exit -1;
             }
-            $buf = socket_read($this->msgsock, 15 + 1024, PHP_BINARY_READ);
+            $buf = socket_read($this->msgsock, strlen(self::SIGNATURE) + self::BLOCK_SIZE, PHP_BINARY_READ);
             if ($buf === false) {
                 echo "socket_read() failed: reason: ".socket_strerror(socket_last_error($this->msgsock))."\n";
 
@@ -144,20 +145,29 @@ class ServerMongoCommand extends ContainerAwareCommand
                 return '';
             }
 
-            if (substr_count($buf, ":") < 3) {
-                var_dump($buf);
-                die('error in format');
+            $signature = substr($buf, 0, strlen(self::SIGNATURE));
+            if (substr_count($signature, ":") < 3) {
+                $this->send(self::NO_ACK);
+                $this->exception('error in signature format');
             }
-            list($size, $block, $blocks)  = explode(":", $buf);
+            list($size, $block, $blocks)  = explode(":", $signature);
+            $size = intval($size);
+            $block = intval($block);
+            $blocks = intval($blocks);
+            if(!$size || !$block || !$blocks){
+                $this->send(self::NO_ACK);
+                $this->exception("error in signature: zero");
+            }
             $aux = substr($buf, strlen(self::SIGNATURE));
 
-            $this->debug("received block %d of %d", $block, $blocks);
+            $this->debug("received block %d of %d <info>%s</info>", $block, $blocks, substr($buf, 0, strlen(self::SIGNATURE)));
+            $this->hexDump($aux);
 
             if ($size == strlen($aux)) {
                 $this->send(self::ACK);
             } else {
                 $this->send(self::NO_ACK);
-                die(sprintf('error in size (block %d of %d): informed %d vs %d read', $block, $blocks, $size, strlen($aux)));
+                $this->exception(sprintf('error in size (block %d of %d): informed %d vs %d read', $block, $blocks, $size, strlen($aux)));
             }
 
             $buffer .= $aux;
@@ -167,18 +177,22 @@ class ServerMongoCommand extends ContainerAwareCommand
         $size = $this->prettySize($this->received);
         $this->debug("<error>v</error> downloaded %s" , $size);
 
-        try {
-            if ($compress) {
-                if ($this->lzfUse) {
-                    $result = lzf_decompress($buffer);
-                } else {
-                    $result = gzuncompress($buffer);
-                }
+        $this->debug("size of buffer is %d", strlen($buffer));
+        $this->hexDump($buffer);
+
+        if ($compress) {
+            if ($this->lzfUse) {
+                $this->debug('lzf_decompressing');
+                $result = lzf_decompress($buffer);
             } else {
-                $result = $buffer;
+                $this->debug('gzuncompressing');
+                $result = gzuncompress($buffer);
             }
-        } catch (\Exception $e) {
-            $this->exception($e->getMessage());
+        } else {
+            $result = $buffer;
+        }
+        if(false === $result){
+            $this->exception('Error descompressing data');
         }
 
         $this->debug($result);
@@ -191,6 +205,17 @@ class ServerMongoCommand extends ContainerAwareCommand
         }
 
         return $result;
+    }
+
+    protected function hexDump($data)
+    {
+        $result = array();
+        for($i=0; $i<strlen($data); $i++){
+            $result[] = sprintf("%02X", ord($data[$i]));
+        }
+        $result = join(':', $result);
+
+        $this->debug( '[' . $result . ']');
     }
 
     protected function debug()
@@ -390,6 +415,7 @@ class ServerMongoCommand extends ContainerAwareCommand
                                 $this->exception(sprintf('command \'%s\' unknown', $command));
                                 break;
                         }
+
                     } catch (\Exception $e) {
                         $msg = $e->getCode().': '.$e->getMessage().' in line '.$e->getLine().' of file '.$e->getFile();
                         $this->exception($msg);
@@ -544,6 +570,7 @@ class ServerMongoCommand extends ContainerAwareCommand
      */
     protected function sendMessage($msg, $compress = true)
     {
+        $this->debug("sending %s chars <info>%s</info>", strlen($msg), $msg);
         if ($compress) {
             if ($this->lzfUse) {
                 $msg = lzf_compress($msg);
@@ -553,14 +580,15 @@ class ServerMongoCommand extends ContainerAwareCommand
         } else {
             $msg .= PHP_EOL;
         }
-
         $len = strlen($msg);
-        $this->debug("sending <info>%d</info> chars", $len);
 
         $blocks = ceil($len / self::BLOCK_SIZE);
         for ($i = 0; $i<$blocks; $i++) {
-            $block = substr($msg, $i * self::BLOCK_SIZE,
-                ($i == $blocks-1) ? $len - ($i-1) * self::BLOCK_SIZE : self::BLOCK_SIZE);
+            $block = substr(
+                $msg,
+                $i * self::BLOCK_SIZE,
+                ($i == $blocks-1) ? $len - ($i-1) * self::BLOCK_SIZE : self::BLOCK_SIZE
+            );
             $prefix = sprintf("%06d:%03d:%03d:", strlen($block), $i+1, $blocks);
             $aux =  $prefix.$block;
             $this->debug("sending block %d from %d, prefix <info>%s</info>", $i+1, $blocks, $prefix);
@@ -571,17 +599,11 @@ class ServerMongoCommand extends ContainerAwareCommand
 
             do {
                 $read = socket_read($this->msgsock, 10, PHP_NORMAL_READ);
-                //print $read;
             } while (strpos($read, self::ACK) !== 0);
         }
         $this->sended += strlen($msg);
         $size = $this->prettySize($this->sended);
-        echo '^ ' ,$size, "    ";
-
-        $size = $this->prettySize($this->sended + $this->received);
-        echo ', Total:', $size;
-
-        echo str_repeat(chr(8), 80);
+        $this->debug('<error>^</error> uploaded %s, total(d+u) %s', $size, $this->prettySize($this->sended + $this->received));
 
         return true;
     }
@@ -601,7 +623,7 @@ class ServerMongoCommand extends ContainerAwareCommand
 
     /**
      * @param $reason
-     * @return int
+     * @throws \Exception
      */
     protected function exception($reason)
     {
@@ -612,8 +634,12 @@ class ServerMongoCommand extends ContainerAwareCommand
         $result = json_encode($result).PHP_EOL;
 
         $this->debug($result);
+        $this->send($result);
 
-        return $this->sendMessage($result);
+        sleep(1);
+        socket_close($this->msgsock);
+
+        die($reason);
     }
 
     /**
@@ -1034,7 +1060,7 @@ class ServerMongoCommand extends ContainerAwareCommand
 
         foreach ($data as $key => $dataLocale) {
             if (count($dataLocale)) {
-                $this->debug("processing key <info>%s</info<", $key);
+                $this->debug("processing key <info>%s</info>", $key);
 
                 $bundle = '';
 
