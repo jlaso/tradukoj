@@ -16,7 +16,7 @@ p > span {
     font-weight: bold;
 }
 
-p.negrita {
+p.strongtext {
     color: black;
     font-weight: bold;
     margin-bottom: 20px;
@@ -70,7 +70,7 @@ p.negrita {
 #info img{
     margin-top: 20px;}
 
-.cita{
+.quote{
     padding: 0 5%;
 }
 
