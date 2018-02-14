@@ -10,11 +10,12 @@
         "symfony/symfony": "2.5.0",
         "symfony/yaml": "*",
 
-        "doctrine/orm": "*",
-        "doctrine/mongodb-odm-bundle": "*",
-        "doctrine/doctrine-bundle": "*",
+        "doctrine/orm": "2.4.*@dev",
+        "doctrine/mongodb-odm-bundle": "3.0.*@dev",
+        "doctrine/doctrine-bundle": "1.4.*@dev",
 
-        "twig/extensions": "*",
+
+      "twig/extensions": "*",
 
         "symfony/assetic-bundle": "*",
         "symfony/swiftmailer-bundle": "*",
